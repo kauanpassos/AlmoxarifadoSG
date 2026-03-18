@@ -29,11 +29,6 @@ cd AlmoxarifadoSG
 dotnet restore
 dotnet run
 ```
-
-## Configuração
-
-Crie um arquivo `.env` com suas credenciais do Supabase.
-
 ## Contribuição
 
 Pull requests são bem-vindos!
