@@ -1,22 +1,17 @@
-﻿using System;
-using Supabase.Postgrest.Attributes;
+﻿using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
 
-namespace Almoxarifado.Domain.Models // Ajuste se a sua pasta se chamar diferente
+namespace Almoxarifado.Domain;
+
+[Table("usuarios")]
+public class Usuario : BaseModel
 {
-    [Table("usuarios")] // O nome da sua tabela lá no Supabase
-    public class Usuario : BaseModel
-    {
-        [PrimaryKey("id", false)]
-        public int Id { get; set; }
+    [PrimaryKey("id", false)]
+    public int Id { get; set; }
 
-        [Column("nome")]
-        public string Nome { get; set; }
+    [Column("username")]
+    public string? Username { get; set; }
 
-        [Column("email")]
-        public string Email { get; set; }
-
-        [Column("senha")]
-        public string Senha { get; set; }
-    }
+    [Column("password")]
+    public string? Password { get; set; }
 }
