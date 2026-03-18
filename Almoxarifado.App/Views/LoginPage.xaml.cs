@@ -1,53 +1,26 @@
-using Almoxarifado.Domain;
-
-namespace Almoxarifado.App.Views;
+using Almoxarifado.App.Services;
 
 public partial class LoginPage : ContentPage
 {
-    private readonly Supabase.Client _supabase;
+    private readonly IAuthService _authService; //usando o Auth
 
-    public LoginPage(Supabase.Client supabase)
+    public LoginPage(IAuthService authService)
     {
+        _authService = authService;
         InitializeComponent();
-        _supabase = supabase;
     }
 
     private async void OnLoginClicked(object? sender, EventArgs e)
     {
-        // captura os dados usando os nomes x:Name que definiu
-        string usuarioDigitado = EntryUsuario.Text;
-        string senhaDigitada = EntrySenha.Text;
+        var usuario = await _authService.LoginAsync(EntryUsuario.Text, EntrySenha.Text);
 
-        if (string.IsNullOrWhiteSpace(usuarioDigitado) || string.IsNullOrWhiteSpace(senhaDigitada))
+        if (usuario != null)
         {
-            await DisplayAlert("Atenção", "Por favor, preencha o usuário e a senha.", "OK");
-            return;
+            await Shell.Current.GoToAsync("//EstoquePage");
         }
-
-        try
+        else
         {
-            // tá buscando o usuário na tabela 'usuarios' do Supabase
-            var response = await _supabase
-                .From<Usuario>()
-                .Where(x => x.Username == usuarioDigitado)
-                .Where(x => x.Password == senhaDigitada)
-                .Get();
-
-            var usuario = response.Model;
-
-            if (usuario != null)
-            {
-               
-                await Shell.Current.GoToAsync("//EstoquePage");
-            }
-            else
-            {
-                await DisplayAlert("Erro", "Usuário ou senha incorretos.", "OK");
-            }
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert("Erro de Conexão", $"Não foi possível conectar ao banco: {ex.Message}", "OK");
+            await DisplayAlert("Erro", "Usuário ou senha inválidos", "OK");
         }
     }
 }
