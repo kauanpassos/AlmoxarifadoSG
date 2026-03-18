@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Almoxarifado.App.Views.EstoquePage"
+             Title="Gerenciar Estoque"
+             BackgroundColor="#F5F5F5">
+
+    <Grid RowDefinitions="Auto, *" Padding="20">
+
+        <VerticalStackLayout Grid.Row="0" Spacing="5" Margin="0,0,0,20">
+            <Label Text="Estoque Atual" FontSize="28" FontAttributes="Bold" TextColor="#2B0B98" />
+            <Label Text="Aqui você controla todas as peças" FontSize="14" TextColor="Gray" />
+        </VerticalStackLayout>
+
+        <CollectionView x:Name="ListaEstoque" Grid.Row="1">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Margin="0,0,0,15" Padding="15" CornerRadius="10" HasShadow="True" BorderColor="Transparent">
+                        <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding NomePeca}" FontSize="18" FontAttributes="Bold" />
+                            <Label Grid.Row="1" Grid.Column="0" Text="{Binding Localizacao}" FontSize="14" TextColor="Gray" />
+                            <Frame Grid.RowSpan="2" Grid.Column="1" BackgroundColor="#2B0B98" CornerRadius="8" Padding="15,10" VerticalOptions="Center">
+                                <Label Text="{Binding Quantidade}" TextColor="White" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
+                            </Frame>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>

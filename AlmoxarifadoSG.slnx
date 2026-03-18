@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Almoxarifado.API/Almoxarifado.API.csproj" />
+  <Project Path="Almoxarifado.App/Almoxarifado.App.csproj" Id="36bd8510-2a2a-40d1-906c-73e7245f8834">
+    <Deploy Solution="Debug|*" />
+  </Project>
+  <Project Path="Almoxarifado.Domain/Almoxarifado.Domain.csproj" Id="863ab427-4a6f-4291-9bec-7aaec6a138c6" />
+</Solution>
