@@ -12,7 +12,7 @@ Sistema de gestão de almoxarifado com autenticação utilizando Supabase.
 ## Tecnologias
 
 * .NET
-* Supabase
+* Firebase
 * C#
 
 ## Estrutura do projeto
