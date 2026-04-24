@@ -4,6 +4,8 @@ using Almoxarifado.App.Views;
 
 namespace Almoxarifado.App;
 
+
+//Alterar arquivo pro Firebase
 public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
@@ -21,24 +23,21 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
-        // --- CONFIGURAÇÃO DO SUPABASE ---
-        // Substitua pelas suas credenciais reais do painel do Supabase
-        var url = "https://SUA_URL_AQUI.supabase.co";
-        var key = "SUA_CHAVE_ANON_AQUI";
+        var url = "URL BANCO DE DADOS";
+        var key = "CHAVE_ANON_AQUI";
 
         var options = new SupabaseOptions
         {
             AutoConnectRealtime = true
         };
 
-        // Registra o cliente do Supabase como Singleton (uma única instância para o app todo)
         builder.Services.AddSingleton(provider => new Supabase.Client(url, key, options));
 
-        // --- REGISTRO DAS PÁGINAS (Essencial para o login funcionar!) ---
-        // Isso permite que a LoginPage receba o 'Supabase.Client' no construtor
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<EstoquePage>();
         builder.Services.AddTransient<MainPage>();
+        builder.Services.AddTransient<Almoxarifado.App.Views.GestaoFilaPage>();
+        builder.Services.AddTransient<Almoxarifado.App.ViewModels.GestaoFilaViewModel>();
 
         return builder.Build();
     }

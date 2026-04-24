@@ -2,7 +2,7 @@ using Almoxarifado.App.Services;
 
 public partial class LoginPage : ContentPage
 {
-    private readonly IAuthService _authService; //usando o Auth
+    private readonly IAuthService _authService;
 
     public LoginPage(IAuthService authService)
     {
