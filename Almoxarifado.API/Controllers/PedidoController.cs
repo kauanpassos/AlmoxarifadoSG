@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Almoxarifado.Domain;
-using Almoxarifado.API.Services;
+using Almoxarifado.API.Services.Interfaces;
 
 namespace Almoxarifado.API.Controllers
 {
@@ -16,7 +16,7 @@ namespace Almoxarifado.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Pedido>> CriarPedido([FromBody] Pedido novoPedido)
+        public async Task<ActionResult<Solicitacao>> CriarPedido([FromBody] Solicitacao novoPedido)
         {
             try
             {
@@ -30,7 +30,7 @@ namespace Almoxarifado.API.Controllers
         }
 
         [HttpGet("usuario/{usuarioId}")]
-        public async Task<ActionResult<IEnumerable<Pedido>>> GetPedidosPorUsuario(string usuarioId)
+        public async Task<ActionResult<IEnumerable<Solicitacao>>> GetPedidosPorUsuario(string usuarioId)
         {
             var pedidos = await _pedidoService.ListarPorUsuario(usuarioId);
             return Ok(pedidos);

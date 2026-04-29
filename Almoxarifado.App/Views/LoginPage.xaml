@@ -21,27 +21,31 @@
                TextColor="Gray"
                Margin="0, -15, 0, 20"/>
 
-        <Entry x:Name="EntryUsuario"
-               Placeholder="Utilizador ou Crachá"
+        <Entry Placeholder="Utilizador ou Crachá"
+               Text="{Binding Email}"
                Keyboard="Text"
                ClearButtonVisibility="WhileEditing" 
                TextColor="Black"/>
 
-        <Entry x:Name="EntrySenha"
-               Placeholder="Password"
+        <Entry Placeholder="Password"
+               Text="{Binding Senha}"
                IsPassword="True"
                ClearButtonVisibility="WhileEditing" 
                TextColor="Black"/>
 
+        <ActivityIndicator IsRunning="{Binding IsBusy}" 
+                           IsVisible="{Binding IsBusy}"
+                           Color="#2B0B98"
+                           HorizontalOptions="Center"/>
+
         <Button Text="ENTRAR"
+                Command="{Binding FazerLoginCommand}"
                 FontAttributes="Bold"
                 CornerRadius="8"
                 BackgroundColor="#2B0B98"
                 TextColor="White"
                 HeightRequest="50"
-                Margin="0, 15, 0, 0"
-                Clicked="OnLoginClicked" />
+                Margin="0, 15, 0, 0" />
 
     </VerticalStackLayout>
-
 </ContentPage>

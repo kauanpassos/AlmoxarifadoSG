@@ -1,25 +1,65 @@
-﻿using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
+﻿using System;
 
-namespace Almoxarifado.Domain
+namespace Almoxarifado.Domain;
+
+public sealed class Estoque
 {
-    [Table("estoque")]
-    public class Estoque : BaseModel
+    public string ProdutoId { get; }
+    public string Localizacao { get; private set; }
+    public int QuantidadeAtual { get; private set; }
+    public int QuantidadeMinima { get; private set; }
+    public DateTime UpdatedAt { get; private set; }
+
+    public Estoque(string produtoId, string localizacao, int quantidadeAtual, int quantidadeMinima)
     {
-        [PrimaryKey("id", false)]
-        public int Id { get; set; }
+        if (string.IsNullOrWhiteSpace(produtoId))
+            throw new ArgumentException("O ID do produto é obrigatório.", nameof(produtoId));
 
-        [Column("nome_peca")]
-        public string NomePeca { get; set; }
+        if (quantidadeAtual < 0)
+            throw new ArgumentException("A quantidade atual não pode ser negativa.", nameof(quantidadeAtual));
 
-        // Eu deixo a descrição como string para armazenar os detalhes técnicos que eu cadastrei na nuvem.
-        [Column("descricao_tecnica")]
-        public string DescricaoTecnica { get; set; }
+        if (quantidadeMinima < 0)
+            throw new ArgumentException("A quantidade mínima não pode ser negativa.", nameof(quantidadeMinima));
 
-        [Column("quantidade")]
-        public int Quantidade { get; set; }
+        ProdutoId = produtoId;
+        Localizacao = string.IsNullOrWhiteSpace(localizacao) ? "Sem Localização" : localizacao;
+        QuantidadeAtual = quantidadeAtual;
+        QuantidadeMinima = quantidadeMinima;
+        UpdatedAt = DateTime.UtcNow;
+    }
+    public void Adicionar(int quantidade)
+    {
+        if (quantidade <= 0)
+            throw new ArgumentException("A quantidade a adicionar deve ser maior que zero.");
 
-        [Column("localizacao")]
-        public string Localizacao { get; set; }
+        QuantidadeAtual += quantidade;
+        AtualizarData();
+    }
+    public void Retirar(int quantidade)
+    {
+        if (quantidade <= 0)
+            throw new ArgumentException("A quantidade a retirar deve ser maior que zero.");
+
+        if (QuantidadeAtual - quantidade < 0)
+            throw new InvalidOperationException("Operação negada: Estoque insuficiente para essa retirada.");
+
+        QuantidadeAtual -= quantidade;
+        AtualizarData();
+    }
+    public void MoverPara(string novaLocalizacao)
+    {
+        if (string.IsNullOrWhiteSpace(novaLocalizacao))
+            throw new ArgumentException("A nova localização é obrigatória.");
+
+        Localizacao = novaLocalizacao;
+        AtualizarData();
+    }
+    public bool PrecisaRepor()
+    {
+        return QuantidadeAtual <= QuantidadeMinima;
+    }
+    private void AtualizarData()
+    {
+        UpdatedAt = DateTime.UtcNow;
     }
 }

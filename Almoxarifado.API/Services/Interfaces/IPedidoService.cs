@@ -1,10 +1,10 @@
 ﻿using Almoxarifado.Domain;
 
-namespace Almoxarifado.API.Services
+namespace Almoxarifado.API.Services.Interfaces
 {
     public interface IPedidoService
     {
-        Task<Pedido> CriarNovoPedido(Pedido pedido);
-        Task<IEnumerable<Pedido>> ListarPorUsuario(string usuarioId);
+        Task<Solicitacao> CriarNovoPedido(Solicitacao pedido);
+        Task<IEnumerable<Solicitacao>> ListarPorUsuario(string usuarioId);
     }
 }

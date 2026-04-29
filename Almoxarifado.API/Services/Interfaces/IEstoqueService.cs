@@ -1,6 +1,6 @@
 ﻿using Almoxarifado.Domain;
 
-namespace Almoxarifado.API.Services;
+namespace Almoxarifado.API.Services.Interfaces;
 
 public interface IEstoqueService
 {

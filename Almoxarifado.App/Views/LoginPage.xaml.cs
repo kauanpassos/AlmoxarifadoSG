@@ -1,26 +1,13 @@
-using Almoxarifado.App.Services;
+using Almoxarifado.App.ViewModels;
+using Microsoft.Maui.Controls;
+
+namespace Almoxarifado.App.Views;
 
 public partial class LoginPage : ContentPage
 {
-    private readonly IAuthService _authService; //usando o Auth
-
-    public LoginPage(IAuthService authService)
+    public LoginPage(LoginViewModel viewModel)
     {
-        _authService = authService;
         InitializeComponent();
-    }
-
-    private async void OnLoginClicked(object? sender, EventArgs e)
-    {
-        var usuario = await _authService.LoginAsync(EntryUsuario.Text, EntrySenha.Text);
-
-        if (usuario != null)
-        {
-            await Shell.Current.GoToAsync("//EstoquePage");
-        }
-        else
-        {
-            await DisplayAlert("Erro", "Usuário ou senha inválidos", "OK");
-        }
+        BindingContext = viewModel;
     }
 }
