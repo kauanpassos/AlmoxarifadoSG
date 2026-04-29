@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Almoxarifado.App;
 
+
+//Alterar arquivo pro Firebase
 public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
@@ -32,6 +34,8 @@ public static class MauiProgram
         builder.Services.AddTransient<GestaoFilaPage>();
         builder.Services.AddTransient<EstoquePage>();
         builder.Services.AddTransient<MainPage>();
+        builder.Services.AddTransient<Almoxarifado.App.Views.GestaoFilaPage>();
+        builder.Services.AddTransient<Almoxarifado.App.ViewModels.GestaoFilaViewModel>();
 
         return builder.Build();
     }

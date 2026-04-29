@@ -11,8 +11,6 @@ namespace Almoxarifado.App.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-
-            // Eu chamo a minha função de buscar os dados no banco assim que a tela abre.
             await CarregarEstoque();
         }
 
@@ -24,7 +22,6 @@ namespace Almoxarifado.App.Views
             }
             catch (System.Exception)
             {
-                // Se der ruim (tipo sem internet), eu aviso o usuário.
                 await DisplayAlert("Erro", "Não foi possível carregar o estoque. Verifique sua conexão.", "OK");
             }
         }
