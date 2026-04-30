@@ -8,7 +8,6 @@ namespace Almoxarifado.App
         public App(LoginPage loginPage)
         {
             InitializeComponent();
-
             MainPage = loginPage;
         }
     }

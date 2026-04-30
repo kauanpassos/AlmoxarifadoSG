@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Almoxarifado.Domain;
-using Almoxarifado.API.Services;
+using Almoxarifado.API.Services.Interfaces;
 
 namespace Almoxarifado.API.Controllers
 {

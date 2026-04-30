@@ -1,41 +1,20 @@
-﻿using Almoxarifado.Domain;
-using Supabase;
+﻿using Almoxarifado.API.Services.Interfaces;
+using Almoxarifado.Domain;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Almoxarifado.API.Services
 {
     public class PedidoService : IPedidoService
     {
-        private readonly Client _supabase;
-
-        // Eu recebo o cliente do Supabase aqui pela Injeção de Dependência
-        public PedidoService(Client supabase)
+        public async Task<Solicitacao> CriarNovoPedido(Solicitacao pedido)
         {
-            _supabase = supabase;
+            return await Task.FromResult(pedido);
         }
 
-        public async Task<Pedido> CriarNovoPedido(Pedido pedido)
+        public async Task<IEnumerable<Solicitacao>> ListarPorUsuario(string usuarioId)
         {
-            // Eu garanto que a data e o status fiquem preenchidos automaticamente
-            pedido.DataAbertura = DateTime.UtcNow;
-            pedido.Status = "Pendente";
-
-            var response = await _supabase.From<Pedido>().Insert(pedido);
-
-            // Eu retorno o pedido que foi criado lá no banco
-            return response.Models.FirstOrDefault() ?? pedido;
-        }
-
-        public async Task<IEnumerable<Pedido>> ListarPorUsuario(string usuarioId)
-        {
-            // COMO EU RESOLVO O ERRO: Transformo o texto que chegou em um número de verdade!
-            int idNumerico = int.Parse(usuarioId);
-
-            var response = await _supabase.From<Pedido>()
-                // Agora sim! Eu comparo o número do banco (x.UsuarioId) com o número que eu acabei de converter
-                .Where(x => x.UsuarioId == idNumerico)
-                .Get();
-
-            return response.Models;
+            return await Task.FromResult(new List<Solicitacao>());
         }
     }
 }

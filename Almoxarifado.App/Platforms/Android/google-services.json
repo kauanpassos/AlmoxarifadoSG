@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "436886895237",
+    "project_id": "almoxarifado-sg",
+    "storage_bucket": "almoxarifado-sg.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:436886895237:android:867f95c136985beb0a87ec",
+        "android_client_info": {
+          "package_name": "com.companyname.almoxarifado.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCD1hywuoaY2Bmls2sz5hXzJG-KyruJVYE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,19 +1,7 @@
-using Supabase;
 using Almoxarifado.API.Services;
+using Almoxarifado.API.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Configuração do Supabase
-var supabaseUrl = builder.Configuration["Supabase:Url"]!;
-var supabaseKey = builder.Configuration["Supabase:Key"]!;
-
-builder.Services.AddScoped(_ =>
-    new Supabase.Client(supabaseUrl, supabaseKey, new SupabaseOptions
-    {
-        AutoRefreshToken = true,
-        AutoConnectRealtime = true,
-    }));
-
 
 builder.Services.AddScoped<IEstoqueService, EstoqueService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
