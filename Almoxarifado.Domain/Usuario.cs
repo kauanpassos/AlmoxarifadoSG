@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Almoxarifado.Domain;
+
 public sealed class Usuario
 {
     public string Id { get; }
@@ -11,6 +13,7 @@ public sealed class Usuario
     public bool Ativo { get; private set; }
     public DateTime CreatedAt { get; }
     public DateTime UpdatedAt { get; private set; }
+
     public Usuario(string id, string nome, string email, string setor, string tipo)
     {
         if (string.IsNullOrWhiteSpace(id))
@@ -32,6 +35,15 @@ public sealed class Usuario
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
+    public static void ValidarRegrasDeSenha(string senha)
+    {
+        if (string.IsNullOrWhiteSpace(senha))
+            throw new ArgumentException("A senha é obrigatória.");
+
+        if (senha.Length < 6)
+            throw new ArgumentException("A senha deve ter no mínimo 6 caracteres.");
+    }
+
     public void Desativar()
     {
         if (!Ativo) return;
@@ -39,6 +51,7 @@ public sealed class Usuario
         Ativo = false;
         AtualizarData();
     }
+
     public void Ativar()
     {
         if (Ativo) return;
@@ -46,6 +59,7 @@ public sealed class Usuario
         Ativo = true;
         AtualizarData();
     }
+
     public void MudarSetor(string novoSetor)
     {
         if (string.IsNullOrWhiteSpace(novoSetor))
@@ -54,6 +68,7 @@ public sealed class Usuario
         Setor = novoSetor.Trim();
         AtualizarData();
     }
+
     private void AtualizarData()
     {
         UpdatedAt = DateTime.UtcNow;
