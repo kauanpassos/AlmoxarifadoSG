@@ -1,0 +1,45 @@
+# Nome da Action que aparecerá no GitHub
+name: .NET MAUI Build
+
+# 1. GATILHOS (Triggers)
+# O código rodará sempre que houver Push ou Pull Request na branch 'main'
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-android:
+    # Usamos o Windows pois é excelente para compilar Android e Windows
+    runs-on: windows-latest
+
+    steps:
+    # Passos iniciais: Baixar o código e configurar o ambiente
+    - name: Checkout do código
+      uses: actions/checkout@v4
+
+    - name: Configurar Java (Necessário para Android)
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'microsoft'
+        java-version: '17'
+
+    - name: Configurar .NET 8
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    # 2. INSTALAÇÃO DE WORKLOADS
+    # Este passo instala as ferramentas específicas do MAUI no servidor
+    - name: Instalar MAUI Workloads
+      run: dotnet workload install maui
+
+    # 3. RESTAURO E COMPILAÇÃO
+    - name: Restaurar dependências (NuGet)
+      run: dotnet restore
+
+    - name: Build para Android
+      # O comando 'publish' cria o pacote final. 
+      # Mudamos para 'build' se quisermos apenas testar o código.
+      run: dotnet build -c Release -f net8.0-android
