@@ -1,24 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using MediatR;
 using Almoxarifado.Domain;
-using Almoxarifado.API.Services;
+using Almoxarifado.Application.Queries;
 
-namespace Almoxarifado.API.Controllers
+namespace Almoxarifado.API.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public sealed class EstoqueController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class EstoqueController : ControllerBase
-    {
-        private readonly IEstoqueService _estoqueService;
-        public EstoqueController(IEstoqueService estoqueService)
-        {
-            _estoqueService = estoqueService;
-        }
+    private readonly IMediator _mediator;
 
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            var produtos = await _estoqueService.ObterTodos();
-            return Ok(produtos);
-        }
+    public EstoqueController(IMediator mediator) => _mediator = mediator;
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Estoque>>> Get()
+    {
+        var query = new GetEstoqueQuery();
+        var result = await _mediator.Send(query);
+        return Ok(result);
     }
 }

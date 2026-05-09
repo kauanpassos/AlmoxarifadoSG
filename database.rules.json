@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "estoque": {
+      ".read": true,
+      ".write": true
+    },
+    "pedidos": {
+      ".read": true,
+      ".write": true
+    },
+    "usuarios": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}

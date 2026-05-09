@@ -1,48 +1,20 @@
-using Microsoft.Maui.Controls;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Almoxarifado.Domain;
+using Almoxarifado.App.ViewModels;
 
-namespace Almoxarifado.App.Views
+namespace Almoxarifado.App.Views;
+
+public partial class EstoquePage : ContentPage
 {
-    public partial class EstoquePage : ContentPage
+    private readonly EstoqueViewModel _viewModel;
+
+    public EstoquePage(EstoqueViewModel viewModel)
     {
-        private readonly Supabase.Client _supabaseClient;
+        InitializeComponent();
+        BindingContext = _viewModel = viewModel;
+    }
 
-        public ObservableCollection<Estoque> PecasNoEstoque { get; set; } = new ObservableCollection<Estoque>();
-
-        public EstoquePage(Supabase.Client supabaseClient)
-        {
-            InitializeComponent();
-            _supabaseClient = supabaseClient;
-            BindingContext = this;
-        }
-
-
-        protected override async void OnAppearing()
-        {
-            base.OnAppearing();
-            await CarregarEstoque();
-        }
-
-        private async Task CarregarEstoque()
-        {
-            try
-            {
-
-                var resposta = await _supabaseClient.From<Estoque>().Get();
-
-                PecasNoEstoque.Clear();
-
-                foreach (var peca in resposta.Models)
-                {
-                    PecasNoEstoque.Add(peca);
-                }
-            }
-            catch (System.Exception)
-            {
-                await DisplayAlert("Erro", "Não foi possível carregar o estoque. Verifique sua conexão.", "OK");
-            }
-        }
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        _viewModel.LoadItemsCommand.Execute(null);
     }
 }

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using Almoxarifado.Domain;
 
-namespace Almoxarifado.App.Services.Interfaces
+namespace Almoxarifado.App.Services.Interfaces;
+
+public interface IAuthService
 {
-    internal interface IAuthService
-    {
-    }
+    Task<Usuario?> LoginAsync(string username, string password);
+    Task LogoutAsync();
 }

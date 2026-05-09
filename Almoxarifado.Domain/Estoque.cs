@@ -1,25 +1,22 @@
-﻿using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
+using Almoxarifado.Domain.Interfaces;
 
-namespace Almoxarifado.Domain
+namespace Almoxarifado.Domain;
+
+// Entidade que representa um item no estoque.
+// O Domínio é o local onde definimos o que o nosso negócio entende por 'Estoque'.
+public class Estoque : IEntity
 {
-    [Table("estoque")]
-    public class Estoque : BaseModel
-    {
-        [PrimaryKey("id", false)]
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        [Column("nome_peca")]
-        public string NomePeca { get; set; }
+    // Identificação amigável do item.
+    public string NomePeca { get; set; } = null!;
 
-        // Eu deixo a descrição como string para armazenar os detalhes técnicos que eu cadastrei na nuvem.
-        [Column("descricao_tecnica")]
-        public string DescricaoTecnica { get; set; }
+    // Detalhes técnicos para especificação rigorosa.
+    public string DescricaoTecnica { get; set; } = null!;
 
-        [Column("quantidade")]
-        public int Quantidade { get; set; }
+    // Saldo atual em unidades.
+    public int Quantidade { get; set; }
 
-        [Column("localizacao")]
-        public string Localizacao { get; set; }
-    }
+    // Posição física no armazém (Ex: Corredor A, Prateleira 2).
+    public string Localizacao { get; set; } = null!;
 }
