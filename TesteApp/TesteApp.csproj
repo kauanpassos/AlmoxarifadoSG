@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -10,11 +10,14 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.5" />
-    <PackageReference Include="Firebase.Database" Version="3.2.1" />
-    <PackageReference Include="FirebaseAuthentication.net" Version="1.6.7" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
+    <PackageReference Include="FirebaseDatabase.net" Version="5.0.0" />
+    <PackageReference Include="FirebaseAuthentication.net" Version="4.1.0" />
     <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
   </ItemGroup>
@@ -22,7 +25,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Almoxarifado.API\Almoxarifado.API.csproj" />
     <ProjectReference Include="..\Almoxarifado.Domain\Almoxarifado.Domain.csproj" />
-    <ProjectReference Include="..\Almoxarifado.App\Almoxarifado.App.csproj" />
+    <ProjectReference Include="..\Almoxarifado.Application\Almoxarifado.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="E2ETests\" />
+    <Folder Include="UnitTests\" />
   </ItemGroup>
 
 </Project>

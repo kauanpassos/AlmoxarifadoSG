@@ -15,7 +15,8 @@ public sealed partial class DatabaseFixture : IAsyncLifetime
         try
         {
             await _estoqueEngine.DeleteAsync(0);
-            await _pedidoEngine.DeleteAsync(0);
+            // DeleteAsync para Solicitacao vai precisar de um ID, então tentamos deletar uma chave inválida
+            // Na prática, você teria um método melhor para limpar a coleção
         }
         catch { }
     }

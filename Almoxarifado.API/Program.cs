@@ -43,3 +43,6 @@ app.MapControllers();
 
 // Sobe o servidor e fica "escutando" as requisições.
 app.Run();
+
+// Torna a classe Program visível para testes de integração
+public partial class Program { }
