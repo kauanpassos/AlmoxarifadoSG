@@ -26,8 +26,8 @@ jobs:
         dotnet-version: '10.0.x'
 
     # Este passo resolve o erro NETSDK1147 que apareceu antes
-    - name: Instalar Workloads (Android e iOS)
-      run: dotnet workload install maui-android maui-ios
+    - name: Instalar Workload MAUI Completo
+      run: dotnet workload install maui
 
     - name: Restaurar dependências
       run: dotnet restore
