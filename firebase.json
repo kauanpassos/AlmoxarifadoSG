@@ -1,0 +1,23 @@
+{
+  "emulators": {
+    "database": {
+      "host": "127.0.0.1",
+      "port": 9000
+    },
+    "ui": {
+      "enabled": true,
+      "host": "127.0.0.1",
+      "port": 4000
+    }
+  },
+  "database": [
+    {
+      "target": "almoxarifado-test",
+      "rules": "database.rules.json"
+    },
+    {
+      "target": "almoxarifado-dev",
+      "rules": "database.rules.json"
+    }
+  ]
+}

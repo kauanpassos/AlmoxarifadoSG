@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <!-- 
+      Senior Fix: Move build artifacts to C:\temp to avoid:
+      1. OneDrive file locking during build.
+      2. Windows Long Path limitations (> 260 chars) which break Android/Windows builds.
+    -->
+    <BaseIntermediateOutputPath>C:\temp\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>C:\temp\bin\$(MSBuildProjectName)\</BaseOutputPath>
+  </PropertyGroup>
+</Project>

@@ -1,5 +1,4 @@
 using Almoxarifado.App.ViewModels;
-using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.Views;
 

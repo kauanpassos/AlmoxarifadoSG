@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <MaxCpuCount>4</MaxCpuCount>
+    <ResultsDirectory>.\TestResults</ResultsDirectory>
+    <TargetFrameworkVersion>net10.0</TargetFrameworkVersion>
+  </RunConfiguration>
+
+  <MSTest>
+    <CaptureTraceOutput>true</CaptureTraceOutput>
+    <MapNotExecutedTestsToFailed>true</MapNotExecutedTestsToFailed>
+    <Parallelize>
+      <Workers>4</Workers>
+      <Scope>MethodLevel</Scope>
+    </Parallelize>
+  </MSTest>
+
+  <CodeCoverage>
+    <ModulePaths>
+      <ModulePath>.*Almoxarifado\.API.*\.dll$</ModulePath>
+      <ModulePath>.*Almoxarifado\.Domain.*\.dll$</ModulePath>
+    </ModulePaths>
+  </CodeCoverage>
+
+  <LoggerRunSettings>
+    <Verbosity>verbose</Verbosity>
+  </LoggerRunSettings>
+</RunSettings>

@@ -1,59 +1,60 @@
-﻿using Almoxarifado.App.Services.Interfaces;
-using Almoxarifado.App.Views;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
+using Almoxarifado.App.Services.Interfaces;
+using System.Windows.Input;
 
 namespace Almoxarifado.App.ViewModels;
 
-public partial class LoginViewModel : ObservableObject
+public sealed class LoginViewModel : BaseViewModel
 {
     private readonly IAuthService _authService;
+    private string _username = string.Empty;
+    private string _password = string.Empty;
 
-    [ObservableProperty]
-    private string email;
+    public string Username
+    {
+        get => _username;
+        set => SetProperty(ref _username, value);
+    }
 
-    [ObservableProperty]
-    private string senha;
+    public string Password
+    {
+        get => _password;
+        set => SetProperty(ref _password, value);
+    }
 
-    [ObservableProperty]
-    private bool isBusy;
+    public ICommand LoginCommand { get; }
 
     public LoginViewModel(IAuthService authService)
     {
         _authService = authService;
+        Title = "Login";
+        LoginCommand = new Command(ExecuteLoginCommand);
     }
 
-    [RelayCommand]
-    public async Task FazerLoginAsync()
+    private async void ExecuteLoginCommand()
     {
-        if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Senha))
+        if (IsBusy) return;
+
+        try
         {
-            await Application.Current.MainPage.DisplayAlert("Aviso", "Preencha e-mail e senha.", "OK");
-            return;
-        }
+            IsBusy = true;
+            var user = await _authService.LoginAsync(Username, Password);
 
-        IsBusy = true;
-
-        var usuarioLogado = await _authService.LoginAsync(Email, Senha);
-
-        IsBusy = false;
-
-        if (usuarioLogado != null)
-        {
-            if (usuarioLogado.Tipo == "Almoxarife")
+            if (user != null)
             {
-                Application.Current.MainPage = IPlatformApplication.Current.Services.GetService<GestaoFilaPage>();
+                await Shell.Current.GoToAsync("//EstoquePage");
             }
             else
             {
-                await Application.Current.MainPage.DisplayAlert("Sucesso", "Bem vindo Funcionario do Galpão!", "OK");
+                await Application.Current!.MainPage!.DisplayAlert("Erro", "Usuário ou senha inválidos", "OK");
             }
         }
-        else
+        catch (Exception ex)
         {
-            await Application.Current.MainPage.DisplayAlert("Erro", "E-mail ou senha incorretos.", "OK");
+            await Application.Current!.MainPage!.DisplayAlert("Erro", $"Falha na autenticação: {ex.Message}", "OK");
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 }

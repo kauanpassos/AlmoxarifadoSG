@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql-almoxarifado
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SeniorPass123!
+    ports:
+      - "1433:1433"
+    networks:
+      - almoxarifado-network
+
+  estoque.api:
+    build:
+      context: ./Estoque
+      dockerfile: Dockerfile
+    container_name: estoque-api
+    ports:
+      - "5001:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EstoqueDb;User Id=sa;Password=SeniorPass123!;TrustServerCertificate=True;
+    depends_on:
+      - sqlserver
+    networks:
+      - almoxarifado-network
+
+  pedido.api:
+    build:
+      context: ./Pedido
+      dockerfile: Dockerfile
+    container_name: pedido-api
+    ports:
+      - "5002:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=PedidoDb;User Id=sa;Password=SeniorPass123!;TrustServerCertificate=True;
+      - ExternalServices__EstoqueUrl=http://estoque.api
+    depends_on:
+      - sqlserver
+      - estoque.api
+    networks:
+      - almoxarifado-network
+
+networks:
+  almoxarifado-network:
+    driver: bridge
