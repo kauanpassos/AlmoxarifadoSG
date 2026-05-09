@@ -5,17 +5,11 @@ using Almoxarifado.App.Views;
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Firebase.Database;
-using Almoxarifado.App.Views;
-using Almoxarifado.App.ViewModels;
-using Almoxarifado.App.Services;
-using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.Domain;
-using Almoxarifado.Domain.Interfaces;
+using Firebase.Auth;
 
 namespace Almoxarifado.App;
 
-// Coração da configuração do nosso App Mobile. 
-// Aqui é onde registramos TUDO que o aplicativo precisa para rodar (Fontes, Banco, Telas).
 public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
@@ -23,56 +17,64 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
-            .UseMauiCommunityToolkit()
+            .UseMauiCommunityToolkit() // Agora reconhecido com o pacote instalado
             .ConfigureFonts(fonts =>
             {
-                // Registramos as fontes customizadas para que fiquem disponíveis globalmente no XAML.
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
-        // Habilita logs de debug apenas quando estamos desenvolvendo.
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
 
-        // Configuração do Cliente Firebase. 
-        // OBS: A URL deve vir de um arquivo de configuração seguro em um cenário real.
+        // Configuração Firebase
         var firebaseUrl = "URL_DO_FIREBASE_AQUI";
+        var firebaseApiKey = "API_KEY_AQUI";
+        var projectId = "PROJECT_ID_AQUI";
+
         var firebaseClient = new FirebaseClient(firebaseUrl);
         builder.Services.AddSingleton(firebaseClient);
 
-        // CONFIGURAÇÃO DE INFRA: Registramos os motores de acesso a dados.
-        // Usamos Scoped para garantir um ciclo de vida controlado durante a navegação.
+        // Configuração do FirebaseAuthClient
+        var authClient = new FirebaseAuthClient(new FirebaseAuthConfigs
+        {
+            ApiKey = firebaseApiKey,
+            AuthDomain = $"{projectId}.firebaseapp.com",
+            Providers = new[] { new EmailPasswordAuthProvider() }
+        });
+        builder.Services.AddSingleton(authClient);
+        
+        builder.Services.AddSingleton<HttpClient>();
+
+        // Infra
         builder.Services.AddScoped<IEngine<Estoque>>(sp => new FirebaseEngine<Estoque>(firebaseClient, "estoque"));
-        builder.Services.AddScoped<IReadOnlyRepository<Estoque>>(sp => sp.GetRequiredService<IEngine<Estoque>>());
-        builder.Services.AddScoped<IWriteOnlyRepository<Estoque>>(sp => sp.GetRequiredService<IEngine<Estoque>>());
+        builder.Services.AddScoped<IEngine<Solicitacao>>(sp => new FirebaseEngine<Solicitacao>(firebaseClient, "solicitacoes"));
 
-        // Por enquanto usando um Mock para agilizar o desenvolvimento da UI sem depender de API.
-        builder.Services.AddScoped<IAuthService, MockAuthService>();
+        // Repositórios
+        builder.Services.AddScoped<Almoxarifado.Domain.Interfaces.IReadOnlyRepository<Estoque>>(sp => sp.GetRequiredService<IEngine<Estoque>>());
+        builder.Services.AddScoped<Almoxarifado.Domain.Interfaces.IWriteOnlyRepository<Estoque>>(sp => sp.GetRequiredService<IEngine<Estoque>>());
+        builder.Services.AddScoped<Almoxarifado.Domain.Interfaces.IReadOnlyRepository<Solicitacao>>(sp => sp.GetRequiredService<IEngine<Solicitacao>>());
+        builder.Services.AddScoped<Almoxarifado.Domain.Interfaces.IWriteOnlyRepository<Solicitacao>>(sp => sp.GetRequiredService<IEngine<Solicitacao>>());
 
-        // REGISTRO DE VIEWMODELS: Usamos Transient para que o estado da ViewModel 
-        // seja resetado toda vez que o usuário navegar para a tela.
+        // Serviços
+        builder.Services.AddScoped<IAuthService>(sp => new AuthService(
+            sp.GetRequiredService<FirebaseAuthClient>(),
+            sp.GetRequiredService<HttpClient>(),
+            projectId,
+            firebaseApiKey));
+
+        // ViewModels
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<EstoqueViewModel>();
         builder.Services.AddTransient<GestaoFilaViewModel>();
 
-        // REGISTRO DE VIEWS: Também Transient, acompanhando suas respectivas ViewModels.
+        // Views
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<GestaoFilaPage>();
         builder.Services.AddTransient<EstoquePage>();
         builder.Services.AddTransient<MainPage>();
-        builder.Services.AddTransient<GestaoFilaPage>();
 
         return builder.Build();
     }
-}
-
-// Implementação fake para não travar o desenvolvimento das telas de Login.
-public class MockAuthService : IAuthService
-{
-    public Task<Almoxarifado.Domain.Usuario?> LoginAsync(string u, string p) 
-        => Task.FromResult<Almoxarifado.Domain.Usuario?>(new Almoxarifado.Domain.Usuario { Nome = "Usuário Teste" });
-        
-    public Task LogoutAsync() => Task.CompletedTask;
 }
