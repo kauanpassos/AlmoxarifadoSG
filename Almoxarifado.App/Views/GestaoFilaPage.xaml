@@ -1,12 +1,119 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:viewmodels="clr-namespace:Almoxarifado.App.ViewModels"
+             xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
              x:Class="Almoxarifado.App.Views.GestaoFilaPage"
-             Title="Gestão de Fila">
+             Title="Gestão de Fila"
+             BackgroundColor="White">
 
-    <VerticalStackLayout>
+    <Grid RowDefinitions="Auto, Auto, *, Auto">
 
-    </VerticalStackLayout>
+        <Grid Grid.Row="0" BackgroundColor="#1A336E" ColumnDefinitions="*, Auto" Padding="20,20,20,20">
+            <Label Grid.Column="0" 
+                   Text="Gestão de Fila" 
+                   FontSize="24" 
+                   FontAttributes="Bold" 
+                   TextColor="White"
+                   VerticalOptions="Center" />
+
+            <Frame Grid.Column="1" 
+                   WidthRequest="40" 
+                   HeightRequest="40" 
+                   CornerRadius="20" 
+                   Padding="0" 
+                   HasShadow="True"
+                   BackgroundColor="#F0F4F8"
+                   BorderColor="#AFD7FF"
+                   VerticalOptions="Center" 
+                   HorizontalOptions="Center">
+                <Label Text="LO" 
+                       FontAttributes="Bold" 
+                       TextColor="#1A336E" 
+                       FontSize="15" 
+                       HorizontalOptions="Center" 
+                       VerticalOptions="Center" />
+            </Frame>
+        </Grid>
+
+        <VerticalStackLayout Grid.Row="1" Padding="15,20,15,10" Spacing="15">
+
+            <Frame BackgroundColor="#F1F1F1" 
+                   BorderColor="#757575" 
+                   CornerRadius="20" 
+                   Padding="10,0" 
+                   HeightRequest="45"
+                   HasShadow="False">
+                <SearchBar Placeholder="Pesquisar por Peça, SKU ou Status" 
+                           BackgroundColor="Transparent" 
+                           PlaceholderColor="#757575"
+                           TextColor="#757575"
+                           VerticalOptions="Center" />
+            </Frame>
+
+            <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Concluído" 
+                            BackgroundColor="#03BA15" Opacity="0.8" 
+                            TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+
+                    <Button Text="Aprovado" 
+                            BackgroundColor="#254A9A" Opacity="0.8"
+                            TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+
+                    <Button Text="Indisponível" 
+                            BackgroundColor="#DA0004" Opacity="0.8"
+                            TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+
+                    <Button Text="Em Análise" 
+                            BackgroundColor="#FF9565" Opacity="0.8"
+                            TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+                </HorizontalStackLayout>
+            </ScrollView>
+
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="2" 
+                        Margin="15,5,15,0"
+                        ItemsSource="{Binding Solicitacoes}">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="15">
+                    <Image Source="empty_box.png" HeightRequest="100" Opacity="0.5" />
+                    <Label Text="Não há solicitações na fila no momento." 
+                           TextColor="Gray" 
+                           FontSize="16" 
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Margin="0,0,0,15" Padding="15" CornerRadius="5" BorderColor="#E0E0E0" BackgroundColor="White" HasShadow="True">
+                        <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                            <VerticalStackLayout Grid.Column="0" Grid.Row="0">
+                                <Label Text="{Binding Sku}" FontAttributes="Bold" TextColor="#1A1A1A" FontSize="18" />
+                                <Label Text="{Binding Sku, StringFormat='SKU: {0}'}" TextColor="#757575" FontSize="12" Margin="0,2,0,0" />
+                            </VerticalStackLayout>
+
+                            <Frame Grid.Column="0" Grid.Row="1" 
+                                   BackgroundColor="#254A9A" 
+                                   Padding="15,5" 
+                                   CornerRadius="10" 
+                                   HasShadow="False" 
+                                   Opacity="0.8"
+                                   HorizontalOptions="Start"
+                                   Margin="0,15,0,0">
+                                <Label Text="{Binding Status}" TextColor="White" FontSize="12" FontAttributes="Bold" />
+                            </Frame>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+        <BoxView Grid.Row="3" BackgroundColor="#1A336E" HeightRequest="51" HorizontalOptions="Fill" />
+
+    </Grid>
 
 </ContentPage>

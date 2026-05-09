@@ -1,4 +1,5 @@
 using Almoxarifado.Domain;
+using Almoxarifado.Domain;
 
 namespace Almoxarifado.App.Services.Interfaces;
 

@@ -1,3 +1,8 @@
+using Almoxarifado.App.Services;
+using Almoxarifado.App.Services.Interfaces;
+using Almoxarifado.App.ViewModels;
+using Almoxarifado.App.Views;
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Firebase.Database;
 using Almoxarifado.App.Views;
@@ -18,6 +23,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
             .ConfigureFonts(fonts =>
             {
                 // Registramos as fontes customizadas para que fiquem disponíveis globalmente no XAML.
@@ -53,6 +59,7 @@ public static class MauiProgram
 
         // REGISTRO DE VIEWS: Também Transient, acompanhando suas respectivas ViewModels.
         builder.Services.AddTransient<LoginPage>();
+        builder.Services.AddTransient<GestaoFilaPage>();
         builder.Services.AddTransient<EstoquePage>();
         builder.Services.AddTransient<MainPage>();
         builder.Services.AddTransient<GestaoFilaPage>();

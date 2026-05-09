@@ -35,6 +35,11 @@
                ClearButtonVisibility="WhileEditing" 
                TextColor="Black"/>
 
+        <ActivityIndicator IsRunning="{Binding IsBusy}" 
+                           IsVisible="{Binding IsBusy}"
+                           Color="#2B0B98"
+                           HorizontalOptions="Center"/>
+
         <Button Text="ENTRAR"
                 Command="{Binding LoginCommand}"
                 IsEnabled="{Binding IsNotBusy}"
@@ -51,5 +56,4 @@
                            HorizontalOptions="Center" />
 
     </VerticalStackLayout>
-
 </ContentPage>
