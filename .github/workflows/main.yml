@@ -31,5 +31,5 @@ jobs:
     - name: Restaurar dependências
       run: dotnet restore
 
-    - name: Build do Projeto
-      run: dotnet build -c Release -f net9.0-android --no-restore
+    - name: Build do Projeto Mobile
+      run: dotnet build Almoxarifado.App/Almoxarifado.App.csproj -c Release -f net9.0-android --no-restore
