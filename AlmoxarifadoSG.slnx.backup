@@ -4,6 +4,4 @@
     <Deploy Solution="Debug|*" />
   </Project>
   <Project Path="Almoxarifado.Domain/Almoxarifado.Domain.csproj" Id="863ab427-4a6f-4291-9bec-7aaec6a138c6" />
-  <Project Path="Almoxarifado.Application/Almoxarifado.Application.csproj" />
-  <Project Path="TesteApp/TesteApp.csproj" />
 </Solution>

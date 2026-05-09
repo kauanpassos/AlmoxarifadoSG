@@ -2,22 +2,24 @@ using Almoxarifado.Domain;
 
 namespace TesteApp.Fixtures;
 
-public static class PedidoFixture
+public static class SolicitacaoFixture
 {
     private const string StatusPendente = "Pendente";
 
-    public static Pedido Criar(int id = 0, int usuarioId = 1, string status = StatusPendente) => new()
+    public static Solicitacao Criar(string id = "test-id", string usuarioId = "user-1", string observacao = "Test") 
     {
-        Id = id,
-        UsuarioId = usuarioId,
-        Status = status,
-        DataAbertura = DateTime.UtcNow
-    };
+        return new Solicitacao(id, usuarioId, observacao);
+    }
 
-    public static IReadOnlyList<Pedido> CriarLista(int quantidade = 3, int usuarioId = 1) =>
-        Enumerable.Range(1, quantidade)
-                  .Select(i => Criar(i, usuarioId))
-                  .ToArray();
+    public static IReadOnlyList<Solicitacao> CriarLista(int quantidade = 3, string usuarioId = "user-1")
+    {
+        var lista = new List<Solicitacao>();
+        for (int i = 1; i <= quantidade; i++)
+        {
+            lista.Add(Criar($"id-{i}", usuarioId, $"Solicitação {i}"));
+        }
+        return lista.AsReadOnly();
+    }
 }
 
 public static class EstoqueFixture
