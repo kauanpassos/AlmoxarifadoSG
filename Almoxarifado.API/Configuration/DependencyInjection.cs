@@ -6,7 +6,6 @@ using Almoxarifado.Application.Handlers;
 using Almoxarifado.Application.Behaviors;
 using FluentValidation;
 using MediatR;
-using System.Reflection;
 
 namespace Almoxarifado.API.Configuration;
 
@@ -24,33 +23,35 @@ public static class DependencyInjection
 
         services.AddSingleton(firebaseClient);
 
+        // Registro dos motores genéricos (FirebaseEngine).
         services.AddScoped<IEngine<Estoque>>(sp => new FirebaseEngine<Estoque>(firebaseClient, "estoque"));
-        services.AddScoped<IEngine<Pedido>>(sp => new FirebaseEngine<Pedido>(firebaseClient, "pedidos"));
+        services.AddScoped<IEngine<Solicitacao>>(sp => new FirebaseEngine<Solicitacao>(firebaseClient, "solicitacoes"));
 
+        // Interfaces segregadas (ISP) para Estoque.
         services.AddScoped<IReadOnlyRepository<Estoque>>(sp => sp.GetRequiredService<IEngine<Estoque>>());
         services.AddScoped<IWriteOnlyRepository<Estoque>>(sp => sp.GetRequiredService<IEngine<Estoque>>());
         
-        services.AddScoped<IReadOnlyRepository<Pedido>>(sp => sp.GetRequiredService<IEngine<Pedido>>());
-        services.AddScoped<IWriteOnlyRepository<Pedido>>(sp => sp.GetRequiredService<IEngine<Pedido>>());
+        // Interfaces segregadas (ISP) para Solicitação.
+        services.AddScoped<IReadOnlyRepository<Solicitacao>>(sp => sp.GetRequiredService<IEngine<Solicitacao>>());
+        services.AddScoped<IWriteOnlyRepository<Solicitacao>>(sp => sp.GetRequiredService<IEngine<Solicitacao>>());
 
         return services;
     }
 
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        var assembly = typeof(CreatePedidoHandler).Assembly;
+        // Usamos um Handler como referência para localizar o Assembly da camada de Application.
+        var assembly = typeof(CreateSolicitacaoHandler).Assembly;
 
-        // Registro do MediatR com o pipeline de validação automática.
         services.AddMediatR(cfg => 
         {
             cfg.RegisterServicesFromAssembly(assembly);
             
-            // Adicionamos o interceptor de validação. 
-            // Ele rodará ANTES de qualquer Handler ser executado.
+            // Injeção do pipeline de validação automática.
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
 
-        // Escaneia e registra automaticamente todos os validadores do FluentValidation no mesmo Assembly.
+        // Registro automático de todos os validadores FluentValidation.
         services.AddValidatorsFromAssembly(assembly);
 
         return services;
