@@ -5,8 +5,7 @@ using Almoxarifado.Application.Commands;
 
 namespace Almoxarifado.Application.Handlers;
 
-// Handler responsável pela criação de solicitações.
-// Refatorado para usar 'Solicitacao' em vez de 'Pedido'.
+// Handler responsável pela criação de solicitações
 public sealed class CreateSolicitacaoHandler(IWriteOnlyRepository<Solicitacao> repository) 
     : IRequestHandler<CreateSolicitacaoCommand, Solicitacao>
 {

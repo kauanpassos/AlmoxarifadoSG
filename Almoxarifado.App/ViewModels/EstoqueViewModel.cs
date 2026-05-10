@@ -1,56 +1,50 @@
-using Almoxarifado.Domain;
-using Almoxarifado.Domain.Interfaces;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
+using System.Linq;
 
 namespace Almoxarifado.App.ViewModels;
 
-// ViewModel responsável pela tela de listagem de estoque.
-// Utilizamos o padrão MVVM para separar a lógica de apresentação da UI (XAML).
-public sealed class EstoqueViewModel : BaseViewModel
+// Melhorei com defaults para JSON
+public class ItemEstoqueModel
 {
-    private readonly IReadOnlyRepository<Estoque> _repository;
-    
-    // Coleção observável que notifica a tela automaticamente quando itens são adicionados ou removidos.
-    public ObservableCollection<Estoque> Items { get; } = new();
-    
-    // Comando para disparar a carga de dados (bindado ao RefreshView ou Botão na tela).
-    public ICommand LoadItemsCommand { get; }
+    public string Id { get; set; } = string.Empty;
+    public string NomePeca { get; set; } = string.Empty;
+    public string Sku { get; set; } = string.Empty;
+    public int Quantidade { get; set; }
+    public string DataAtualizacao { get; set; } = string.Empty;
+    public string TextoStatus { get; set; } = string.Empty;
+    public string CorFundoStatus { get; set; } = "Transparent";
+    public string CorBordaStatus { get; set; } = "Transparent";
+    public string CorTextoStatus { get; set; } = "Black";
+}
 
-    public EstoqueViewModel(IReadOnlyRepository<Estoque> repository)
+// As ViewModel estão limpas e preparadas para API
+public partial class EstoqueViewModel : ObservableObject
+{
+    [ObservableProperty]
+    private string _termoPesquisa = string.Empty;
+
+    public ObservableCollection<ItemEstoqueModel> PecasEstoque { get; } = new();
+    public EstoqueViewModel()
     {
-        _repository = repository;
-        Title = "Estoque de Peças";
-        LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
     }
 
-    private async Task ExecuteLoadItemsCommand()
+    [RelayCommand]
+    private void ExecuteFiltrarTodos()
     {
-        // Evita chamadas duplicadas enquanto uma já está em andamento.
-        if (IsBusy) return;
+        PecasEstoque.Clear();
+    }
 
-        try
-        {
-            IsBusy = true;
-            
-            // Busca as peças diretamente do motor Firebase unificado.
-            var items = await _repository.GetAllAsync();
+    [RelayCommand]
+    private void ExecuteFiltrarBaixoEstoque()
+    {
+        PecasEstoque.Clear();
+    }
 
-            // DICA PARA OS JUNIORES: Sempre limpem a coleção antes de recarregar para evitar duplicatas na tela.
-            Items.Clear();
-            foreach (var item in items)
-            {
-                Items.Add(item);
-            }
-        }
-        catch (Exception ex)
-        {
-            // Tratamento de erro amigável para o usuário final.
-            await Application.Current!.MainPage!.DisplayAlert("Erro", $"Não foi possível carregar as peças: {ex.Message}", "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
+    [RelayCommand]
+    private void ExecuteFiltrarIndisponivel()
+    {
+        PecasEstoque.Clear();
     }
 }
