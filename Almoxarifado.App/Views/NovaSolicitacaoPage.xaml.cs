@@ -3,9 +3,9 @@ using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.Views;
 
-public partial class LoginPage : ContentPage
+public partial class NovaSolicitacaoPage : ContentPage
 {
-    public LoginPage(LoginViewModel viewModel)
+    public NovaSolicitacaoPage(NovaSolicitacaoViewModel viewModel)
     {
         InitializeComponent();
         BindingContext = viewModel;

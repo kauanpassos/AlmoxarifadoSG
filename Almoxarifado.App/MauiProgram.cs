@@ -9,6 +9,8 @@ using Almoxarifado.Domain;
 using Almoxarifado.Domain.Interfaces;
 using Firebase.Auth;
 using Firebase.Auth.Providers;
+using MediatR;
+using System.Net.Http;
 
 namespace Almoxarifado.App;
 
@@ -17,6 +19,7 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
+
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
@@ -30,15 +33,17 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
-        // Configuração Firebase
-        var firebaseUrl = "URL_DO_FIREBASE_AQUI";
-        var firebaseApiKey = "API_KEY_AQUI";
-        var projectId = "PROJECT_ID_AQUI";
+        // --- CONFIGURAÇÃO FIREBASE ---
 
+        var firebaseUrl = "https://almoxarifado-sg-default-rtdb.firebaseio.com/";
+        var firebaseApiKey = "AIzaSyCD1hywuoaY2Bmls2sz5hXzJG-KyruJVYE";
+        var projectId = "almoxarifado-sg";
+
+        // Firebase Realtime Database
         var firebaseClient = new FirebaseClient(firebaseUrl);
         builder.Services.AddSingleton(firebaseClient);
 
-        // Configuração do FirebaseAuthClient (Versão 4.1.0)
+        // Configuração do FirebaseAuthClient
         var config = new FirebaseAuthConfig
         {
             ApiKey = firebaseApiKey,
@@ -51,7 +56,6 @@ public static class MauiProgram
 
         var authClient = new FirebaseAuthClient(config);
         builder.Services.AddSingleton(authClient);
-        
         builder.Services.AddSingleton<HttpClient>();
 
         // Infra e Repositórios
@@ -70,16 +74,30 @@ public static class MauiProgram
             projectId,
             firebaseApiKey));
 
+        // --- REGISTRO DO MEDIATR ---
+        builder.Services.AddMediatR(cfg =>
+        {
+            // Registra o assembly do App (ViewModels)
+            cfg.RegisterServicesFromAssembly(typeof(MauiProgram).Assembly);
+
+            // IMPORTANTE: Registra o assembly da Application para que o MediatR encontre seus Handlers
+            cfg.RegisterServicesFromAssembly(typeof(Almoxarifado.Application.Queries.GetEstoqueQuery).Assembly);
+        });
+
         // ViewModels
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<EstoqueViewModel>();
         builder.Services.AddTransient<GestaoFilaViewModel>();
+        builder.Services.AddTransient<HomeColaboradorViewModel>();
+        builder.Services.AddTransient<NovaSolicitacaoViewModel>();
 
         // Views
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<GestaoFilaPage>();
         builder.Services.AddTransient<EstoquePage>();
         builder.Services.AddTransient<MainPage>();
+        builder.Services.AddTransient<HomeColaboradorPage>();
+        builder.Services.AddTransient<NovaSolicitacaoPage>();
 
         return builder.Build();
     }

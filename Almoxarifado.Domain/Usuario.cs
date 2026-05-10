@@ -8,7 +8,7 @@ public class Usuario
     public string Nome { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
     public string Setor { get; private set; } = string.Empty;
-    public string Tipo { get; private set; } = string.Empty; // Ex: "Admin", "Operador"
+    public string Tipo { get; private set; } = string.Empty;
     public bool Ativo { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }

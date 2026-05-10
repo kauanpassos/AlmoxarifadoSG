@@ -41,16 +41,30 @@ public sealed class LoginViewModel : BaseViewModel
 
             if (user != null)
             {
-                await Shell.Current.GoToAsync("//EstoquePage");
+                if (user.Tipo == "Almoxarife")
+                {
+                    await Shell.Current.GoToAsync("//GestaoFilaPage");
+                }
+                else if (user.Tipo == "Colaborador")
+                {
+                    await Shell.Current.GoToAsync("//HomeColaboradorPage");
+                }
+                else
+                {
+                    await Shell.Current.GoToAsync("//EstoquePage");
+                }
             }
             else
             {
-                await Application.Current!.MainPage!.DisplayAlert("Erro", "Usuário ou senha inválidos", "OK");
+                await Shell.Current.DisplayAlert(
+                    "Erro de Login",
+                    "Credenciais inválidas. Verifique seu usuário e senha.",
+                    "OK");
             }
         }
         catch (Exception ex)
         {
-            await Application.Current!.MainPage!.DisplayAlert("Erro", $"Falha na autenticação: {ex.Message}", "OK");
+            await Shell.Current.DisplayAlert("Erro", ex.Message, "OK");
         }
         finally
         {

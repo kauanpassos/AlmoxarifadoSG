@@ -1,14 +1,12 @@
-﻿using Almoxarifado.App.Views;
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls;
 
-namespace Almoxarifado.App
+namespace Almoxarifado.App;
+
+public partial class App : Microsoft.Maui.Controls.Application
 {
-    public partial class App : Application
+    public App()
     {
-        public App(LoginPage loginPage)
-        {
-            InitializeComponent();
-            MainPage = loginPage;
-        }
+        InitializeComponent();
+        MainPage = new AppShell();
     }
 }

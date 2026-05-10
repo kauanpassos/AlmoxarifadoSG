@@ -17,28 +17,23 @@
                HorizontalOptions="Center"
                TextColor="#2B0B98" />
 
-        <Label Text="Faz login para solicitar peças"
+        <Label Text="Faça login para solicitar peças"
                FontSize="16"
                HorizontalOptions="Center"
                TextColor="Gray"
                Margin="0, -15, 0, 20"/>
 
         <Entry Text="{Binding Username}"
-               Placeholder="Utilizador ou Crachá"
-               Keyboard="Text"
+               Placeholder="E-mail ou Crachá"
+               Keyboard="Email"
                ClearButtonVisibility="WhileEditing" 
                TextColor="Black"/>
 
         <Entry Text="{Binding Password}"
-               Placeholder="Password"
+               Placeholder="Senha"
                IsPassword="True"
                ClearButtonVisibility="WhileEditing" 
                TextColor="Black"/>
-
-        <ActivityIndicator IsRunning="{Binding IsBusy}" 
-                           IsVisible="{Binding IsBusy}"
-                           Color="#2B0B98"
-                           HorizontalOptions="Center"/>
 
         <Button Text="ENTRAR"
                 Command="{Binding LoginCommand}"

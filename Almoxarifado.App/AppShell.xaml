@@ -3,12 +3,35 @@
     x:Class="Almoxarifado.App.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:Almoxarifado.App"
-    Title="Almoxarifado.App">
+    xmlns:views="clr-namespace:Almoxarifado.App.Views"
+    Shell.FlyoutBehavior="Disabled">
+
+    <!-- Rotas principais com ShellContent -->
+    <ShellContent
+        Title="Login"
+        ContentTemplate="{DataTemplate views:LoginPage}"
+        Route="LoginPage" />
+
+    <!-- Home como página principal após login -->
+    <ShellContent
+        Title="Home Colaborador"
+        ContentTemplate="{DataTemplate views:HomeColaboradorPage}"
+        Route="HomeColaboradorPage" />
+
+    <!-- Páginas secundárias -->
+    <ShellContent
+        Title="Gestão de Fila"
+        ContentTemplate="{DataTemplate views:GestaoFilaPage}"
+        Route="GestaoFilaPage" />
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Title="Estoque"
+        ContentTemplate="{DataTemplate views:EstoquePage}"
+        Route="EstoquePage" />
+
+    <!-- NovaSolicitacao como Modal/Overlay -->
+    <ShellContent
+        ContentTemplate="{DataTemplate views:NovaSolicitacaoPage}"
+        Route="NovaSolicitacaoPage" />
 
 </Shell>
