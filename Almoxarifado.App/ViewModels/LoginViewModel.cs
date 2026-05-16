@@ -1,5 +1,6 @@
 using Almoxarifado.App.Services.Interfaces;
 using System.Windows.Input;
+using Almoxarifado.App.Services;
 
 namespace Almoxarifado.App.ViewModels;
 
@@ -41,7 +42,9 @@ public sealed class LoginViewModel : BaseViewModel
 
             if (user != null)
             {
-                if (user.Tipo == "Almoxarife")
+                UsuarioSessao.UsuarioLogado = user;
+
+                    if (user.Tipo == "Almoxarife")
                 {
                     await Shell.Current.GoToAsync("//GestaoFilaPage");
                 }

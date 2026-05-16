@@ -1,9 +1,10 @@
+using Almoxarifado.App.Services;
 using Almoxarifado.Domain;
 using Almoxarifado.Domain.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 using System.Linq;
+using System.Windows.Input;
 
 namespace Almoxarifado.App.ViewModels;
 
@@ -57,7 +58,18 @@ public partial class GestaoFilaViewModel : ObservableObject
             Solicitacoes.Clear();
 
             // Agora falando com o Firebase via IReadOnlyRepository
-            var dados = await _repository.GetAllAsync();
+            var usuario = UsuarioSessao.UsuarioLogado;
+
+            IEnumerable<Solicitacao> dados;
+
+            if (usuario.Tipo == "Almoxarife")
+            {
+                dados = await _repository.GetAllAsync();
+            }
+            else
+            {
+                dados = await _repository.GetByUserIdAsync(usuario.Id);
+            }
 
             _filaCompleta.Clear();
             _filaCompleta.AddRange(dados);
