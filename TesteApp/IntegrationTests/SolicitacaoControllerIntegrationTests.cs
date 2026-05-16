@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using Xunit;
 using Almoxarifado.API;
+using Almoxarifado.Domain;
+using Almoxarifado.Domain.Interfaces;
 
 namespace TesteApp.IntegrationTests;
 
@@ -12,7 +15,31 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _factory = new WebApplicationFactory<Program>();
+        _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureServices(services =>
+            {
+                // Removemos as implementações reais do Firebase
+                var descriptors = services.Where(d => d.ServiceType.IsGenericType && 
+                    (d.ServiceType.GetGenericTypeDefinition() == typeof(IEngine<>) ||
+                     d.ServiceType.GetGenericTypeDefinition() == typeof(IReadOnlyRepository<>) ||
+                     d.ServiceType.GetGenericTypeDefinition() == typeof(IWriteOnlyRepository<>))).ToList();
+
+                foreach (var descriptor in descriptors)
+                {
+                    services.Remove(descriptor);
+                }
+
+                // Injetamos nossos Mocks em memória
+                services.AddSingleton<IEngine<Estoque>, Mocks.MockEngine<Estoque>>();
+                services.AddSingleton<IEngine<Solicitacao>, Mocks.MockEngine<Solicitacao>>();
+
+                services.AddSingleton<IReadOnlyRepository<Estoque>>(sp => sp.GetRequiredService<IEngine<Estoque>>());
+                services.AddSingleton<IWriteOnlyRepository<Estoque>>(sp => sp.GetRequiredService<IEngine<Estoque>>());
+                services.AddSingleton<IReadOnlyRepository<Solicitacao>>(sp => sp.GetRequiredService<IEngine<Solicitacao>>());
+                services.AddSingleton<IWriteOnlyRepository<Solicitacao>>(sp => sp.GetRequiredService<IEngine<Solicitacao>>());
+            });
+        });
         _client = _factory.CreateClient();
         _client.Timeout = TimeSpan.FromSeconds(30);
         await Task.CompletedTask;
