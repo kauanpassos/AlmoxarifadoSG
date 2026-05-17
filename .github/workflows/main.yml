@@ -1,35 +1,132 @@
-name: .NET MAUI Build Android
+name: Almoxarifado CI/CD Pipeline
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+env:
+  DOTNET_VERSION: '9.0.x'
 
 jobs:
-  build:
-    runs-on: windows-latest
-
+  # Job 1: Validação da API e Testes (Roda no Linux, é rápido e mais barato)
+  backend-ci:
+    name: Backend Build & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
     steps:
     - name: Checkout do código
       uses: actions/checkout@v4
 
-    - name: Configurar Java 17
+    - name: Configurar .NET SDK ${{ env.DOTNET_VERSION }}
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Cache de pacotes NuGet
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restaurar dependências da API e Testes
+      run: dotnet restore AlmoxarifadoSG.slnx
+
+    - name: Compilar a Solução (Backend)
+      run: dotnet build AlmoxarifadoSG.slnx -c Release --no-restore
+
+    - name: Executar Testes com Cobertura (Code Coverage)
+      run: dotnet test TesteApp/TesteApp.csproj -c Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
+
+    - name: Instalar k6 (Testes de Estresse)
+      run: |
+        sudo gpg -k
+        sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+        echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+        sudo apt-get update
+        sudo apt-get install k6
+
+    - name: Executar Teste de Performance (k6) na API
+      run: |
+        # Inicia a API em background para o teste
+        dotnet run --project Almoxarifado.API/Almoxarifado.API.csproj -c Release --urls "http://localhost:5000" &
+        sleep 5 # Espera a API subir completamente
+        # Executa o script de carga, se falhar nos thresholds o job quebra
+        k6 run k6-stress-test.js
+
+    - name: Publicar API
+      run: dotnet publish Almoxarifado.API/Almoxarifado.API.csproj -c Release -o publish --no-restore
+
+    - name: Upload Artifact da API
+      uses: actions/upload-artifact@v4
+      with:
+        name: api-publish-${{ github.run_number }}
+        path: publish
+
+  # Job 2: Build do MAUI Android (Roda no Windows, só inicia se o backend passar)
+  mobile-android:
+    name: Mobile Build (Android)
+    runs-on: windows-latest
+    needs: backend-ci # Fail-Fast
+    # Roda se for push na main OU se for PR que alterou arquivos do Mobile
+    if: github.event_name == 'push' || contains(github.event.pull_request.changed_files, 'Almoxarifado.App/')
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v4
+
+    - name: Configurar Java 17 (Requisito para Android)
       uses: actions/setup-java@v4
       with:
         distribution: 'microsoft'
         java-version: '17'
 
-    - name: Configurar .NET 9
+    - name: Configurar .NET SDK ${{ env.DOTNET_VERSION }}
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Instalar Workload MAUI Completo
+    - name: Cache de pacotes NuGet
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-mobile-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-mobile-
+
+    - name: Cache do Workload MAUI
+      uses: actions/cache@v4
+      with:
+        path: ~/.dotnet/workloads
+        key: ${{ runner.os }}-maui-workload-${{ env.DOTNET_VERSION }}
+        restore-keys: |
+          ${{ runner.os }}-maui-workload-
+
+    - name: Instalar Workload MAUI
       run: dotnet workload install maui
 
-    - name: Restaurar dependências
-      run: dotnet restore
+    - name: Restaurar dependências do Mobile
+      run: dotnet restore Almoxarifado.App/Almoxarifado.App.csproj
 
-    - name: Build do Projeto Mobile
+    - name: Análise Estática do Frontend (Code Quality)
+      run: dotnet format Almoxarifado.App/Almoxarifado.App.csproj --verify-no-changes
+
+    - name: Compilar o Projeto Mobile (Release)
       run: dotnet build Almoxarifado.App/Almoxarifado.App.csproj -c Release -f net9.0-android --no-restore
+
+    - name: Publicar APK Android
+      run: dotnet publish Almoxarifado.App/Almoxarifado.App.csproj -c Release -f net9.0-android --no-restore -p:AndroidSigningKeyStore=false
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-apk-${{ github.run_number }}
+        path: '**/*.apk'
