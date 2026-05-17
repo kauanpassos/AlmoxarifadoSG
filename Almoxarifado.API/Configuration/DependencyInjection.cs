@@ -32,7 +32,7 @@ public static class DependencyInjection
 
         services.AddScoped<IReadOnlyRepository<Estoque>>(sp => sp.GetRequiredService<IEngine<Estoque>>());
         services.AddScoped<IWriteOnlyRepository<Estoque>>(sp => sp.GetRequiredService<IEngine<Estoque>>());
-        
+
         services.AddScoped<IReadOnlyRepository<Solicitacao>>(sp => sp.GetRequiredService<IEngine<Solicitacao>>());
         services.AddScoped<IWriteOnlyRepository<Solicitacao>>(sp => sp.GetRequiredService<IEngine<Solicitacao>>());
 
@@ -43,7 +43,7 @@ public static class DependencyInjection
     {
         var applicationAssembly = typeof(CreateSolicitacaoHandler).Assembly;
 
-        services.AddMediatR(cfg => 
+        services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(applicationAssembly);
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));

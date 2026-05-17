@@ -6,10 +6,10 @@ public interface IWriteOnlyRepository<T> where T : class
 {
     // Adiciona uma nova entidade ao banco.
     Task AddAsync(T entity);
-    
+
     // Atualiza um registro existente.
     Task UpdateAsync(T entity);
-    
+
     // Remove um registro pelo ID.
     Task DeleteAsync(int id);
 }

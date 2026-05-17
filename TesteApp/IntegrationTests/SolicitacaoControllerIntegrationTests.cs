@@ -20,7 +20,7 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
             builder.ConfigureServices(services =>
             {
                 // Removemos as implementações reais do Firebase
-                var descriptors = services.Where(d => d.ServiceType.IsGenericType && 
+                var descriptors = services.Where(d => d.ServiceType.IsGenericType &&
                     (d.ServiceType.GetGenericTypeDefinition() == typeof(IEngine<>) ||
                      d.ServiceType.GetGenericTypeDefinition() == typeof(IReadOnlyRepository<>) ||
                      d.ServiceType.GetGenericTypeDefinition() == typeof(IWriteOnlyRepository<>))).ToList();
@@ -69,7 +69,7 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
 
         var response = await _client.PostAsync("/api/solicitacao", httpContent);
 
-        Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK || 
+        Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK ||
                       response.StatusCode == System.Net.HttpStatusCode.Created ||
                       response.StatusCode == System.Net.HttpStatusCode.BadRequest);
     }
@@ -78,7 +78,7 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
     public async Task ListarPorUsuario_DeveRetornarOk()
     {
         var response = await _client.GetAsync("/api/solicitacao/usuario/user123");
-        Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK || 
+        Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK ||
                       response.StatusCode == System.Net.HttpStatusCode.NotFound);
     }
 }

@@ -6,7 +6,7 @@ public static class SolicitacaoFixture
 {
     private const string StatusPendente = "Pendente";
 
-    public static Solicitacao Criar(string id = "test-id", string usuarioId = "user-1", string observacao = "Test") 
+    public static Solicitacao Criar(string id = "test-id", string usuarioId = "user-1", string observacao = "Test")
     {
         return new Solicitacao(id, usuarioId, observacao);
     }

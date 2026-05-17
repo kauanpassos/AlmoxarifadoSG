@@ -6,7 +6,7 @@ using Almoxarifado.Application.Commands;
 namespace Almoxarifado.Application.Handlers;
 
 // Handler responsável pela criação de solicitações
-public sealed class CreateSolicitacaoHandler(IWriteOnlyRepository<Solicitacao> repository) 
+public sealed class CreateSolicitacaoHandler(IWriteOnlyRepository<Solicitacao> repository)
     : IRequestHandler<CreateSolicitacaoCommand, Solicitacao>
 {
     public async Task<Solicitacao> Handle(CreateSolicitacaoCommand request, CancellationToken cancellationToken)

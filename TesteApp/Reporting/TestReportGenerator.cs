@@ -5,10 +5,10 @@ namespace TesteApp.Reporting;
 // Simples DTO para carregar os dados de cada teste.
 // Usando record para aproveitar a imutabilidade e o código mais enxuto.
 public record TestResult(
-    string Name, 
-    string Category, 
-    bool Passed, 
-    long DurationMs, 
+    string Name,
+    string Category,
+    bool Passed,
+    long DurationMs,
     string? Error = null);
 
 public class TestReportGenerator
@@ -29,7 +29,7 @@ public class TestReportGenerator
         if (_results.Count == 0) return "Nenhum resultado registrado para gerar o relatório.";
 
         var sb = new StringBuilder();
-        
+
         AppendHeader(sb);
         AppendSummary(sb);
         AppendCategories(sb);
@@ -73,7 +73,7 @@ public class TestReportGenerator
             {
                 var icon = test.Passed ? "✓" : "×";
                 sb.AppendLine($"  {icon} {test.Name} ({test.DurationMs}ms)");
-                
+
                 if (!test.Passed && !string.IsNullOrEmpty(test.Error))
                 {
                     sb.AppendLine($"     ! Erro: {test.Error}");

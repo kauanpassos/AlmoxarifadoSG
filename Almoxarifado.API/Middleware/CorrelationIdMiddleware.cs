@@ -10,7 +10,7 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next)
         var correlationId = GetOrGenerateCorrelationId(context);
 
         context.Items[HttpConstants.CorrelationIdHeader] = correlationId;
-        
+
         AddCorrelationIdToResponse(context, correlationId);
 
         using (LogContext.PushProperty("CorrelationId", correlationId))
