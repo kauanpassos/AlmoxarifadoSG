@@ -37,10 +37,14 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Restaurar dependências da API e Testes
-      run: dotnet restore AlmoxarifadoSG.slnx
+      run: |
+        dotnet restore Almoxarifado.API/Almoxarifado.API.csproj
+        dotnet restore TesteApp/TesteApp.csproj
 
     - name: Compilar a Solução (Backend)
-      run: dotnet build AlmoxarifadoSG.slnx -c Release --no-restore
+      run: |
+        dotnet build Almoxarifado.API/Almoxarifado.API.csproj -c Release --no-restore
+        dotnet build TesteApp/TesteApp.csproj -c Release --no-restore
 
     - name: Executar Testes com Cobertura (Code Coverage)
       run: dotnet test TesteApp/TesteApp.csproj -c Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
