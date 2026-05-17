@@ -1,8 +1,16 @@
 using Almoxarifado.API.Configuration;
 using Almoxarifado.API.Middleware;
+using Serilog;
 
 // O ponto de partida da nossa API. Aqui configuramos serviços e o pipeline de execução.
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Registro de dependências do projeto. 
 // Separamos em métodos de extensão para não poluir este arquivo principal.
@@ -27,7 +35,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ATENÇÃO: A ordem dos middlewares importa muito!
-// Nosso ExceptionMiddleware deve ser um dos primeiros para capturar erros em qualquer camada abaixo.
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
 
 // Habilita o Swagger/OpenApi apenas em ambiente de desenvolvimento.
