@@ -3,21 +3,32 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using FluentValidation;
 using Almoxarifado.Domain.Exceptions;
-using Almoxarifado.API.Configuration;
 
 namespace Almoxarifado.API.Middleware;
 
-public sealed class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
+// Middleware de exceção global refatorado para suportar validações fluídas e erros de domínio.
+public sealed class ExceptionMiddleware
 {
+    private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
+    private readonly IHostEnvironment _env;
+
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
+    {
+        _next = next;
+        _logger = logger;
+        _env = env;
+    }
+
     public async Task Invoke(HttpContext context)
     {
         try
         {
-            await next(context);
+            await _next(context);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Falha capturada no pipeline da API.");
+            _logger.LogError(ex, "Falha capturada no pipeline da API.");
             await HandleExceptionAsync(context, ex);
         }
     }
@@ -25,16 +36,13 @@ public sealed class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionM
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/problem+json";
-
+        
+        // Determinamos o Status Code baseado no tipo da exceção.
         var statusCode = exception switch
         {
             ValidationException => HttpStatusCode.BadRequest,
-            ConflictException => HttpStatusCode.Conflict,
-            UnprocessableEntityException => HttpStatusCode.UnprocessableEntity,
-            NotFoundException => HttpStatusCode.NotFound,
-            ForbiddenAccessException => HttpStatusCode.Forbidden,
+            DomainException => HttpStatusCode.BadRequest,
             UnauthorizedAccessException => HttpStatusCode.Unauthorized,
-            DomainException => HttpStatusCode.BadRequest, // Mantém compatibilidade reversa com o código legado
             _ => HttpStatusCode.InternalServerError
         };
 
@@ -44,13 +52,11 @@ public sealed class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionM
         {
             Status = context.Response.StatusCode,
             Title = GetTitle(exception),
-            Detail = env.IsDevelopment() ? exception.Message : GetUserMessage(exception),
+            Detail = _env.IsDevelopment() ? exception.Message : GetUserMessage(exception),
             Instance = context.Request.Path
         };
 
-        var traceId = context.Items[HttpConstants.CorrelationIdHeader]?.ToString() ?? context.TraceIdentifier;
-        problem.Extensions["traceId"] = traceId;
-
+        // Se for erro de validação, injetamos a lista de erros detalhada no "Extensions".
         if (exception is ValidationException valEx)
         {
             problem.Extensions["errors"] = valEx.Errors
@@ -61,15 +67,15 @@ public sealed class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionM
                 );
         }
 
-        if (env.IsDevelopment())
+        if (_env.IsDevelopment())
         {
             problem.Extensions["stackTrace"] = exception.StackTrace;
         }
 
-        var json = JsonSerializer.Serialize(problem, new JsonSerializerOptions
-        {
+        var json = JsonSerializer.Serialize(problem, new JsonSerializerOptions 
+        { 
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = env.IsDevelopment()
+            WriteIndented = _env.IsDevelopment()
         });
 
         await context.Response.WriteAsync(json);
@@ -78,10 +84,6 @@ public sealed class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionM
     private static string GetTitle(Exception ex) => ex switch
     {
         ValidationException => "Erro de Validação",
-        ConflictException => "Conflito de Dados",
-        UnprocessableEntityException => "Requisição Não Processável",
-        NotFoundException => "Recurso Não Encontrado",
-        ForbiddenAccessException => "Acesso Proibido",
         DomainException => "Violação de Regra de Negócio",
         _ => "Erro Interno do Servidor"
     };
@@ -89,7 +91,7 @@ public sealed class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionM
     private static string GetUserMessage(Exception ex) => ex switch
     {
         ValidationException => "Um ou mais campos estão inválidos. Verifique os detalhes.",
-        DomainException => ex.Message, // Captura todas as heranças de DomainException (Conflict, Unprocessable, etc)
+        DomainException => ex.Message,
         _ => "Ocorreu um erro inesperado. Tente novamente mais tarde."
     };
 }

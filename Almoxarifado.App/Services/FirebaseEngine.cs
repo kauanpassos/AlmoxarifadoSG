@@ -17,19 +17,19 @@ public sealed class FirebaseEngine<T>(FirebaseClient firebase, string childName)
         .Handle<Exception>() // Em um cenário real, filtraríamos apenas exceções de rede/timeout.
         .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 
-    public Task<T?> GetByIdAsync(int id)
+    public Task<T?> GetByIdAsync(int id) 
         => _retryPolicy.ExecuteAsync(async () => await Node.Child(id.ToString()).OnceSingleAsync<T>());
 
-    public async Task<IEnumerable<T>> GetAllAsync()
+    public async Task<IEnumerable<T>> GetAllAsync() 
         => await _retryPolicy.ExecuteAsync(async () => (await Node.OnceAsync<T>()).Select(e => e.Object).ToList());
 
-    public Task AddAsync(T entity)
+    public Task AddAsync(T entity) 
         => _retryPolicy.ExecuteAsync(() => Node.PostAsync(entity));
 
-    public Task UpdateAsync(string key, T entity)
+    public Task UpdateAsync(string key, T entity) 
         => _retryPolicy.ExecuteAsync(() => Node.Child(key).PutAsync(entity));
 
-    public Task DeleteAsync(int id)
+    public Task DeleteAsync(int id) 
         => _retryPolicy.ExecuteAsync(() => Node.Child(id.ToString()).DeleteAsync());
 
     public Task UpdateAsync(T entity)

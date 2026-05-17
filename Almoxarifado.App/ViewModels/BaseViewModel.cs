@@ -9,7 +9,7 @@ public abstract class BaseViewModel : INotifyPropertyChanged
     public bool IsBusy
     {
         get => _isBusy;
-        set
+        set 
         {
             if (SetProperty(ref _isBusy, value))
             {

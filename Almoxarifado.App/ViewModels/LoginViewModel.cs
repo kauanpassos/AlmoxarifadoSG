@@ -44,7 +44,7 @@ public sealed class LoginViewModel : BaseViewModel
             {
                 UsuarioSessao.UsuarioLogado = user;
 
-                if (user.Tipo == "Almoxarife")
+                    if (user.Tipo == "Almoxarife")
                 {
                     await Shell.Current.GoToAsync("//GestaoFilaPage");
                 }

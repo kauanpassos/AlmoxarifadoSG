@@ -14,9 +14,9 @@ public static class TestRunner
         try
         {
             var startInfo = GetProcessConfig();
-
+            
             using var process = Process.Start(startInfo);
-            if (process == null)
+            if (process == null) 
             {
                 throw new Exception("Falha ao subir o processo do 'dotnet test'. Verifique se o SDK está no PATH.");
             }
