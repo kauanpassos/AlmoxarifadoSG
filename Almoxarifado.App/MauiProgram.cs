@@ -74,13 +74,13 @@ public static class MauiProgram
             projectId,
             firebaseApiKey));
 
+        builder.Services.AddScoped<INavigationService>(sp => new NavigationService(
+            sp.GetRequiredService<IAuthService>()));
+
         // --- REGISTRO DO MEDIATR ---
         builder.Services.AddMediatR(cfg =>
         {
-            // Registra o assembly do App (ViewModels)
             cfg.RegisterServicesFromAssembly(typeof(MauiProgram).Assembly);
-
-            // IMPORTANTE: Registra o assembly da Application para que o MediatR encontre seus Handlers
             cfg.RegisterServicesFromAssembly(typeof(Almoxarifado.Application.Queries.GetEstoqueQuery).Assembly);
         });
 
@@ -90,7 +90,9 @@ public static class MauiProgram
         builder.Services.AddTransient<GestaoFilaViewModel>();
         builder.Services.AddTransient<HomeColaboradorViewModel>();
         builder.Services.AddTransient<NovaSolicitacaoViewModel>();
-
+        builder.Services.AddTransient<PerfilViewModel>();
+        builder.Services.AddTransient<Almoxarifado.App.ViewModels.PerfilViewModel>();
+        
         // Views
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<GestaoFilaPage>();
@@ -98,6 +100,8 @@ public static class MauiProgram
         builder.Services.AddTransient<MainPage>();
         builder.Services.AddTransient<HomeColaboradorPage>();
         builder.Services.AddTransient<NovaSolicitacaoPage>();
+        builder.Services.AddTransient<PerfilPage>();
+        builder.Services.AddTransient<Almoxarifado.App.Views.PerfilPage>();
 
         return builder.Build();
     }

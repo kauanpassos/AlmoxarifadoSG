@@ -1,73 +1,59 @@
-using Almoxarifado.App.Services.Interfaces;
-using System.Windows.Input;
 using Almoxarifado.App.Services;
+using Almoxarifado.App.Services.Interfaces;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Almoxarifado.App.ViewModels;
 
-public sealed class LoginViewModel : BaseViewModel
+public partial class LoginViewModel : ObservableObject
 {
     private readonly IAuthService _authService;
+
+    [ObservableProperty]
     private string _username = string.Empty;
+
+    [ObservableProperty]
     private string _password = string.Empty;
 
-    public string Username
-    {
-        get => _username;
-        set => SetProperty(ref _username, value);
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsNotBusy))]
+    private bool _isBusy;
 
-    public string Password
-    {
-        get => _password;
-        set => SetProperty(ref _password, value);
-    }
-
-    public ICommand LoginCommand { get; }
+    public bool IsNotBusy => !IsBusy;
 
     public LoginViewModel(IAuthService authService)
     {
         _authService = authService;
-        Title = "Login";
-        LoginCommand = new Command(ExecuteLoginCommand);
     }
 
-    private async void ExecuteLoginCommand()
+    [RelayCommand]
+    private async Task LoginAsync()
     {
         if (IsBusy) return;
 
         try
         {
             IsBusy = true;
+
             var user = await _authService.LoginAsync(Username, Password);
 
             if (user != null)
             {
-                UsuarioSessao.UsuarioLogado = user;
-
-                    if (user.Tipo == "Almoxarife")
-                {
+                if (user.Tipo == "Almoxarife")
                     await Shell.Current.GoToAsync("//GestaoFilaPage");
-                }
                 else if (user.Tipo == "Colaborador")
-                {
                     await Shell.Current.GoToAsync("//HomeColaboradorPage");
-                }
                 else
-                {
                     await Shell.Current.GoToAsync("//EstoquePage");
-                }
             }
             else
             {
-                await Shell.Current.DisplayAlert(
-                    "Erro de Login",
-                    "Credenciais inválidas. Verifique seu usuário e senha.",
-                    "OK");
+                await Shell.Current.DisplayAlert("Erro de Login", "Credenciais inválidas. Verifique seu usuário e senha.", "OK");
             }
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Erro", ex.Message, "OK");
+            await Shell.Current.DisplayAlert("Aviso", ex.Message, "OK");
         }
         finally
         {

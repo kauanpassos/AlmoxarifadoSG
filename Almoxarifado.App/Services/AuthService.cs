@@ -1,6 +1,7 @@
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.Domain;
 using Firebase.Auth;
+using Microsoft.Maui.Storage;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -27,22 +28,13 @@ public class AuthService : IAuthService
         try
         {
             var signInUrl = $"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={_apiKey}";
-
-            var signInBody = new
-            {
-                email,
-                password,
-                returnSecureToken = true
-            };
-
+            var signInBody = new { email, password, returnSecureToken = true };
             var payload = new StringContent(JsonSerializer.Serialize(signInBody), Encoding.UTF8, "application/json");
+
             var signInResponse = await _httpClient.PostAsync(signInUrl, payload);
 
             if (!signInResponse.IsSuccessStatusCode)
-            {
-                var err = await signInResponse.Content.ReadAsStringAsync();
-                throw new Exception($"Falha ao autenticar: {err}");
-            }
+                throw new Exception("Credenciais inválidas ou erro de comunicação.");
 
             var signInJson = await signInResponse.Content.ReadAsStringAsync();
             using var signInDoc = JsonDocument.Parse(signInJson);
@@ -51,6 +43,54 @@ public class AuthService : IAuthService
             var idToken = root.GetProperty("idToken").GetString();
             var localId = root.GetProperty("localId").GetString();
             var userEmail = root.TryGetProperty("email", out var emailEl) ? emailEl.GetString() : email;
+
+            if (string.IsNullOrEmpty(idToken) || string.IsNullOrEmpty(localId))
+                return null;
+
+            await SecureStorage.Default.SetAsync("auth_token", idToken);
+            await SecureStorage.Default.SetAsync("user_uid", localId);
+
+            var docName = $"projects/{_projectId}/databases/(default)/documents/Usuarios/{localId}";
+            var url = $"https://firestore.googleapis.com/v1/{docName}";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
+
+            var resp = await _httpClient.SendAsync(request);
+
+            if (!resp.IsSuccessStatusCode) return null;
+
+            var json = await resp.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty("fields", out var fields)) return null;
+
+            string GetStringField(string name)
+                => fields.TryGetProperty(name, out var v) && v.TryGetProperty("stringValue", out var s) ? s.GetString() ?? string.Empty : string.Empty;
+
+            var usuario = new Usuario(
+                id: localId,
+                nome: GetStringField("Nome"),
+                email: userEmail ?? string.Empty,
+                setor: GetStringField("Setor"),
+                tipo: GetStringField("Tipo")
+            );
+
+            UsuarioSessao.UsuarioLogado = usuario;
+
+            return usuario;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Erro de Autenticação: {ex.Message}");
+        }
+    }
+
+    public async Task<Usuario?> VerificarSessaoAtivaAsync()
+    {
+        try
+        {
+            var idToken = await SecureStorage.Default.GetAsync("auth_token");
+            var localId = await SecureStorage.Default.GetAsync("user_uid");
 
             if (string.IsNullOrEmpty(idToken) || string.IsNullOrEmpty(localId))
                 return null;
@@ -65,35 +105,59 @@ public class AuthService : IAuthService
 
             if (!resp.IsSuccessStatusCode)
             {
+                await LogoutAsync();
                 return null;
             }
 
             var json = await resp.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(json);
-
-            if (!doc.RootElement.TryGetProperty("fields", out var fields))
-                return null;
+            if (!doc.RootElement.TryGetProperty("fields", out var fields)) return null;
 
             string GetStringField(string name)
                 => fields.TryGetProperty(name, out var v) && v.TryGetProperty("stringValue", out var s) ? s.GetString() ?? string.Empty : string.Empty;
 
-            return new Usuario(
+            var usuario = new Usuario(
                 id: localId,
                 nome: GetStringField("Nome"),
-                email: userEmail ?? string.Empty,
+                email: GetStringField("Email"),
                 setor: GetStringField("Setor"),
                 tipo: GetStringField("Tipo")
             );
+
+            UsuarioSessao.UsuarioLogado = usuario;
+
+            return usuario;
         }
-        catch (Exception ex)
+        catch
         {
-            throw new Exception($"O Firebase disse: {ex.Message}");
+            return null;
         }
     }
 
     public async Task LogoutAsync()
     {
-        _authClient.SignOut();
+        try
+        {
+            // Tenta fazer SignOut - pode falhar se não há sessão ativa
+            _authClient?.SignOut();
+        }
+        catch (NullReferenceException nrEx)
+        {
+            // FirebaseAuthClient.SignOut() pode lançar NRE internamente quando não há usuário
+            System.Diagnostics.Debug.WriteLine($"SignOut falhou (sem sessão ativa): {nrEx.Message}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Erro ao fazer SignOut: {ex.Message}");
+        }
+
+        // Limpa completamente a sessão local
+        UsuarioSessao.UsuarioLogado = null;
+
+        // 🔥 CORREÇÃO: Remove() é síncrono. RemoveAsync() NÃO EXISTE no .NET MAUI.
+        SecureStorage.Default.Remove("auth_token");
+        SecureStorage.Default.Remove("user_uid");
+
         await Task.CompletedTask;
     }
 
@@ -120,12 +184,7 @@ public class AuthService : IAuthService
             };
 
             var signInUrl = $"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={_apiKey}";
-            var signInBody = new
-            {
-                email,
-                password = senha,
-                returnSecureToken = true
-            };
+            var signInBody = new { email, password = senha, returnSecureToken = true };
             var payload = new StringContent(JsonSerializer.Serialize(signInBody), Encoding.UTF8, "application/json");
             var signInResponse = await _httpClient.PostAsync(signInUrl, payload);
             if (!signInResponse.IsSuccessStatusCode)
@@ -152,10 +211,7 @@ public class AuthService : IAuthService
                     firestoreFields[kv.Key] = new Dictionary<string, object> { { "stringValue", kv.Value?.ToString() ?? string.Empty } };
             }
 
-            var docPayload = new
-            {
-                fields = firestoreFields
-            };
+            var docPayload = new { fields = firestoreFields };
 
             var request = new HttpRequestMessage(HttpMethod.Patch, url)
             {

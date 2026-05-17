@@ -6,19 +6,16 @@
     xmlns:views="clr-namespace:Almoxarifado.App.Views"
     Shell.FlyoutBehavior="Disabled">
 
-    <!-- Rotas principais com ShellContent -->
     <ShellContent
         Title="Login"
         ContentTemplate="{DataTemplate views:LoginPage}"
         Route="LoginPage" />
 
-    <!-- Home como página principal após login -->
     <ShellContent
         Title="Home Colaborador"
         ContentTemplate="{DataTemplate views:HomeColaboradorPage}"
         Route="HomeColaboradorPage" />
 
-    <!-- Páginas secundárias -->
     <ShellContent
         Title="Gestão de Fila"
         ContentTemplate="{DataTemplate views:GestaoFilaPage}"
@@ -29,7 +26,6 @@
         ContentTemplate="{DataTemplate views:EstoquePage}"
         Route="EstoquePage" />
 
-    <!-- NovaSolicitacao como Modal/Overlay -->
     <ShellContent
         ContentTemplate="{DataTemplate views:NovaSolicitacaoPage}"
         Route="NovaSolicitacaoPage" />

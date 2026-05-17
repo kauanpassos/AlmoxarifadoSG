@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
+             x:Class="Almoxarifado.App.Views.PerfilPage"
+             x:DataType="vm:PerfilViewModel"
+             Title="Meu Perfil"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <Grid HeightRequest="120" BackgroundColor="#1A336E" Padding="20,35,20,15">
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
+                    <Label Text="Almoxarifado SG" FontSize="14" FontAttributes="Bold" TextColor="White" HorizontalTextAlignment="Center" Opacity="0.8"/>
+                    <Label Text="Meu Perfil" FontSize="24" FontAttributes="Bold" TextColor="White" HorizontalTextAlignment="Center"/>
+                </VerticalStackLayout>
+            </Grid>
+
+            <Frame Margin="0,20,0,14" Padding="7" BackgroundColor="#D9D9D9" CornerRadius="100" HasShadow="False" HorizontalOptions="Center">
+                <Frame Padding="30" BackgroundColor="#F2F2F2" CornerRadius="100" HasShadow="False">
+                    <Label Text="{Binding Iniciais}" FontSize="60" FontAttributes="Bold" TextColor="#1A336E" HorizontalTextAlignment="Center"/>
+                </Frame>
+            </Frame>
+
+            <Label Text="{Binding UsuarioAtual.Nome}" FontSize="22" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalOptions="Center"/>
+            <Label Margin="0,5,0,40" Text="{Binding UsuarioAtual.Tipo}" FontSize="16" FontAttributes="Bold" TextColor="#757575" HorizontalOptions="Center"/>
+
+            <Frame Margin="30,0" Padding="20" BorderColor="#254A9A" CornerRadius="8" BackgroundColor="White" HasShadow="True">
+                <VerticalStackLayout Spacing="12">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="E-mail" FontSize="12" TextColor="#254A9A" FontAttributes="Bold"/>
+                        <Label Text="{Binding UsuarioAtual.Email}" FontSize="15" TextColor="#444" FontAttributes="Bold"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Setor / Departamento" FontSize="12" TextColor="#254A9A" FontAttributes="Bold"/>
+                        <Label Text="{Binding UsuarioAtual.Setor}" FontSize="15" TextColor="#444" FontAttributes="Bold"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="ID de Acesso (UID)" FontSize="12" TextColor="#254A9A" FontAttributes="Bold"/>
+                        <Label Text="{Binding UsuarioAtual.Id}" FontSize="13" TextColor="#757575"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <VerticalStackLayout Margin="0,40,0,30" Spacing="15" HorizontalOptions="Center">
+
+                <Button Text="GERENCIAR FILA"
+                        IsVisible="{Binding IsAlmoxarife}"
+                        Command="{Binding VoltarParaFilaCommand}"
+                        WidthRequest="280" HeightRequest="55" CornerRadius="28"
+                        BackgroundColor="#254A9A" TextColor="White" FontAttributes="Bold"/>
+
+                <Button Text="SAIR DA CONTA"
+                        Command="{Binding SairCommand}"
+                        WidthRequest="280" HeightRequest="55" CornerRadius="28"
+                        BackgroundColor="#DA0004" TextColor="White" FontAttributes="Bold"/>
+            </VerticalStackLayout>
+
+            <BoxView HeightRequest="50" BackgroundColor="#1A336E"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
