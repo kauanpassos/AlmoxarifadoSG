@@ -71,5 +71,8 @@
 		<MauiXaml Update="Views\NovaSolicitacaoPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Views\PerfilPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 	</ItemGroup>
 </Project>

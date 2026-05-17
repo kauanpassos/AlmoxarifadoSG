@@ -8,6 +8,7 @@ public sealed class Solicitacao
     public string UsuarioId { get; }
     public string Observacao { get; private set; }
     public string Status { get; private set; }
+    public string? Sku { get; private set; }
     public DateTime CreatedAt { get; }
     public DateTime UpdatedAt { get; private set; }
     public Solicitacao(string id, string usuarioId, string observacao)
