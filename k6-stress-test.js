@@ -17,8 +17,8 @@ export const options = {
 };
 
 export default function () {
-  // Bate na API que estará rodando em background no servidor do GitHub Actions
-  const res = http.get('http://localhost:5000/api/estoque');
+  // Bate na API (Endpoint de Health Check) que estará rodando em background no servidor
+  const res = http.get('http://localhost:5000/health');
   
   // Validações básicas de resposta
   check(res, {
