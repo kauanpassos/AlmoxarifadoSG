@@ -47,6 +47,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("MobileAppPolicy");
 app.UseAuthorization();
+
+// Endpoint de Health Check (usado pelo k6 e monitores de infraestrutura)
+app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow }));
+
 app.MapControllers();
 
 // Sobe o servidor e fica "escutando" as requisições.
