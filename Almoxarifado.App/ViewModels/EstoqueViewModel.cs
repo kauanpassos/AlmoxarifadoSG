@@ -1,12 +1,16 @@
+using Almoxarifado.App.Services;
+using Almoxarifado.App.Services.Interfaces;
+using Almoxarifado.App.Views;
 using Almoxarifado.Application.Queries;
+using Almoxarifado.Domain;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace Almoxarifado.App.ViewModels;
 
@@ -26,26 +30,50 @@ public class ItemEstoqueModel
 public partial class EstoqueViewModel : ObservableObject
 {
     private readonly IMediator _mediator;
-
+    private readonly INavigationService _navigationService;
     private readonly List<ItemEstoqueModel> _todasAsPecasCache = new();
-
     private bool _estaCarregando;
 
     [ObservableProperty]
     private string _termoPesquisa = string.Empty;
 
+    [ObservableProperty]
+    private string _iniciaisUsuario = string.Empty;
+
     public ObservableCollection<ItemEstoqueModel> PecasEstoque { get; } = new();
-    public EstoqueViewModel(IMediator mediator)
+
+    public EstoqueViewModel(IMediator mediator, INavigationService navigationService)
     {
-        _mediator = mediator;
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+
+        var usuarioLogado = UsuarioSessao.UsuarioLogado;
+        if (usuarioLogado != null)
+        {
+            IniciaisUsuario = ObterIniciais(usuarioLogado.Nome);
+        }
+    }
+
+    [RelayCommand]
+    private async Task VoltarAsync()
+    {
+        var usuarioLogado = UsuarioSessao.UsuarioLogado;
+        if (usuarioLogado?.Tipo == "Almoxarife")
+            await _navigationService.NavigateToAsync("//GestaoFilaPage");
+        else
+            await _navigationService.NavigateToAsync("//HomeColaboradorPage");
+    }
+
+    [RelayCommand]
+    private async Task IrParaPerfilAsync()
+    {
+        await _navigationService.NavigateToAsync(nameof(PerfilPage));
     }
 
     [RelayCommand]
     public async Task CarregarEstoqueAsync()
     {
-        if (_estaCarregando)
-            return;
-
+        if (_estaCarregando) return;
         if (_todasAsPecasCache.Any())
         {
             ExecuteFiltrarTodos();
@@ -55,9 +83,7 @@ public partial class EstoqueViewModel : ObservableObject
         try
         {
             _estaCarregando = true;
-
             var pecasDoBanco = await _mediator.Send(new GetEstoqueQuery());
-
             _todasAsPecasCache.Clear();
 
             foreach (var peca in pecasDoBanco)
@@ -95,7 +121,6 @@ public partial class EstoqueViewModel : ObservableObject
 
                 _todasAsPecasCache.Add(item);
             }
-
             ExecuteFiltrarTodos();
         }
         catch (Exception ex)
@@ -112,8 +137,7 @@ public partial class EstoqueViewModel : ObservableObject
     private void ExecuteFiltrarTodos()
     {
         PecasEstoque.Clear();
-        foreach (var item in _todasAsPecasCache)
-            PecasEstoque.Add(item);
+        foreach (var item in _todasAsPecasCache) PecasEstoque.Add(item);
     }
 
     [RelayCommand]
@@ -121,8 +145,7 @@ public partial class EstoqueViewModel : ObservableObject
     {
         PecasEstoque.Clear();
         var filtrados = _todasAsPecasCache.Where(p => p.Quantidade > 0 && p.Quantidade <= 20);
-        foreach (var item in filtrados)
-            PecasEstoque.Add(item);
+        foreach (var item in filtrados) PecasEstoque.Add(item);
     }
 
     [RelayCommand]
@@ -130,7 +153,14 @@ public partial class EstoqueViewModel : ObservableObject
     {
         PecasEstoque.Clear();
         var filtrados = _todasAsPecasCache.Where(p => p.Quantidade == 0);
-        foreach (var item in filtrados)
-            PecasEstoque.Add(item);
+        foreach (var item in filtrados) PecasEstoque.Add(item);
+    }
+
+    private string ObterIniciais(string? nome)
+    {
+        if (string.IsNullOrWhiteSpace(nome)) return "US";
+        var partes = nome.Trim().Split(' ');
+        if (partes.Length == 1) return partes[0].Substring(0, Math.Min(2, partes[0].Length)).ToUpper();
+        return $"{partes[0][0]}{partes[^1][0]}".ToUpper();
     }
 }

@@ -38,6 +38,10 @@
                 HasShadow="False"
                 BorderColor="#D9D9D9">
 
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding IrParaPerfilCommand}" />
+                </Frame.GestureRecognizers>
+
                 <Label
                     Text="{Binding IniciaisUsuario}"
                     TextColor="#1A336E"

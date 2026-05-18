@@ -5,11 +5,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Almoxarifado.App.ViewModels;
-
-/// <summary>
-/// ViewModel da página de perfil de usuário.
-/// Gerencia ações como logout de forma segura e centralizada.
-/// </summary>
 public partial class PerfilViewModel : ObservableObject
 {
     private readonly IAuthService _authService;
@@ -22,6 +17,13 @@ public partial class PerfilViewModel : ObservableObject
 
     public string Iniciais => ObterIniciais(UsuarioAtual?.Nome);
     public bool IsAlmoxarife => UsuarioAtual?.Tipo == "Almoxarife";
+    public bool IsColaborador => UsuarioAtual?.Tipo == "Colaborador";
+
+    [RelayCommand]
+    private async Task VoltarParaHomeAsync()
+    {
+        await _navigationService.NavigateToAsync("//HomeColaboradorPage");
+    }
 
     public PerfilViewModel(IAuthService authService, INavigationService navigationService)
     {
@@ -44,7 +46,6 @@ public partial class PerfilViewModel : ObservableObject
 
             if (confirmar)
             {
-                // Usa o serviço centralizado de navegação
                 await _navigationService.NavigateToLoginAsync();
             }
         }

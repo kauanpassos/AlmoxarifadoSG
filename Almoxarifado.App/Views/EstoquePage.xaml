@@ -10,18 +10,23 @@
     <Grid RowDefinitions="Auto, *, Auto" BackgroundColor="White">
 
         <VerticalStackLayout Grid.Row="0">
-
-            <Border BackgroundColor="#1A336E" Stroke="Black" StrokeThickness="1" Padding="32,38,32,6" Margin="0,0,0,18">
+            <Border BackgroundColor="#1A336E" Stroke="Black" StrokeThickness="1" Padding="20,38,20,6" Margin="0,0,0,18">
                 <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Start">
-                    <VerticalStackLayout Grid.Column="0" Spacing="1" VerticalOptions="Center" Margin="0,0,31,0">
-                        <BoxView WidthRequest="14" HeightRequest="14" Color="White" />
-                        <BoxView WidthRequest="14" HeightRequest="14" Color="White" />
-                    </VerticalStackLayout>
+
+                    <ImageButton Grid.Column="0" Command="{Binding VoltarCommand}"
+                                 Source="{FontImageSource FontFamily=OpenSansSemibold, Glyph='❮', Size=24, Color=White}"
+                                 BackgroundColor="Transparent" VerticalOptions="Center" WidthRequest="40" HeightRequest="40" Margin="0,0,15,0" />
 
                     <Label Grid.Column="1" Text="Estoque" TextColor="White" FontSize="24" FontAttributes="Bold" VerticalOptions="Center" />
 
-                    <Border Grid.Column="2" BackgroundColor="White" Padding="4,8" StrokeThickness="0" VerticalOptions="Center">
-                        <Label Text="JS" TextColor="#1A336E" FontSize="15" FontAttributes="Bold" HorizontalOptions="Center"/>
+                    <Border Grid.Column="2" BackgroundColor="White" Padding="8,8" StrokeThickness="0" VerticalOptions="Center" WidthRequest="40" HeightRequest="40">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="20"/>
+                        </Border.StrokeShape>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding IrParaPerfilCommand}" />
+                        </Border.GestureRecognizers>
+                        <Label Text="{Binding IniciaisUsuario}" TextColor="#1A336E" FontSize="15" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
                     </Border>
                 </Grid>
             </Border>

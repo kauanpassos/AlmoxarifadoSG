@@ -138,12 +138,10 @@ public class AuthService : IAuthService
     {
         try
         {
-            // Tenta fazer SignOut - pode falhar se não há sessão ativa
             _authClient?.SignOut();
         }
         catch (NullReferenceException nrEx)
         {
-            // FirebaseAuthClient.SignOut() pode lançar NRE internamente quando não há usuário
             System.Diagnostics.Debug.WriteLine($"SignOut falhou (sem sessão ativa): {nrEx.Message}");
         }
         catch (Exception ex)
@@ -151,10 +149,8 @@ public class AuthService : IAuthService
             System.Diagnostics.Debug.WriteLine($"Erro ao fazer SignOut: {ex.Message}");
         }
 
-        // Limpa completamente a sessão local
         UsuarioSessao.UsuarioLogado = null;
 
-        // 🔥 CORREÇÃO: Remove() é síncrono. RemoveAsync() NÃO EXISTE no .NET MAUI.
         SecureStorage.Default.Remove("auth_token");
         SecureStorage.Default.Remove("user_uid");
 

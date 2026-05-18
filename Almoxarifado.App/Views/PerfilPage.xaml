@@ -54,6 +54,12 @@
                         WidthRequest="280" HeightRequest="55" CornerRadius="28"
                         BackgroundColor="#254A9A" TextColor="White" FontAttributes="Bold"/>
 
+                <Button Text="VOLTAR PARA HOME"
+                        IsVisible="{Binding IsColaborador}"
+                        Command="{Binding VoltarParaHomeCommand}"
+                        WidthRequest="280" HeightRequest="55" CornerRadius="28"
+                        BackgroundColor="#254A9A" TextColor="White" FontAttributes="Bold"/>
+
                 <Button Text="SAIR DA CONTA"
                         Command="{Binding SairCommand}"
                         WidthRequest="280" HeightRequest="55" CornerRadius="28"

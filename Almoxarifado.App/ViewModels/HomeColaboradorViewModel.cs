@@ -1,6 +1,10 @@
-﻿using Almoxarifado.App.Views;
+﻿using Almoxarifado.App.Services;
+using Almoxarifado.App.Services.Interfaces;
+using Almoxarifado.App.Views;
+using Almoxarifado.Domain;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
@@ -8,6 +12,8 @@ namespace Almoxarifado.App.ViewModels;
 
 public partial class HomeColaboradorViewModel : ObservableObject
 {
+    private readonly INavigationService _navigationService;
+
     [ObservableProperty]
     private string _iniciaisUsuario = string.Empty;
 
@@ -16,8 +22,21 @@ public partial class HomeColaboradorViewModel : ObservableObject
 
     public ObservableCollection<SolicitacaoModel> ListaSolicitacoes { get; } = new();
 
-    public HomeColaboradorViewModel()
+    public HomeColaboradorViewModel(INavigationService navigationService)
     {
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+
+        var usuarioLogado = UsuarioSessao.UsuarioLogado;
+        if (usuarioLogado != null)
+        {
+            IniciaisUsuario = ObterIniciais(usuarioLogado.Nome);
+        }
+    }
+
+    [RelayCommand]
+    private async Task IrParaPerfilAsync()
+    {
+        await _navigationService.NavigateToAsync(nameof(PerfilPage));
     }
 
     [RelayCommand]
@@ -36,6 +55,14 @@ public partial class HomeColaboradorViewModel : ObservableObject
     public async Task CarregarDashboardAsync()
     {
         ListaSolicitacoes.Clear();
+    }
+
+    private string ObterIniciais(string? nome)
+    {
+        if (string.IsNullOrWhiteSpace(nome)) return "CO";
+        var partes = nome.Trim().Split(' ');
+        if (partes.Length == 1) return partes[0].Substring(0, Math.Min(2, partes[0].Length)).ToUpper();
+        return $"{partes[0][0]}{partes[^1][0]}".ToUpper();
     }
 }
 
