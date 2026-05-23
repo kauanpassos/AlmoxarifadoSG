@@ -3,68 +3,54 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
              x:Class="Almoxarifado.App.Views.GestaoFilaPage"
+             x:DataType="vm:GestaoFilaViewModel"
              Title="Gestão de Fila"
              BackgroundColor="White">
-
     <Grid RowDefinitions="Auto, Auto, *, Auto">
-
         <Grid Grid.Row="0" BackgroundColor="#1A336E" ColumnDefinitions="*, Auto" Padding="20,20,20,20">
-            <Label Grid.Column="0" 
-                   Text="Gestão de Fila" 
-                   FontSize="24" 
-                   FontAttributes="Bold" 
+            <Label Grid.Column="0"
+                   Text="Gestão de Fila"
+                   FontSize="24"
+                   FontAttributes="Bold"
                    TextColor="White"
                    VerticalOptions="Center" />
-
             <Frame Grid.Column="1" WidthRequest="40" HeightRequest="40" CornerRadius="20" Padding="0" HasShadow="True" BackgroundColor="#F0F4F8" BorderColor="#AFD7FF" VerticalOptions="Center" HorizontalOptions="Center">
-
                 <Frame.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding IrParaPerfilCommand}" />
                 </Frame.GestureRecognizers>
-
                 <Label Text="{Binding IniciaisUsuario}" FontAttributes="Bold" TextColor="#1A336E" FontSize="15" HorizontalOptions="Center" VerticalOptions="Center" />
             </Frame>
         </Grid>
-
         <VerticalStackLayout Grid.Row="1" Padding="15,20,15,10" Spacing="15">
-
             <Frame BackgroundColor="#F1F1F1" BorderColor="#757575" CornerRadius="20" Padding="10,0" HeightRequest="45" HasShadow="False">
                 <SearchBar Text="{Binding TextoPesquisa, Mode=TwoWay}"
-                           Placeholder="Pesquisar por Peça, SKU ou Status" 
-                           BackgroundColor="Transparent" 
+                           Placeholder="Pesquisar por Peça, SKU ou Status"
+                           BackgroundColor="Transparent"
                            PlaceholderColor="#757575"
                            TextColor="#757575"
                            VerticalOptions="Center" />
             </Frame>
-
             <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
                 <HorizontalStackLayout Spacing="10">
-                    <Button Text="Todos" 
+                    <Button Text="Todos"
                             Command="{Binding MudarFiltroCommand}" CommandParameter="Todos"
                             BackgroundColor="#757575" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
-
-                    <Button Text="Concluído" 
-                            Command="{Binding MudarFiltroCommand}" CommandParameter="Concluído"
-                            BackgroundColor="#03BA15" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
-
-                    <Button Text="Aprovado" 
-                            Command="{Binding MudarFiltroCommand}" CommandParameter="Aprovado"
-                            BackgroundColor="#254A9A" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
-
-                    <Button Text="Indisponível" 
-                            Command="{Binding MudarFiltroCommand}" CommandParameter="Indisponível"
-                            BackgroundColor="#DA0004" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
-
-                    <Button Text="Em Análise" 
-                            Command="{Binding MudarFiltroCommand}" CommandParameter="Em Análise"
+                    <Button Text="Pendente"
+                            Command="{Binding MudarFiltroCommand}" CommandParameter="Pendente"
                             BackgroundColor="#FF9565" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+                    <Button Text="Aprovada"
+                            Command="{Binding MudarFiltroCommand}" CommandParameter="Aprovada"
+                            BackgroundColor="#254A9A" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+                    <Button Text="Recusada"
+                            Command="{Binding MudarFiltroCommand}" CommandParameter="Recusada"
+                            BackgroundColor="#DA0004" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+                    <Button Text="Entregue"
+                            Command="{Binding MudarFiltroCommand}" CommandParameter="Entregue"
+                            BackgroundColor="#03BA15" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
                 </HorizontalStackLayout>
             </ScrollView>
-
         </VerticalStackLayout>
-
         <Grid Grid.Row="2" Margin="15,5,15,0">
-
             <CollectionView ItemsSource="{Binding Solicitacoes}">
                 <CollectionView.EmptyView>
                     <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="15" IsVisible="{Binding IsEmpty}">
@@ -72,34 +58,53 @@
                         <Label Text="Não há solicitações na fila no momento." TextColor="Gray" FontSize="16" HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
-
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Frame Margin="0,0,0,15" Padding="15" CornerRadius="5" BorderColor="#E0E0E0" BackgroundColor="White" HasShadow="True">
-                            <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
-                                <VerticalStackLayout Grid.Column="0" Grid.Row="0">
-                                    <Label Text="{Binding Sku}" FontAttributes="Bold" TextColor="#1A1A1A" FontSize="18" />
-                                    <Label Text="{Binding Sku, StringFormat='SKU: {0}'}" TextColor="#757575" FontSize="12" Margin="0,2,0,0" />
-                                </VerticalStackLayout>
-
-                                <Frame Grid.Column="0" Grid.Row="1" BackgroundColor="#254A9A" Padding="15,5" CornerRadius="10" HasShadow="False" Opacity="0.8" HorizontalOptions="Start" Margin="0,15,0,0">
-                                    <Label Text="{Binding Status}" TextColor="White" FontSize="12" FontAttributes="Bold" />
-                                </Frame>
-                            </Grid>
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <VerticalStackLayout Grid.Column="0">
+                                        <Label Text="{Binding Sku}" FontAttributes="Bold" TextColor="#1A1A1A" FontSize="18" />
+                                        <Label Text="{Binding UsuarioId, StringFormat='Solicitante: {0}'}" TextColor="#757575" FontSize="12" Margin="0,2,0,0" />
+                                        <Label Text="{Binding Observacao}" TextColor="#555555" FontSize="12" Margin="0,2,0,0" />
+                                    </VerticalStackLayout>
+                                    <Frame Grid.Column="1" BackgroundColor="#254A9A" Padding="10,4" CornerRadius="10" HasShadow="False" Opacity="0.8" VerticalOptions="Start">
+                                        <Label Text="{Binding Status}" TextColor="White" FontSize="11" FontAttributes="Bold" />
+                                    </Frame>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10"
+                                      IsVisible="{Binding Status, Converter={x:Null}}">
+                                    <Button Grid.Column="0"
+                                            Text="✔ Aprovar"
+                                            BackgroundColor="#03BA15"
+                                            TextColor="White"
+                                            FontSize="13"
+                                            CornerRadius="8"
+                                            HeightRequest="38"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GestaoFilaViewModel}}, Path=AprovarCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    <Button Grid.Column="1"
+                                            Text="✖ Recusar"
+                                            BackgroundColor="#DA0004"
+                                            TextColor="White"
+                                            FontSize="13"
+                                            CornerRadius="8"
+                                            HeightRequest="38"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GestaoFilaViewModel}}, Path=RecusarCommand}"
+                                            CommandParameter="{Binding .}" />
+                                </Grid>
+                            </VerticalStackLayout>
                         </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-
-            <ActivityIndicator IsRunning="{Binding IsBusy}" 
-                               IsVisible="{Binding IsBusy}" 
-                               HorizontalOptions="Center" 
-                               VerticalOptions="Center" 
-                               Color="#254A9A" 
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               Color="#254A9A"
                                Scale="1.5" />
         </Grid>
-
         <BoxView Grid.Row="3" BackgroundColor="#1A336E" HeightRequest="51" HorizontalOptions="Fill" />
-
     </Grid>
 </ContentPage>

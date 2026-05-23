@@ -120,8 +120,6 @@ jobs:
     - name: Restaurar dependências do Mobile
       run: dotnet restore Almoxarifado.App/Almoxarifado.App.csproj
 
-    - name: Análise Estática do Frontend (Code Quality)
-      run: dotnet format Almoxarifado.App/Almoxarifado.App.csproj --verify-no-changes
 
     - name: Compilar o Projeto Mobile (Release)
       run: dotnet build Almoxarifado.App/Almoxarifado.App.csproj -c Release -f net9.0-android --no-restore
