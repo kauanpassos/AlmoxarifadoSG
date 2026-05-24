@@ -23,8 +23,8 @@
                TextColor="Gray"
                Margin="0, -15, 0, 20"/>
 
-        <Entry Text="{Binding Username}"
-               Placeholder="E-mail ou Crachá"
+        <Entry Text="{Binding Email}"
+               Placeholder="E-mail Cadastrado"
                Keyboard="Email"
                ClearButtonVisibility="WhileEditing" 
                TextColor="Black"/>

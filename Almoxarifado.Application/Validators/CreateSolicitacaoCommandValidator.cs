@@ -2,8 +2,6 @@ using FluentValidation;
 using Almoxarifado.Application.Commands;
 
 namespace Almoxarifado.Application.Validators;
-
-// Validador especializado para o comando de criação de solicitações.
 public sealed class CreateSolicitacaoCommandValidator : AbstractValidator<CreateSolicitacaoCommand>
 {
     public CreateSolicitacaoCommandValidator()

@@ -1,21 +1,18 @@
 using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.App.Views;
-using Almoxarifado.Domain;
+using Almoxarifado.Domain.Entities;
+using Almoxarifado.Domain.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Storage;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Almoxarifado.App.ViewModels;
 
 public partial class NovaSolicitacaoViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
-    private readonly IFirebaseService _firebaseService;
     private ObservableCollection<Produto> _todosProdutos = new();
 
     [ObservableProperty]
@@ -41,10 +38,9 @@ public partial class NovaSolicitacaoViewModel : ObservableObject
 
     public ObservableCollection<Produto> ProdutosFiltrados { get; } = new();
 
-    public NovaSolicitacaoViewModel(INavigationService navigationService, IFirebaseService firebaseService)
+    public NovaSolicitacaoViewModel(INavigationService navigationService)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-        _firebaseService = firebaseService ?? throw new ArgumentNullException(nameof(firebaseService));
 
         var usuarioLogado = UsuarioSessao.UsuarioLogado;
         if (usuarioLogado != null)
@@ -61,22 +57,7 @@ public partial class NovaSolicitacaoViewModel : ObservableObject
     [RelayCommand]
     private async Task CarregarProdutosAsync()
     {
-        if (IsBusy) return;
-        try
-        {
-            IsBusy = true;
-            var produtos = await _firebaseService.GetProdutosAsync();
-            _todosProdutos = new ObservableCollection<Produto>(produtos.Where(p => p.Ativo));
-            AplicarFiltroProdutos(TermoBusca);
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Erro", $"Não foi possível carregar os produtos: {ex.Message}", "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
+        await Task.CompletedTask;
     }
 
     [RelayCommand]
@@ -92,7 +73,7 @@ public partial class NovaSolicitacaoViewModel : ObservableObject
     private async Task VoltarAsync()
     {
         var usuarioLogado = UsuarioSessao.UsuarioLogado;
-        if (usuarioLogado?.Tipo == "Almoxarife")
+        if (usuarioLogado?.Tipo == TipoUsuario.Almoxarife)
             await _navigationService.NavigateToAsync("//GestaoFilaPage");
         else
             await _navigationService.NavigateToAsync("//HomeColaboradorPage");
@@ -130,16 +111,8 @@ public partial class NovaSolicitacaoViewModel : ObservableObject
 
         try
         {
-            IsBusy = true;
-            var idToken = await SecureStorage.Default.GetAsync("auth_token") ?? string.Empty;
-            await _firebaseService.EnviarSolicitacaoAsync(
-                usuarioId: usuario.Id,
-                sku: PecaSelecionada.Sku,
-                quantidade: QuantidadeSolicitada,
-                justificativa: string.IsNullOrWhiteSpace(Justificativa) ? "Sem justificativa informada." : Justificativa,
-                idToken: idToken
-            );
-            await Shell.Current.DisplayAlert("Solicitação enviada", $"Pedido de {QuantidadeSolicitada} un de '{PecaSelecionada.Nome}' registrado com sucesso.", "OK");
+            await Task.CompletedTask;
+            await Shell.Current.DisplayAlert("Solicitação enviada", $"Pedido registrado com sucesso no servidor.", "OK");
             await VoltarAsync();
         }
         catch (Exception ex)

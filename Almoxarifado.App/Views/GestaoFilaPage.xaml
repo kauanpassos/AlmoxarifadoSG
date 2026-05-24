@@ -7,7 +7,8 @@
              Title="Gestão de Fila"
              BackgroundColor="White">
     <Grid RowDefinitions="Auto, Auto, *, Auto">
-        <Grid Grid.Row="0" BackgroundColor="#1A336E" ColumnDefinitions="*, Auto" Padding="20,20,20,20">
+
+        <Grid Grid.Row="0" BackgroundColor="#1A336E" ColumnDefinitions="*, Auto" Padding="20">
             <Label Grid.Column="0"
                    Text="Gestão de Fila"
                    FontSize="24"
@@ -21,6 +22,7 @@
                 <Label Text="{Binding IniciaisUsuario}" FontAttributes="Bold" TextColor="#1A336E" FontSize="15" HorizontalOptions="Center" VerticalOptions="Center" />
             </Frame>
         </Grid>
+
         <VerticalStackLayout Grid.Row="1" Padding="15,20,15,10" Spacing="15">
             <Frame BackgroundColor="#F1F1F1" BorderColor="#757575" CornerRadius="20" Padding="10,0" HeightRequest="45" HasShadow="False">
                 <SearchBar Text="{Binding TextoPesquisa, Mode=TwoWay}"
@@ -32,24 +34,15 @@
             </Frame>
             <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
                 <HorizontalStackLayout Spacing="10">
-                    <Button Text="Todos"
-                            Command="{Binding MudarFiltroCommand}" CommandParameter="Todos"
-                            BackgroundColor="#757575" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
-                    <Button Text="Pendente"
-                            Command="{Binding MudarFiltroCommand}" CommandParameter="Pendente"
-                            BackgroundColor="#FF9565" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
-                    <Button Text="Aprovada"
-                            Command="{Binding MudarFiltroCommand}" CommandParameter="Aprovada"
-                            BackgroundColor="#254A9A" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
-                    <Button Text="Recusada"
-                            Command="{Binding MudarFiltroCommand}" CommandParameter="Recusada"
-                            BackgroundColor="#DA0004" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
-                    <Button Text="Entregue"
-                            Command="{Binding MudarFiltroCommand}" CommandParameter="Entregue"
-                            BackgroundColor="#03BA15" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+                    <Button Text="Todos" Command="{Binding MudarFiltroCommand}" CommandParameter="Todos" BackgroundColor="#757575" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+                    <Button Text="Pendente" Command="{Binding MudarFiltroCommand}" CommandParameter="Pendente" BackgroundColor="#FF9565" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+                    <Button Text="Aprovada" Command="{Binding MudarFiltroCommand}" CommandParameter="Aprovada" BackgroundColor="#254A9A" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+                    <Button Text="Recusada" Command="{Binding MudarFiltroCommand}" CommandParameter="Recusada" BackgroundColor="#DA0004" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
+                    <Button Text="Entregue" Command="{Binding MudarFiltroCommand}" CommandParameter="Entregue" BackgroundColor="#03BA15" Opacity="0.8" TextColor="White" FontAttributes="Bold" FontSize="12" CornerRadius="10" HeightRequest="35" />
                 </HorizontalStackLayout>
             </ScrollView>
         </VerticalStackLayout>
+
         <Grid Grid.Row="2" Margin="15,5,15,0">
             <CollectionView ItemsSource="{Binding Solicitacoes}">
                 <CollectionView.EmptyView>
@@ -72,8 +65,8 @@
                                         <Label Text="{Binding Status}" TextColor="White" FontSize="11" FontAttributes="Bold" />
                                     </Frame>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10"
-                                      IsVisible="{Binding Status, Converter={x:Null}}">
+
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                                     <Button Grid.Column="0"
                                             Text="✔ Aprovar"
                                             BackgroundColor="#03BA15"
@@ -98,6 +91,7 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+
             <ActivityIndicator IsRunning="{Binding IsBusy}"
                                IsVisible="{Binding IsBusy}"
                                HorizontalOptions="Center"
@@ -105,6 +99,7 @@
                                Color="#254A9A"
                                Scale="1.5" />
         </Grid>
+
         <BoxView Grid.Row="3" BackgroundColor="#1A336E" HeightRequest="51" HorizontalOptions="Fill" />
     </Grid>
 </ContentPage>

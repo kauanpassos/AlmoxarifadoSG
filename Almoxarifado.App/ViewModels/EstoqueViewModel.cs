@@ -2,15 +2,11 @@ using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.App.Views;
 using Almoxarifado.Application.Queries;
-using Almoxarifado.Domain;
+using Almoxarifado.Domain.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Almoxarifado.App.ViewModels;
 
@@ -58,7 +54,7 @@ public partial class EstoqueViewModel : ObservableObject
     private async Task VoltarAsync()
     {
         var usuarioLogado = UsuarioSessao.UsuarioLogado;
-        if (usuarioLogado?.Tipo == "Almoxarife")
+        if (usuarioLogado?.Tipo == TipoUsuario.Almoxarife)
             await _navigationService.NavigateToAsync("//GestaoFilaPage");
         else
             await _navigationService.NavigateToAsync("//HomeColaboradorPage");

@@ -4,12 +4,14 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
-    xmlns:domain="clr-namespace:Almoxarifado.Domain;assembly=Almoxarifado.Domain"
+    xmlns:domain="clr-namespace:Almoxarifado.Domain.Entities;assembly=Almoxarifado.Domain"
     x:DataType="vm:NovaSolicitacaoViewModel"
     BackgroundColor="White"
     NavigationPage.HasNavigationBar="False"
     Shell.NavBarIsVisible="False">
+
     <Grid RowDefinitions="Auto, *, Auto">
+
         <Grid Grid.Row="0" BackgroundColor="#1A336E" Padding="20,45,20,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -27,8 +29,10 @@
                 <Label Text="{Binding IniciaisUsuario}" TextColor="#1A336E" FontAttributes="Bold" FontSize="15" HorizontalOptions="Center" VerticalOptions="Center" />
             </Frame>
         </Grid>
+
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="31,25,31,30" Spacing="25">
+
                 <Frame BackgroundColor="White" BorderColor="#254A9A" CornerRadius="5" HasShadow="True" Padding="15,19">
                     <VerticalStackLayout>
                         <Label Text="Selecione a Peça" TextColor="Black" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" Margin="0,0,0,15" />
@@ -45,6 +49,7 @@
                             </Grid>
                         </Frame>
                         <Label Text="Resultados" TextColor="Black" FontSize="14" FontAttributes="Bold" Margin="5,0,0,5" />
+
                         <CollectionView ItemsSource="{Binding ProdutosFiltrados}"
                                         SelectionMode="Single"
                                         SelectedItem="{Binding PecaSelecionada, Mode=TwoWay}"
@@ -60,12 +65,14 @@
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
+
                         <Label Text="{Binding PecaSelecionada.Sku, StringFormat='SKU selecionado: {0}'}"
                                TextColor="#254A9A" FontSize="12" FontAttributes="Bold"
                                IsVisible="{Binding PecaSelecionada, Converter={x:Null}}"
                                Margin="5,5,0,0" />
                     </VerticalStackLayout>
                 </Frame>
+
                 <Frame BackgroundColor="White" BorderColor="#254A9A" CornerRadius="5" HasShadow="True" Padding="25,15">
                     <VerticalStackLayout Spacing="15">
                         <Label Text="Quantidade" TextColor="#1A1A1A" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
@@ -77,6 +84,7 @@
                         <Label Text="{Binding EstoqueDisponivel, StringFormat='Disponível: {0}'}" TextColor="Black" FontSize="14" FontAttributes="Bold" HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </Frame>
+
                 <Frame BackgroundColor="White" BorderColor="#254A9A" CornerRadius="5" HasShadow="True" Padding="15">
                     <VerticalStackLayout Spacing="10">
                         <Label Text="Justificativa" TextColor="Black" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
@@ -90,6 +98,7 @@
                         </Frame>
                     </VerticalStackLayout>
                 </Frame>
+
                 <Button Command="{Binding ConfirmarPedidoCommand}"
                         Text="Confirmar Pedido"
                         TextColor="White"
@@ -102,6 +111,8 @@
                         IsEnabled="{Binding IsBusy, Converter={x:Null}}" />
             </VerticalStackLayout>
         </ScrollView>
+
         <BoxView Grid.Row="2" HeightRequest="49" Color="#1A336E" />
+
     </Grid>
 </ContentPage>

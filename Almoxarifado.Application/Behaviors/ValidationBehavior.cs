@@ -2,8 +2,6 @@ using FluentValidation;
 using MediatR;
 
 namespace Almoxarifado.Application.Behaviors;
-
-// Pipeline Behavior que injeta validação automática em todo o fluxo do MediatR
 public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TRequest>> validators) 
     : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {

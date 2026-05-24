@@ -1,11 +1,9 @@
 using MediatR;
-using Almoxarifado.Domain;
 using Almoxarifado.Domain.Interfaces;
 using Almoxarifado.Application.Commands;
+using Almoxarifado.Domain.Entities;
 
 namespace Almoxarifado.Application.Handlers;
-
-// Handler responsável pela criação de solicitações
 public sealed class CreateSolicitacaoHandler(IWriteOnlyRepository<Solicitacao> repository) 
     : IRequestHandler<CreateSolicitacaoCommand, Solicitacao>
 {

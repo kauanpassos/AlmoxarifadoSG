@@ -1,7 +1,7 @@
 using MediatR;
-using Almoxarifado.Domain;
 using Almoxarifado.Domain.Interfaces;
 using Almoxarifado.Application.Commands;
+using Almoxarifado.Domain.Entities;
 namespace Almoxarifado.Application.Handlers;
 public sealed class AtualizarStatusSolicitacaoHandler(
     IReadOnlyRepository<Solicitacao> readRepository,

@@ -3,7 +3,8 @@
   <Project Path="Almoxarifado.App/Almoxarifado.App.csproj" Id="36bd8510-2a2a-40d1-906c-73e7245f8834">
     <Deploy Solution="Debug|*" />
   </Project>
-  <Project Path="Almoxarifado.Domain/Almoxarifado.Domain.csproj" Id="863ab427-4a6f-4291-9bec-7aaec6a138c6" />
   <Project Path="Almoxarifado.Application/Almoxarifado.Application.csproj" />
+  <Project Path="Almoxarifado.Domain/Almoxarifado.Domain.csproj" Id="863ab427-4a6f-4291-9bec-7aaec6a138c6" />
+  <Project Path="Almoxarifado.Infrastructure/Almoxarifado.Infrastructure.csproj" Id="bde85df7-a747-438c-b385-5ccfd3ba7d2f" />
   <Project Path="TesteApp/TesteApp.csproj" />
 </Solution>
