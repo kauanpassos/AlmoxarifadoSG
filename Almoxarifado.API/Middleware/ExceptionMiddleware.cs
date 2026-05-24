@@ -5,8 +5,6 @@ using FluentValidation;
 using Almoxarifado.Domain.Exceptions;
 
 namespace Almoxarifado.API.Middleware;
-
-// Middleware de exceção global refatorado para suportar validações fluídas e erros de domínio.
 public sealed class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
@@ -37,7 +35,6 @@ public sealed class ExceptionMiddleware
     {
         context.Response.ContentType = "application/problem+json";
         
-        // Determinamos o Status Code baseado no tipo da exceção.
         var statusCode = exception switch
         {
             ValidationException => HttpStatusCode.BadRequest,
@@ -56,7 +53,6 @@ public sealed class ExceptionMiddleware
             Instance = context.Request.Path
         };
 
-        // Se for erro de validação, injetamos a lista de erros detalhada no "Extensions".
         if (exception is ValidationException valEx)
         {
             problem.Extensions["errors"] = valEx.Errors

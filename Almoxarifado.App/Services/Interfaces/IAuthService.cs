@@ -1,4 +1,4 @@
-using Almoxarifado.Domain;
+using Almoxarifado.Domain.Entities;
 
 namespace Almoxarifado.App.Services.Interfaces;
 

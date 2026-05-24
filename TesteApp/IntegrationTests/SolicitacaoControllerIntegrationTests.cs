@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using Xunit;
 using Almoxarifado.API;
-using Almoxarifado.Domain;
 using Almoxarifado.Domain.Interfaces;
+using Almoxarifado.Domain.Entities;
 namespace TesteApp.IntegrationTests;
 public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
 {

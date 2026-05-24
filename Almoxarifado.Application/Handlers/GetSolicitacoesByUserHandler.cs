@@ -1,5 +1,5 @@
 using Almoxarifado.Application.Queries;
-using Almoxarifado.Domain;
+using Almoxarifado.Domain.Entities;
 using Almoxarifado.Domain.Interfaces;
 using MediatR;
 namespace Almoxarifado.Application.Handlers;

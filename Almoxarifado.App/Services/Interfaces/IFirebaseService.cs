@@ -1,4 +1,4 @@
-using Almoxarifado.Domain;
+using Almoxarifado.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 namespace Almoxarifado.App.Services.Interfaces

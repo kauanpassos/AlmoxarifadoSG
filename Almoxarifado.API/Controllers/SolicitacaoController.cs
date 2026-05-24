@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
-using Almoxarifado.Domain;
 using Almoxarifado.Application.Commands;
 using Almoxarifado.Application.Queries;
+using Almoxarifado.Domain.Entities;
 namespace Almoxarifado.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]

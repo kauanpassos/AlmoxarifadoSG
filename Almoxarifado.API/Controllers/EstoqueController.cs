@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
-using Almoxarifado.Domain;
 using Almoxarifado.Application.Queries;
+using Almoxarifado.Domain.Entities;
 
 namespace Almoxarifado.API.Controllers;
 

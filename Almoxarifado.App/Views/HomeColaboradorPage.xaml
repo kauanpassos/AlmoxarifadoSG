@@ -11,25 +11,15 @@
 
     <Grid RowDefinitions="Auto,*,Auto">
 
-        <Grid
-            Grid.Row="0"
-            BackgroundColor="#1A336E"
-            Padding="25,45,25,20">
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <Label
+        <Grid Grid.Row="0" BackgroundColor="#1A336E" Padding="25,45,25,20" ColumnDefinitions="*, Auto">
+            <Label Grid.Column="0"
                 Text="Suas Solicitações"
                 TextColor="White"
                 FontSize="26"
                 FontAttributes="Bold"
                 VerticalOptions="Center" />
 
-            <Frame
-                Grid.Column="1"
+            <Frame Grid.Column="1"
                 WidthRequest="45"
                 HeightRequest="45"
                 CornerRadius="22"
@@ -37,11 +27,9 @@
                 Padding="0"
                 HasShadow="False"
                 BorderColor="#D9D9D9">
-
                 <Frame.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding IrParaPerfilCommand}" />
                 </Frame.GestureRecognizers>
-
                 <Label
                     Text="{Binding IniciaisUsuario}"
                     TextColor="#1A336E"
@@ -54,19 +42,10 @@
 
         <Grid Grid.Row="1" RowDefinitions="Auto,*" Padding="25,20,25,0">
 
-            <Frame
-                Grid.Row="0"
-                BackgroundColor="#F1F1F1"
-                BorderColor="#757575"
-                CornerRadius="20"
-                Padding="15,10"
-                HasShadow="True"
-                Margin="0,0,0,18">
-
+            <Frame Grid.Row="0" BackgroundColor="#F1F1F1" BorderColor="#757575" CornerRadius="20" Padding="15,10" HasShadow="True" Margin="0,0,0,18">
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                     <Label Text="🔍" FontSize="18" VerticalOptions="Center" />
-                    <Entry
-                        Grid.Column="1"
+                    <Entry Grid.Column="1"
                         Text="{Binding TermoPesquisa}"
                         Placeholder="Pesquisar por peça, SKU ou status"
                         PlaceholderColor="#757575"
@@ -78,61 +57,22 @@
             <CollectionView Grid.Row="1" ItemsSource="{Binding ListaSolicitacoes}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:SolicitacaoModel">
-                        <Frame
-                            BackgroundColor="White"
-                            BorderColor="{Binding CorHexStatus}"
-                            CornerRadius="8"
-                            Padding="18,15"
-                            HasShadow="True"
-                            Margin="0,0,0,15">
-
+                        <Frame BackgroundColor="White" BorderColor="{Binding CorHexStatus}" CornerRadius="8" Padding="18,15" HasShadow="True" Margin="0,0,0,15">
                             <VerticalStackLayout Spacing="10">
-
-                                <Label
-                                    Text="{Binding NomePeca}"
-                                    FontSize="18"
-                                    FontAttributes="Bold"
-                                    TextColor="#1A1A1A" />
-
-                                <Label
-                                    Text="{Binding Sku, StringFormat='SKU: {0}'}"
-                                    FontSize="12"
-                                    FontAttributes="Bold"
-                                    TextColor="#757575" />
-
+                                <Label Text="{Binding NomePeca}" FontSize="18" FontAttributes="Bold" TextColor="#1A1A1A" />
+                                <Label Text="{Binding Sku, StringFormat='SKU: {0}'}" FontSize="12" FontAttributes="Bold" TextColor="#757575" />
                                 <Grid ColumnDefinitions="*,Auto">
-
-                                    <Label
-                                        Text="{Binding Quantidade, StringFormat='{0} un'}"
-                                        FontSize="20"
-                                        FontAttributes="Bold"
-                                        VerticalOptions="Center"
-                                        TextColor="Black" />
-
-                                    <Button
-                                        Grid.Column="1"
-                                        Text="{Binding NomeStatus}"
-                                        BackgroundColor="{Binding CorHexStatus}"
-                                        TextColor="White"
-                                        CornerRadius="10"
-                                        Padding="20,8"
-                                        FontAttributes="Bold" />
+                                    <Label Text="{Binding Quantidade, StringFormat='{0} un'}" FontSize="20" FontAttributes="Bold" VerticalOptions="Center" TextColor="Black" />
+                                    <Button Grid.Column="1" Text="{Binding NomeStatus}" BackgroundColor="{Binding CorHexStatus}" TextColor="White" CornerRadius="10" Padding="20,8" FontAttributes="Bold" />
                                 </Grid>
                             </VerticalStackLayout>
                         </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-
         </Grid>
 
-        <Grid
-            Grid.Row="2"
-            BackgroundColor="#1A336E"
-            Padding="20,10"
-            ColumnDefinitions="*,*"
-            ColumnSpacing="15">
-
+        <Grid Grid.Row="2" BackgroundColor="#1A336E" Padding="20,10" ColumnDefinitions="*,*" ColumnSpacing="15">
             <Button
                 Text="Nova Solicitação"
                 Command="{Binding NovoPedidoCommand}"

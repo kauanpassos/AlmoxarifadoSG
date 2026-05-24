@@ -1,5 +1,5 @@
-using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
+using Almoxarifado.Domain.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -10,7 +10,7 @@ public partial class LoginViewModel : ObservableObject
     private readonly IAuthService _authService;
 
     [ObservableProperty]
-    private string _username = string.Empty;
+    private string _email = string.Empty;
 
     [ObservableProperty]
     private string _password = string.Empty;
@@ -31,29 +31,34 @@ public partial class LoginViewModel : ObservableObject
     {
         if (IsBusy) return;
 
+        if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
+        {
+            await Shell.Current.DisplayAlert("Aviso", "Preencha o e-mail e a senha.", "OK");
+            return;
+        }
+
         try
         {
             IsBusy = true;
-
-            var user = await _authService.LoginAsync(Username, Password);
+            var user = await _authService.LoginAsync(Email, Password);
 
             if (user != null)
             {
-                if (user.Tipo == "Almoxarife")
+                if (user.Tipo == TipoUsuario.Almoxarife)
                     await Shell.Current.GoToAsync("//GestaoFilaPage");
-                else if (user.Tipo == "Colaborador")
+                else if (user.Tipo == TipoUsuario.Colaborador)
                     await Shell.Current.GoToAsync("//HomeColaboradorPage");
                 else
                     await Shell.Current.GoToAsync("//EstoquePage");
             }
             else
             {
-                await Shell.Current.DisplayAlert("Erro de Login", "Credenciais inválidas. Verifique seu usuário e senha.", "OK");
+                await Shell.Current.DisplayAlert("Erro de Login", "Credenciais inválidas. Verifique seu e-mail e senha.", "OK");
             }
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Aviso", ex.Message, "OK");
+            await Shell.Current.DisplayAlert("Erro", ex.Message, "OK");
         }
         finally
         {

@@ -1,4 +1,4 @@
-using Almoxarifado.Domain;
+using Almoxarifado.Domain.Entities;
 using Firebase.Database;
 namespace Almoxarifado.API.Repositories;
 public sealed class EstoqueRepository

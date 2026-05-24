@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Almoxarifado.Domain;
+namespace Almoxarifado.Domain.Entities;
 
 public sealed class Solicitacao
 {

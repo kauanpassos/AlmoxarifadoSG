@@ -1,4 +1,4 @@
-using Almoxarifado.Domain;
+using Almoxarifado.Domain.Entities;
 namespace Almoxarifado.Domain.Interfaces;
 public static class SolicitacaoExtensions
 {

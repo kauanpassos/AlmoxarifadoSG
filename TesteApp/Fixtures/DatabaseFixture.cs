@@ -1,7 +1,5 @@
-using Firebase.Database;
 using Almoxarifado.API.Repositories;
-using Almoxarifado.Domain;
-
+using Almoxarifado.Domain.Entities;
 namespace TesteApp.Fixtures;
 
 public sealed partial class DatabaseFixture

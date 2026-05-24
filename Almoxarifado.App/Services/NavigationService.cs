@@ -1,7 +1,7 @@
 using Almoxarifado.App.Services.Interfaces;
-using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.Services;
+
 public class NavigationService : INavigationService
 {
     private readonly IAuthService _authService;
@@ -11,7 +11,6 @@ public class NavigationService : INavigationService
         _authService = authService;
     }
 
-    [Obsolete]
     public async Task NavigateToLoginAsync()
     {
         try
@@ -31,6 +30,7 @@ public class NavigationService : INavigationService
             System.Diagnostics.Debug.WriteLine($"Erro na navegação para login: {ex.Message}\n{ex.StackTrace}");
         }
     }
+
     public async Task NavigateToHomeAsync()
     {
         try
@@ -45,6 +45,7 @@ public class NavigationService : INavigationService
             System.Diagnostics.Debug.WriteLine($"Erro ao navegar para home: {ex.Message}");
         }
     }
+
     public async Task NavigateToAsync(string route)
     {
         try

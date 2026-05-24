@@ -1,7 +1,5 @@
 using MediatR;
-using Almoxarifado.Domain;
+using Almoxarifado.Domain.Entities;
 
 namespace Almoxarifado.Application.Commands;
-
-// Comando para registrar uma nova solicitação no almoxarifado.
 public record CreateSolicitacaoCommand(Solicitacao Solicitacao) : IRequest<Solicitacao>;
