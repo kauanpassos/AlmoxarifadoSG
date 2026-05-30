@@ -1,8 +1,8 @@
 using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
+using Almoxarifado.App.Views;
 using Almoxarifado.Domain.Entities;
 using Almoxarifado.Domain.Enums;
-using Almoxarifado.Domain.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Storage;
@@ -16,7 +16,6 @@ namespace Almoxarifado.App.ViewModels;
 
 public partial class GestaoFilaViewModel : ObservableObject
 {
-    private readonly IReadOnlyRepository<Solicitacao> _repository;
     private readonly HttpClient _httpClient;
     private readonly List<Solicitacao> _filaCompleta = new();
 
@@ -46,45 +45,50 @@ public partial class GestaoFilaViewModel : ObservableObject
         }
     }
 
-    public ICommand LoadCommand { get; }
-    public ICommand MudarFiltroCommand { get; }
-    public GestaoFilaViewModel(IReadOnlyRepository<Solicitacao> repository, HttpClient httpClient)
+    public GestaoFilaViewModel(HttpClient httpClient)
     {
-        _repository = repository;
         _httpClient = httpClient;
-
-        LoadCommand = new Command(async () => await CarregarSolicitacoesAsync());
-
-        MudarFiltroCommand = new Command<string>(status =>
-        {
-            FiltroStatus = status;
-            AplicarFiltros();
-        });
     }
 
     [RelayCommand]
     private async Task IrParaPerfilAsync()
     {
-        await Shell.Current.GoToAsync(nameof(Views.PerfilPage));
+        await Shell.Current.GoToAsync(nameof(PerfilPage));
     }
 
     partial void OnTextoPesquisaChanged(string value) => AplicarFiltros();
 
-    public async Task CarregarSolicitacoesAsync()
+    [RelayCommand]
+    public async Task LoadAsync()
     {
         if (IsBusy) return;
         try
         {
             IsBusy = true;
             Solicitacoes.Clear();
+
             var usuario = UsuarioSessao.UsuarioLogado;
             if (usuario == null) return;
 
-            IEnumerable<Solicitacao> dados;
-            if (usuario.Tipo == TipoUsuario.Almoxarife)
-                dados = await _repository.GetAllAsync();
-            else
-                dados = await _repository.GetByUserIdAsync(usuario.Id);
+            var idToken = await SecureStorage.Default.GetAsync("auth_token") ?? string.Empty;
+            var url = "api/Solicitacao";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
+
+            var resp = await _httpClient.SendAsync(request);
+            if (!resp.IsSuccessStatusCode)
+            {
+                var err = await resp.Content.ReadAsStringAsync();
+                await Shell.Current.DisplayAlert("Erro", $"Não foi possível carregar as solicitações: {err}", "OK");
+                return;
+            }
+
+            var content = await resp.Content.ReadAsStringAsync();
+            var dados = JsonSerializer.Deserialize<List<Solicitacao>>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? new List<Solicitacao>();
 
             _filaCompleta.Clear();
             _filaCompleta.AddRange(dados);
@@ -98,6 +102,13 @@ public partial class GestaoFilaViewModel : ObservableObject
         {
             IsBusy = false;
         }
+    }
+
+    [RelayCommand]
+    private void MudarFiltro(string status)
+    {
+        FiltroStatus = status;
+        AplicarFiltros();
     }
 
     [RelayCommand]
@@ -136,7 +147,7 @@ public partial class GestaoFilaViewModel : ObservableObject
                 return;
             }
 
-            await CarregarSolicitacoesAsync();
+            await LoadAsync();
         }
         catch (Exception ex)
         {

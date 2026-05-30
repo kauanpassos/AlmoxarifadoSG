@@ -1,6 +1,6 @@
 using Almoxarifado.API.Repositories;
 using Almoxarifado.Domain.Entities;
-using Firebase.Database;
+using Google.Cloud.Firestore;
 
 namespace Almoxarifado.Infrastructure.Repositories;
 
@@ -8,9 +8,9 @@ public sealed class EstoqueRepository
 {
     private readonly FirebaseEngine<Estoque> _engine;
 
-    public EstoqueRepository(FirebaseClient firebase)
+    public EstoqueRepository(FirestoreDb firestoreDb)
     {
-        _engine = new FirebaseEngine<Estoque>(firebase, "estoque");
+        _engine = new FirebaseEngine<Estoque>(firestoreDb, "estoque");
     }
 
     public async Task<Estoque?> GetByIdAsync(int id) => await _engine.GetByIdAsync(id.ToString());

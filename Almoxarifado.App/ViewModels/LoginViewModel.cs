@@ -1,4 +1,6 @@
+using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
+using Almoxarifado.App.Views;
 using Almoxarifado.Domain.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -44,12 +46,20 @@ public partial class LoginViewModel : ObservableObject
 
             if (user != null)
             {
+                UsuarioSessao.UsuarioLogado = user;
+
                 if (user.Tipo == TipoUsuario.Almoxarife)
-                    await Shell.Current.GoToAsync("//GestaoFilaPage");
+                {
+                    await Shell.Current.GoToAsync($"//{nameof(GestaoFilaPage)}");
+                }
                 else if (user.Tipo == TipoUsuario.Colaborador)
-                    await Shell.Current.GoToAsync("//HomeColaboradorPage");
+                {
+                    await Shell.Current.GoToAsync($"//{nameof(HomeColaboradorPage)}");
+                }
                 else
-                    await Shell.Current.GoToAsync("//EstoquePage");
+                {
+                    await Shell.Current.GoToAsync($"//{nameof(EstoquePage)}");
+                }
             }
             else
             {
