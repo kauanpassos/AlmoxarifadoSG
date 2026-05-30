@@ -8,8 +8,8 @@ using Almoxarifado.Domain.Entities;
 namespace TesteApp.IntegrationTests;
 public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
 {
-    private WebApplicationFactory<Program> _factory;
-    private HttpClient _client;
+    private WebApplicationFactory<Program> _factory = default!;
+    private HttpClient _client = default!;
     public async Task InitializeAsync()
     {
         _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>

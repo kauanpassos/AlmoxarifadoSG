@@ -28,11 +28,11 @@ public static class DependencyInjection
 
         string fullPath = Path.Combine(AppContext.BaseDirectory, firebaseKeyPath);
 
-        if (!File.Exists(fullPath))
-            throw new FileNotFoundException($"Arquivo de credenciais do Firebase não encontrado: {fullPath}");
-
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Testing")
         {
+            if (!File.Exists(fullPath))
+                throw new FileNotFoundException($"Arquivo de credenciais do Firebase não encontrado: {fullPath}");
+
             if (FirebaseApp.DefaultInstance is null)
             {
                 var credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile(fullPath);
