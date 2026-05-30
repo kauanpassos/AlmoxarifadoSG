@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.Domain.Entities;
@@ -8,36 +9,36 @@ using Microsoft.Maui.Storage;
 
 namespace Almoxarifado.App.Services;
 
-public class AuthService : IAuthService
+public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClient httpClient) : IAuthService
 {
-    private readonly FirebaseAuthClient _firebaseAuthClient;
-    private readonly HttpClient _httpClient;
-
-    public AuthService(FirebaseAuthClient firebaseAuthClient, HttpClient httpClient)
-    {
-        _firebaseAuthClient = firebaseAuthClient;
-        _httpClient = httpClient;
-    }
-
     public async Task<Usuario?> LoginAsync(string email, string password)
     {
         try
         {
-            var userCredential = await _firebaseAuthClient.SignInWithEmailAndPasswordAsync(email, password);
+            var response = await httpClient.PostAsJsonAsync("api/auth/login", new { email, password });
 
-            if (userCredential?.User?.Credential is null) return null;
+            if (!response.IsSuccessStatusCode)
+                throw new UnauthorizedAccessException("E-mail ou senha inválidos. Verifique suas credenciais.");
 
-            var token = userCredential.User.Credential.IdToken;
+            using var jsonDocResponse = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+            if (!jsonDocResponse.RootElement.TryGetProperty("token", out var tokenProperty))
+                throw new InvalidOperationException("Falha ao obter o token de acesso. Servidor retornou um formato inválido.");
 
-            if (string.IsNullOrWhiteSpace(token)) return null;
+            var token = tokenProperty.GetString();
+            if (string.IsNullOrWhiteSpace(token))
+                throw new InvalidOperationException("O token recebido do servidor está vazio.");
 
             await SecureStorage.Default.SetAsync("auth_token", token);
 
-            return await BuscarPerfilNaApiAsync(token, userCredential.User.Uid, email);
+            return await FetchUserProfileAsync(token, email);
         }
-        catch
+        catch (HttpRequestException)
         {
-            return null;
+            throw new InvalidOperationException("Não foi possível conectar ao servidor. Verifique sua conexão com a internet.");
+        }
+        catch (Exception)
+        {
+            throw new InvalidOperationException("Erro inesperado ao realizar o login. Tente novamente mais tarde.");
         }
     }
 
@@ -46,106 +47,108 @@ public class AuthService : IAuthService
         try
         {
             var token = await SecureStorage.Default.GetAsync("auth_token");
-
-            if (string.IsNullOrWhiteSpace(token)) return null;
-
-            var parts = token.Split('.');
-            if (parts.Length < 2) return null;
-
-            var payload = parts[1].PadRight(parts[1].Length + (4 - parts[1].Length % 4) % 4, '=').Replace('-', '+').Replace('_', '/');
-            using var jsonDoc = JsonDocument.Parse(Convert.FromBase64String(payload));
-
-            string id = jsonDoc.RootElement.TryGetProperty("sub", out var subProp) ? subProp.GetString() ?? string.Empty : string.Empty;
-            string email = jsonDoc.RootElement.TryGetProperty("email", out var emailProp) ? emailProp.GetString() ?? string.Empty : string.Empty;
-
-            if (string.IsNullOrWhiteSpace(id)) return null;
-
-            return await BuscarPerfilNaApiAsync(token, id, email);
+            return string.IsNullOrWhiteSpace(token) ? default : ExtractUserFromJwt(token);
         }
         catch
         {
-            return null;
+            return default;
         }
     }
 
-    public async Task LogoutAsync()
+    public Task LogoutAsync()
     {
         try
         {
-            _firebaseAuthClient.SignOut();
+            firebaseAuthClient.SignOut();
         }
-        catch (NullReferenceException) { }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Aviso ao deslogar do Firebase: {ex.Message}");
+        catch (NullReferenceException) 
+        { 
         }
         finally
         {
             SecureStorage.Default.Remove("auth_token");
         }
-        await Task.CompletedTask;
+        
+        return Task.CompletedTask;
     }
 
-    private async Task<Usuario> BuscarPerfilNaApiAsync(string token, string fallbackId, string fallbackEmail)
+    private async Task<Usuario> FetchUserProfileAsync(string token, string defaultEmail)
     {
-        var tipoUsuario = TipoUsuario.Colaborador;
-        string nome = fallbackEmail;
-        string setor = "Não Informado";
-
-        try
-        {
-            var parts = token.Split('.');
-            if (parts.Length >= 2)
-            {
-                var payload = parts[1].PadRight(parts[1].Length + (4 - parts[1].Length % 4) % 4, '=').Replace('-', '+').Replace('_', '/');
-                using var payloadDoc = JsonDocument.Parse(Convert.FromBase64String(payload));
-
-                if (payloadDoc.RootElement.TryGetProperty("role", out var roleProp) ||
-                    payloadDoc.RootElement.TryGetProperty("Role", out roleProp))
-                {
-                    var roleString = roleProp.GetString();
-                    if (roleString == "Almoxarife")
-                    {
-                        tipoUsuario = TipoUsuario.Almoxarife;
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erro ao extrair role do token: {ex.Message}");
-        }
+        var baseUser = ExtractUserFromJwt(token) ?? new Usuario(string.Empty, defaultEmail, defaultEmail, "Não Informado", TipoUsuario.Colaborador);
 
         try
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "api/Auth/perfil");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var response = await _httpClient.SendAsync(request);
+            var response = await httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+                return baseUser;
 
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                using var jsonDoc = JsonDocument.Parse(content);
-                var root = jsonDoc.RootElement;
+            var content = await response.Content.ReadAsStringAsync();
+            using var jsonDoc = JsonDocument.Parse(content);
+            var root = jsonDoc.RootElement;
 
-                if (root.TryGetProperty("nome", out var n) || root.TryGetProperty("Nome", out n))
-                    nome = n.GetString() ?? fallbackEmail;
+            string GetStringFallback(string key1, string key2, string fallback) =>
+                root.TryGetProperty(key1, out var p1) ? p1.GetString() ?? fallback :
+                root.TryGetProperty(key2, out var p2) ? p2.GetString() ?? fallback : fallback;
 
-                if (root.TryGetProperty("setor", out var s) || root.TryGetProperty("Setor", out s))
-                    setor = s.GetString() ?? "Não Informado";
+            var role = baseUser.Tipo;
+            if (root.TryGetProperty("tipo", out var roleProp) || root.TryGetProperty("Tipo", out roleProp))
+                role = (TipoUsuario)roleProp.GetInt32();
 
-                if (root.TryGetProperty("tipo", out var t) || root.TryGetProperty("Tipo", out t))
-                {
-                    tipoUsuario = (TipoUsuario)t.GetInt32();
-                }
-            }
+            return new Usuario(
+                id: baseUser.Id, 
+                nome: GetStringFallback("nome", "Nome", baseUser.Nome), 
+                email: baseUser.Email, 
+                setor: GetStringFallback("setor", "Setor", baseUser.Setor), 
+                tipo: role);
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Erro ao consultar perfil na API: {ex.Message}");
+            return baseUser;
         }
+    }
 
-        return new Usuario(id: fallbackId, nome: nome, email: fallbackEmail, setor: setor, tipo: tipoUsuario);
+    private Usuario? ExtractUserFromJwt(string token)
+    {
+        try
+        {
+            using var jsonDoc = ParseJwtPayload(token);
+            if (jsonDoc is null)
+                return default;
+
+            var root = jsonDoc.RootElement;
+            
+            var id = root.TryGetProperty("sub", out var subProp) ? subProp.GetString() : string.Empty;
+            if (string.IsNullOrWhiteSpace(id))
+                return default;
+
+            var email = root.TryGetProperty("email", out var emailProp) ? emailProp.GetString() ?? string.Empty : string.Empty;
+            var name = root.TryGetProperty("name", out var nameProp) ? nameProp.GetString() ?? email : email;
+
+            var role = TipoUsuario.Colaborador;
+            if (root.TryGetProperty("role", out var roleProp) || root.TryGetProperty("Role", out roleProp))
+            {
+                if (string.Equals(roleProp.GetString(), "Almoxarife", StringComparison.OrdinalIgnoreCase))
+                    role = TipoUsuario.Almoxarife;
+            }
+
+            return new Usuario(id, name, email, "Não Informado", role);
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    private JsonDocument? ParseJwtPayload(string token)
+    {
+        var parts = token.Split('.');
+        if (parts.Length < 2)
+            return default;
+
+        var payload = parts[1].PadRight(parts[1].Length + (4 - parts[1].Length % 4) % 4, '=').Replace('-', '+').Replace('_', '/');
+        return JsonDocument.Parse(Convert.FromBase64String(payload));
     }
 }

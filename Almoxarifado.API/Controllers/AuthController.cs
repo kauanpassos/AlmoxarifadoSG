@@ -1,4 +1,4 @@
-﻿using Almoxarifado.Application.Commands.Auth;
+using Almoxarifado.Application.Commands.Auth;
 using Almoxarifado.Application.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +8,7 @@ namespace Almoxarifado.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(IMediator mediator) : ControllerBase
+public sealed class AuthController(IMediator mediator) : ControllerBase
 {
     [HttpPost("registrar")]
     public async Task<IActionResult> Registrar([FromBody] RegistrarUsuarioCommand command)
@@ -28,27 +28,34 @@ public class AuthController(IMediator mediator) : ControllerBase
     {
         var firebaseUid = User.FindFirst("user_id")?.Value;
 
-        if (string.IsNullOrEmpty(firebaseUid))
+        if (string.IsNullOrWhiteSpace(firebaseUid))
             return Unauthorized("Token inválido ou usuário não identificado.");
 
         var perfil = await mediator.Send(new GetPerfilUsuarioQuery(firebaseUid));
 
-        if (perfil == null)
+        if (perfil is null)
             return NotFound("Usuário não encontrado na base de dados.");
 
-        int tipoId = 2;
-        if (!string.IsNullOrEmpty(perfil.Tipo) && perfil.Tipo.Equals("Almoxarife", StringComparison.OrdinalIgnoreCase))
-        {
-            tipoId = 1;
-        }
+        var tipoId = string.Equals(perfil.Tipo, "Almoxarife", StringComparison.OrdinalIgnoreCase) ? 1 : 2;
 
         return Ok(new
         {
-            Id = perfil.Id,
-            Nome = perfil.Nome,
-            Email = perfil.Email,
-            Setor = perfil.Setor,
+            perfil.Id,
+            perfil.Nome,
+            perfil.Email,
+            perfil.Setor,
             Tipo = tipoId
         });
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginCommand command)
+    {
+        var token = await mediator.Send(command);
+
+        if (string.IsNullOrWhiteSpace(token))
+            return Unauthorized(new { Mensagem = "Credenciais inválidas ou erro ao autenticar no Firebase." });
+
+        return Ok(new { Token = token });
     }
 }

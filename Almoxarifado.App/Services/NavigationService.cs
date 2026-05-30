@@ -1,63 +1,52 @@
 using Almoxarifado.App.Services.Interfaces;
+using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.Services;
 
-public class NavigationService : INavigationService
+public sealed class NavigationService(IAuthService authService) : INavigationService
 {
-    private readonly IAuthService _authService;
-
-    public NavigationService(IAuthService authService)
-    {
-        _authService = authService;
-    }
-
     public async Task NavigateToLoginAsync()
     {
         try
         {
-            await _authService.LogoutAsync();
+            await authService.LogoutAsync();
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                if (Microsoft.Maui.Controls.Application.Current != null)
+                if (Microsoft.Maui.Controls.Application.Current is not null)
                 {
-                    Microsoft.Maui.Controls.Application.Current.MainPage = new AppShell();
+                    var window = Microsoft.Maui.Controls.Application.Current.Windows.FirstOrDefault();
+                    if (window is not null)
+                    {
+                        window.Page = new AppShell();
+                    }
                 }
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"Erro na navegação para login: {ex.Message}\n{ex.StackTrace}");
+            throw new InvalidOperationException("Falha crítica ao redirecionar para a tela de login. Tente reiniciar o aplicativo.");
         }
     }
 
-    public async Task NavigateToHomeAsync()
-    {
-        try
-        {
-            if (Shell.Current != null)
-            {
-                await Shell.Current.GoToAsync("//HomeColaboradorPage", animate: true);
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Erro ao navegar para home: {ex.Message}");
-        }
-    }
+    public Task NavigateToHomeAsync() => NavigateToAsync("//HomeColaboradorPage");
 
     public async Task NavigateToAsync(string route)
     {
         try
         {
-            if (Shell.Current != null)
+            if (Shell.Current is not null)
             {
-                await Shell.Current.GoToAsync(route);
+                await Shell.Current.GoToAsync(route, animate: true);
+            }
+            else
+            {
+                throw new InvalidOperationException("A infraestrutura de navegação principal não está pronta.");
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"Erro ao navegar para {route}: {ex.Message}");
+            throw new InvalidOperationException($"Não foi possível navegar para o destino solicitado. Tente novamente.");
         }
     }
 }

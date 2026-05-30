@@ -22,8 +22,11 @@ var projectId = builder.Configuration["Firebase:ProjectId"]
 var credentialsPath = Path.Combine(AppContext.BaseDirectory, builder.Configuration["Firebase:CredentialsPath"]!);
 Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialsPath);
 
-var firestoreDb = FirestoreDb.Create(projectId);
-builder.Services.AddSingleton(firestoreDb);
+if (builder.Environment.EnvironmentName != "Testing")
+{
+    var firestoreDb = FirestoreDb.Create(projectId);
+    builder.Services.AddSingleton(firestoreDb);
+}
 
 builder.Services
     .AddInfrastructure(builder.Configuration)
