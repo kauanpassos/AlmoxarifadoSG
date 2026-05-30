@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Almoxarifado.App.Models;
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.Domain.Entities;
 using Almoxarifado.Domain.Enums;
@@ -13,7 +14,7 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
 {
     public async Task<Usuario?> LoginAsync(string email, string password)
     {
-        try
+        return await ExecutarRequisicaoSeguraAsync(async () =>
         {
             var response = await httpClient.PostAsJsonAsync("api/auth/login", new { email, password });
 
@@ -31,14 +32,47 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
             await SecureStorage.Default.SetAsync("auth_token", token);
 
             return await FetchUserProfileAsync(token, email);
+        });
+    }
+
+    public async Task RegistrarAsync(RegistrarUsuarioRequest request)
+    {
+        await ExecutarRequisicaoSeguraAsync(async () =>
+        {
+            var payload = new { nome = request.Nome, email = request.Email, senha = request.Senha, setor = request.Setor, tipo = (int)request.Tipo };
+            var response = await httpClient.PostAsJsonAsync("api/auth/registrar", payload);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new InvalidOperationException($"Falha no cadastro: {errorContent}");
+            }
+
+            return true;
+        });
+    }
+
+    private async Task<T> ExecutarRequisicaoSeguraAsync<T>(Func<Task<T>> acao)
+    {
+        try
+        {
+            return await acao();
         }
         catch (HttpRequestException)
         {
             throw new InvalidOperationException("Não foi possível conectar ao servidor. Verifique sua conexão com a internet.");
         }
+        catch (UnauthorizedAccessException)
+        {
+            throw;
+        }
+        catch (InvalidOperationException)
+        {
+            throw;
+        }
         catch (Exception)
         {
-            throw new InvalidOperationException("Erro inesperado ao realizar o login. Tente novamente mais tarde.");
+            throw new InvalidOperationException("Erro inesperado de comunicação. Tente novamente mais tarde.");
         }
     }
 
@@ -61,8 +95,9 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
         {
             firebaseAuthClient.SignOut();
         }
-        catch (NullReferenceException) 
+        catch 
         { 
+            
         }
         finally
         {
