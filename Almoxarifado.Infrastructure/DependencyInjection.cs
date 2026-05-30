@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Almoxarifado.Domain.Interfaces;
 using Almoxarifado.Infrastructure.Identity;
@@ -28,15 +28,20 @@ public static class DependencyInjection
 
         string fullPath = Path.Combine(AppContext.BaseDirectory, firebaseKeyPath);
 
-        if (!File.Exists(fullPath))
-            throw new FileNotFoundException($"Arquivo de credenciais do Firebase não encontrado: {fullPath}");
-
-        if (FirebaseApp.DefaultInstance == null)
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Testing")
         {
-            FirebaseApp.Create(new AppOptions
+            if (!File.Exists(fullPath))
+                throw new FileNotFoundException($"Arquivo de credenciais do Firebase não encontrado: {fullPath}");
+
+            if (FirebaseApp.DefaultInstance is null)
             {
-                Credential = GoogleCredential.FromFile(fullPath)
-            });
+                var credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile(fullPath);
+
+                FirebaseApp.Create(new AppOptions
+                {
+                    Credential = credential
+                });
+            }
         }
 
         return services;

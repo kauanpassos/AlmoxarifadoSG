@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Almoxarifado.Infrastructure.Identity;
 
-public class FirebaseIdentityService : IIdentityService
+public sealed class FirebaseIdentityService : IIdentityService
 {
     private readonly HttpClient _httpClient;
     private readonly string _firebaseApiKey;
@@ -20,69 +20,49 @@ public class FirebaseIdentityService : IIdentityService
         _firebaseApiKey = configuration["Firebase:ApiKey"]
             ?? throw new ArgumentNullException(nameof(configuration), "A ApiKey do Firebase não foi configurada no appsettings.json da API.");
     }
-    public async Task<string?> AutenticarAsync(string email, string senha)
+    public async Task<string> AuthenticateAsync(string email, string password)
     {
         var url = $"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={_firebaseApiKey}";
 
-        var requestBody = new
-        {
-            email = email,
-            password = senha,
-            returnSecureToken = true
-        };
-
         try
         {
-            var response = await _httpClient.PostAsJsonAsync(url, requestBody);
+            var response = await _httpClient.PostAsJsonAsync(url, new { email, password, returnSecureToken = true });
 
             if (!response.IsSuccessStatusCode)
-            {
-                var erroReal = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"\n=== ERRO NO FIREBASE ===\n{erroReal}\n========================\n");
-
-                return null;
-            }
+                throw new UnauthorizedAccessException("E-mail ou senha inválidos. Verifique suas credenciais.");
 
             var authResult = await response.Content.ReadFromJsonAsync<AuthResponse>();
 
-            return authResult?.IdToken;
+            if (authResult is null || string.IsNullOrWhiteSpace(authResult.IdToken))
+                throw new InvalidOperationException("Falha ao autenticar. O provedor de identidade não retornou um token válido.");
+
+            return authResult.IdToken;
         }
-        catch (Exception ex)
+        catch (HttpRequestException)
         {
-            Console.WriteLine($"\n=== EXCEÇÃO NO LOGIN ===\n{ex.Message}\n========================\n");
-            return null;
+            throw new InvalidOperationException("Não foi possível conectar ao provedor de identidade.");
         }
     }
 
     public async Task<string> CreateUserAsync(string email, string password, string displayName, string role)
     {
-        var args = new UserRecordArgs()
+        var userRecord = await FirebaseAuth.DefaultInstance.CreateUserAsync(new UserRecordArgs
         {
             Email = email,
             Password = password,
             DisplayName = displayName,
             Disabled = false
-        };
+        });
 
-        var userRecord = await FirebaseAuth.DefaultInstance.CreateUserAsync(args);
-
-        var claims = new Dictionary<string, object>
-        {
-            { "role", role }
-        };
-
-        await FirebaseAuth.DefaultInstance.SetCustomUserClaimsAsync(userRecord.Uid, claims);
+        await FirebaseAuth.DefaultInstance.SetCustomUserClaimsAsync(userRecord.Uid, new Dictionary<string, object> { { "role", role } });
 
         return userRecord.Uid;
     }
 
-    public async Task DeleteUserAsync(string uid)
-    {
-        await FirebaseAuth.DefaultInstance.DeleteUserAsync(uid);
-    }
+    public Task DeleteUserAsync(string uid) => FirebaseAuth.DefaultInstance.DeleteUserAsync(uid);
 }
-public class AuthResponse
+public sealed record AuthResponse
 {
     [JsonPropertyName("idToken")]
-    public string IdToken { get; set; } = string.Empty;
+    public string IdToken { get; init; } = string.Empty;
 }

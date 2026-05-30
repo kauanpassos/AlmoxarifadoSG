@@ -59,8 +59,8 @@ jobs:
 
     - name: Executar Teste de Performance (k6) na API
       run: |
-        # Inicia a API em background para o teste
-        dotnet run --project Almoxarifado.API/Almoxarifado.API.csproj -c Release --urls "http://localhost:5000" &
+        # Inicia a API em background para o teste com ambiente de Testing
+        ASPNETCORE_ENVIRONMENT="Testing" dotnet run --project Almoxarifado.API/Almoxarifado.API.csproj -c Release --urls "http://localhost:5000" &
         sleep 5 # Espera a API subir completamente
         # Executa o script de carga, se falhar nos thresholds o job quebra
         k6 run k6-stress-test.js
