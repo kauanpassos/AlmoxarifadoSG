@@ -1,5 +1,6 @@
 ﻿using Almoxarifado.App.Views;
 using Almoxarifado.App.Services.Interfaces;
+using Almoxarifado.App.Services;
 using Almoxarifado.Domain.Enums;
 using Microsoft.Maui.Controls;
 
@@ -17,7 +18,7 @@ public partial class AppShell : Shell
 
     private async Task ChecarSessaoE_RoteamentoAsync()
     {
-        var authService = IPlatformApplication.Current?.Services.GetService<IAuthService>();
+        var authService = Handler?.MauiContext?.Services.GetService<IAuthService>();
 
         if (authService != null)
         {
@@ -25,13 +26,21 @@ public partial class AppShell : Shell
 
             if (user != null)
             {
+                UsuarioSessao.UsuarioLogado = user;
+
                 if (user.Tipo == TipoUsuario.Almoxarife)
+                {
                     await Current.GoToAsync($"//{nameof(GestaoFilaPage)}");
+                }
                 else if (user.Tipo == TipoUsuario.Colaborador)
+                {
                     await Current.GoToAsync($"//{nameof(HomeColaboradorPage)}");
+                }
                 else
+                {
                     await Current.GoToAsync($"//{nameof(EstoquePage)}");
+                }
             }
         }
     }
-}
+} 

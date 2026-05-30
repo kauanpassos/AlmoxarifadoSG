@@ -30,4 +30,5 @@
         Title="Nova Solicitação"
         ContentTemplate="{DataTemplate views:NovaSolicitacaoPage}"
         Route="NovaSolicitacaoPage" />
+
 </Shell>

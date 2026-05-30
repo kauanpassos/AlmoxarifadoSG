@@ -17,6 +17,6 @@ public partial class GestaoFilaPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await _viewModel.CarregarSolicitacoesAsync();
+        await _viewModel.LoadAsync ();
     }
 }

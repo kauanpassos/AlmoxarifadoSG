@@ -2,8 +2,6 @@ using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.App.ViewModels;
 using Almoxarifado.App.Views;
-using Almoxarifado.Domain.Entities;
-using Almoxarifado.Domain.Interfaces;
 using CommunityToolkit.Maui;
 using Firebase.Auth;
 using Firebase.Auth.Providers;
@@ -16,6 +14,7 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
+
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
@@ -40,6 +39,7 @@ public static class MauiProgram
         };
 
         builder.Services.AddSingleton(new FirebaseAuthClient(config));
+
         string apiBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
             ? "https://10.0.2.2:7185/"
             : "https://localhost:7185/";
@@ -66,6 +66,7 @@ public static class MauiProgram
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<INavigationService, NavigationService>();
 
+        // ViewModels
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<EstoqueViewModel>();
         builder.Services.AddTransient<GestaoFilaViewModel>();
@@ -73,6 +74,7 @@ public static class MauiProgram
         builder.Services.AddTransient<NovaSolicitacaoViewModel>();
         builder.Services.AddTransient<PerfilViewModel>();
 
+        // Pages
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<GestaoFilaPage>();
         builder.Services.AddTransient<EstoquePage>();

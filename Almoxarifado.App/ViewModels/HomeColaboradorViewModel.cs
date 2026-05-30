@@ -1,12 +1,20 @@
 ﻿using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.App.Views;
-using Almoxarifado.Domain;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 
 namespace Almoxarifado.App.ViewModels;
+
+public class SolicitacaoModel
+{
+    public string NomePeca { get; set; } = string.Empty;
+    public string Sku { get; set; } = string.Empty;
+    public int Quantidade { get; set; }
+    public string NomeStatus { get; set; } = string.Empty;
+    public string CorHexStatus { get; set; } = string.Empty;
+}
 
 public partial class HomeColaboradorViewModel : ObservableObject
 {
@@ -40,19 +48,20 @@ public partial class HomeColaboradorViewModel : ObservableObject
     [RelayCommand]
     private async Task NovoPedidoAsync()
     {
-        await Shell.Current.GoToAsync("///NovaSolicitacaoPage");
+        await Shell.Current.GoToAsync($"//{nameof(NovaSolicitacaoPage)}");
     }
 
     [RelayCommand]
     private async Task VerEstoqueAsync()
     {
-        await Shell.Current.GoToAsync("///EstoquePage");
+        await Shell.Current.GoToAsync($"//{nameof(EstoquePage)}");
     }
 
     [RelayCommand]
     public async Task CarregarDashboardAsync()
     {
         ListaSolicitacoes.Clear();
+        await Task.CompletedTask;
     }
 
     private string ObterIniciais(string? nome)
@@ -62,13 +71,4 @@ public partial class HomeColaboradorViewModel : ObservableObject
         if (partes.Length == 1) return partes[0].Substring(0, Math.Min(2, partes[0].Length)).ToUpper();
         return $"{partes[0][0]}{partes[^1][0]}".ToUpper();
     }
-}
-
-public class SolicitacaoModel
-{
-    public string NomePeca { get; set; } = string.Empty;
-    public string Sku { get; set; } = string.Empty;
-    public int Quantidade { get; set; }
-    public string NomeStatus { get; set; } = string.Empty;
-    public string CorHexStatus { get; set; } = string.Empty;
 }

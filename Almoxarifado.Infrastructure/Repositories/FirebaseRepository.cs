@@ -1,6 +1,6 @@
 ﻿using Almoxarifado.API.Repositories;
 using Almoxarifado.Domain.Interfaces;
-using Firebase.Database;
+using Google.Cloud.Firestore;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -12,10 +12,10 @@ public class FirebaseRepository<T> : IReadOnlyRepository<T>, IWriteOnlyRepositor
 {
     private readonly FirebaseEngine<T> _engine;
 
-    public FirebaseRepository(FirebaseClient firebase)
+    public FirebaseRepository(FirestoreDb firestoreDb)
     {
         var node = typeof(T).Name.ToLower();
-        _engine = new FirebaseEngine<T>(firebase, node);
+        _engine = new FirebaseEngine<T>(firestoreDb, node);
     }
 
     public Task<T?> GetByIdAsync(string id) => _engine.GetByIdAsync(id);
