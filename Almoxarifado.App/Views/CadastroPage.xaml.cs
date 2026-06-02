@@ -1,11 +1,10 @@
 using Almoxarifado.App.ViewModels;
-using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.Views;
 
-public partial class LoginPage : ContentPage
+public partial class CadastroPage : ContentPage
 {
-    public LoginPage(LoginViewModel viewModel)
+    public CadastroPage(CadastroViewModel viewModel)
     {
         InitializeComponent();
         BindingContext = viewModel;
@@ -15,5 +14,11 @@ public partial class LoginPage : ContentPage
     {
         EntrySenha.IsPassword = !EntrySenha.IsPassword;
         BtnToggleSenha.Source = EntrySenha.IsPassword ? "eye_closed.png" : "eye_open.png";
+    }
+
+    private void ToggleConfirmarSenha_Clicked(object sender, EventArgs e)
+    {
+        EntryConfirmarSenha.IsPassword = !EntryConfirmarSenha.IsPassword;
+        BtnToggleConfirmarSenha.Source = EntryConfirmarSenha.IsPassword ? "eye_closed.png" : "eye_open.png";
     }
 }

@@ -1,4 +1,4 @@
-﻿using Almoxarifado.App.Views;
+using Almoxarifado.App.Views;
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.App.Services;
 using Almoxarifado.Domain.Enums;
@@ -12,35 +12,32 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
         Routing.RegisterRoute(nameof(PerfilPage), typeof(PerfilPage));
+        Routing.RegisterRoute(nameof(CadastroPage), typeof(CadastroPage));
 
-        Dispatcher.DispatchAsync(ChecarSessaoE_RoteamentoAsync);
+        Loaded += (s, e) => Dispatcher.DispatchAsync(ChecarSessaoERoteamentoAsync);
     }
 
-    private async Task ChecarSessaoE_RoteamentoAsync()
+    private async Task ChecarSessaoERoteamentoAsync()
     {
         var authService = Handler?.MauiContext?.Services.GetService<IAuthService>();
 
-        if (authService != null)
+        if (authService is null)
+            return;
+
+        var user = await authService.VerificarSessaoAtivaAsync();
+
+        if (user is null)
+            return;
+
+        UsuarioSessao.UsuarioLogado = user;
+
+        var rota = user.Tipo switch
         {
-            var user = await authService.VerificarSessaoAtivaAsync();
+            TipoUsuario.Almoxarife => $"//{nameof(GestaoFilaPage)}",
+            TipoUsuario.Colaborador => $"//{nameof(HomeColaboradorPage)}",
+            _ => $"//{nameof(EstoquePage)}"
+        };
 
-            if (user != null)
-            {
-                UsuarioSessao.UsuarioLogado = user;
-
-                if (user.Tipo == TipoUsuario.Almoxarife)
-                {
-                    await Current.GoToAsync($"//{nameof(GestaoFilaPage)}");
-                }
-                else if (user.Tipo == TipoUsuario.Colaborador)
-                {
-                    await Current.GoToAsync($"//{nameof(HomeColaboradorPage)}");
-                }
-                else
-                {
-                    await Current.GoToAsync($"//{nameof(EstoquePage)}");
-                }
-            }
-        }
+        await Current.GoToAsync(rota);
     }
 } 

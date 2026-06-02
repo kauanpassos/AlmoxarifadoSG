@@ -40,16 +40,22 @@ public static class DependencyInjection
             if (!File.Exists(fullPath))
                 throw new FileNotFoundException($"Arquivo de credenciais do Firebase não encontrado: {fullPath}");
 
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", fullPath);
+
             if (FirebaseApp.DefaultInstance is null)
             {
-                var credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile(fullPath);
-
                 FirebaseApp.Create(new AppOptions
                 {
-                    Credential = credential
+                    Credential = GoogleCredential.GetApplicationDefault()
                 });
             }
         }
+
+        services.AddSingleton(sp => 
+        {
+            var projectId = configuration["Firebase:ProjectId"] ?? "almoxarifado-sg";
+            return Google.Cloud.Firestore.FirestoreDb.Create(projectId);
+        });
 
         return services;
     }
