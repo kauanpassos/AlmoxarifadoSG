@@ -2,5 +2,6 @@ namespace Almoxarifado.Domain.Interfaces;
 
 public interface IEntity
 {
-    int Id { get; set; }
+    // Alterado de int para string para suportar os IDs do Firestore
+    string Id { get; }
 }

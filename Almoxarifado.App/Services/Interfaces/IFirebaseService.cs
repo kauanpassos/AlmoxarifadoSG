@@ -1,14 +1,18 @@
 using Almoxarifado.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-namespace Almoxarifado.App.Services.Interfaces
+
+namespace Almoxarifado.App.Services.Interfaces;
+
+public interface IFirebaseService
 {
-    public interface IFirebaseService
-    {
-        Task<Usuario> GetUsuarioAsync(string uid);
-        Task<List<Estoque>> GetEstoqueAsync();
-        Task<List<Produto>> GetProdutosAsync();
-        Task SalvarProdutoAsync(Produto produto);
-        Task EnviarSolicitacaoAsync(string usuarioId, string sku, int quantidade, string justificativa, string idToken);
-    }
+    Task<Usuario> GetUsuarioAsync(string uid);
+
+    // Unificado: a listagem visual do ecrã de estoque agora consome diretamente este método
+    Task<List<Produto>> GetProdutosAsync();
+
+    Task SalvarProdutoAsync(Produto produto);
+
+    // Quantidade alterada para long para manter o alinhamento com a base de dados
+    Task EnviarSolicitacaoAsync(string usuarioId, string sku, long quantidade, string justificativa, string idToken);
 }

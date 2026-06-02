@@ -26,9 +26,4 @@
         ContentTemplate="{DataTemplate views:EstoquePage}"
         Route="EstoquePage" />
 
-    <ShellContent
-        Title="Nova Solicitação"
-        ContentTemplate="{DataTemplate views:NovaSolicitacaoPage}"
-        Route="NovaSolicitacaoPage" />
-
 </Shell>

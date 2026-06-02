@@ -1,6 +1,11 @@
 using Google.Cloud.Firestore;
 using Almoxarifado.Domain.Interfaces;
 using System.Text.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Reflection;
 
 namespace Almoxarifado.API.Repositories;
 
@@ -72,13 +77,51 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
     private T? ConverterDocumentoParaEntidade(DocumentSnapshot document)
     {
         var dict = document.ToDictionary();
-        var json = JsonSerializer.Serialize(dict);
-        return JsonSerializer.Deserialize<T>(json);
+        dict["Id"] = document.Id;
+
+        foreach (var key in dict.Keys.ToList())
+        {
+            if (dict[key] is Timestamp timestamp)
+            {
+                dict[key] = timestamp.ToDateTime();
+            }
+        }
+
+        // CORREÇÃO APLICADA: Permite ler números que estão gravados como texto no banco
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+        };
+
+        var json = JsonSerializer.Serialize(dict, options);
+        return JsonSerializer.Deserialize<T>(json, options);
     }
 
     private Dictionary<string, object> ConverterEntidadeParaDicionario(T entity)
     {
-        var json = JsonSerializer.Serialize(entity);
-        return JsonSerializer.Deserialize<Dictionary<string, object>>(json) ?? new Dictionary<string, object>();
+        var dict = new Dictionary<string, object>();
+        var propriedades = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var prop in propriedades)
+        {
+            var valor = prop.GetValue(entity);
+
+            if (valor != null)
+            {
+                // O Firestore exige que as datas sejam em formato Universal (UTC).
+                // Isso garante que ele grave como Timestamp lá no painel.
+                if (valor is DateTime data)
+                {
+                    valor = data.Kind == DateTimeKind.Unspecified
+                        ? DateTime.SpecifyKind(data, DateTimeKind.Utc)
+                        : data.ToUniversalTime();
+                }
+
+                dict[prop.Name] = valor;
+            }
+        }
+
+        return dict;
     }
 }

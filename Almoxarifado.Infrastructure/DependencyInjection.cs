@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Almoxarifado.Domain.Interfaces;
+using Almoxarifado.Domain.Entities; // <-- Necessário para referenciar o Produto
 using Almoxarifado.Infrastructure.Identity;
 using Almoxarifado.Infrastructure.Repositories;
 using FirebaseAdmin;
@@ -15,7 +16,13 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddHttpClient();
+
         services.AddScoped<EstoqueRepository>();
+
+        // CORREÇÃO VITAL: Mapeia especificamente o Produto para o EstoqueRepository (coleção "Produtos")
+        services.AddScoped<IReadOnlyRepository<Produto>, EstoqueRepository>();
+
+        // Fallbacks genéricos para as outras entidades do seu sistema
         services.AddScoped(typeof(IReadOnlyRepository<>), typeof(FirebaseRepository<>));
         services.AddScoped(typeof(IWriteOnlyRepository<>), typeof(FirebaseRepository<>));
 

@@ -4,5 +4,6 @@ using MediatR;
 
 namespace Almoxarifado.Application.Queries
 {
-    public sealed record GetEstoqueQuery() : IRequest<IEnumerable<Estoque>>;
+    // Trocamos IEnumerable<Estoque> por IEnumerable<Produto>
+    public sealed record GetEstoqueQuery() : IRequest<IEnumerable<Produto>>;
 }

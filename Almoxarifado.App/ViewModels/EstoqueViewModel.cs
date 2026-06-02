@@ -1,12 +1,17 @@
+using Almoxarifado.App.Popups;
 using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.App.Views;
-using Almoxarifado.Application.Queries;
 using Almoxarifado.Domain.Enums;
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MediatR;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.ViewModels;
 
@@ -15,38 +20,208 @@ public class ItemEstoqueModel
     public string Id { get; set; } = string.Empty;
     public string NomePeca { get; set; } = string.Empty;
     public string Sku { get; set; } = string.Empty;
-    public int Quantidade { get; set; }
+    public long Quantidade { get; set; }
     public string DataAtualizacao { get; set; } = string.Empty;
-    public string TextoStatus { get; set; } = string.Empty;
-    public string CorFundoStatus { get; set; } = "Transparent";
-    public string CorBordaStatus { get; set; } = "Transparent";
-    public string CorTextoStatus { get; set; } = "Black";
+    public string Status { get; set; } = string.Empty;
 }
 
 public partial class EstoqueViewModel : ObservableObject
 {
-    private readonly IMediator _mediator;
+    private readonly IFirebaseService _firebaseService;
     private readonly INavigationService _navigationService;
+    private readonly ICartService _cartService;
     private readonly List<ItemEstoqueModel> _todasAsPecasCache = new();
+
     private bool _estaCarregando;
+    public bool EstaCarregando
+    {
+        get => _estaCarregando;
+        set => SetProperty(ref _estaCarregando, value);
+    }
 
-    [ObservableProperty]
     private string _termoPesquisa = string.Empty;
+    public string TermoPesquisa
+    {
+        get => _termoPesquisa;
+        set
+        {
+            // SetProperty atualiza o valor. Se for alterado, executa a pesquisa
+            if (SetProperty(ref _termoPesquisa, value))
+            {
+                ExecutarPesquisa();
+            }
+        }
+    }
 
-    [ObservableProperty]
     private string _iniciaisUsuario = string.Empty;
+    public string IniciaisUsuario
+    {
+        get => _iniciaisUsuario;
+        set => SetProperty(ref _iniciaisUsuario, value);
+    }
+
+    private int _quantidadeCarrinho;
+    public int QuantidadeCarrinho
+    {
+        get => _quantidadeCarrinho;
+        set => SetProperty(ref _quantidadeCarrinho, value);
+    }
+
+    private bool _temItensNoCarrinho;
+    public bool TemItensNoCarrinho
+    {
+        get => _temItensNoCarrinho;
+        set => SetProperty(ref _temItensNoCarrinho, value);
+    }
 
     public ObservableCollection<ItemEstoqueModel> PecasEstoque { get; } = new();
 
-    public EstoqueViewModel(IMediator mediator, INavigationService navigationService)
+    public EstoqueViewModel(IFirebaseService firebaseService, INavigationService navigationService, ICartService cartService)
     {
-        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _firebaseService = firebaseService ?? throw new ArgumentNullException(nameof(firebaseService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _cartService = cartService ?? throw new ArgumentNullException(nameof(cartService));
+
+        _cartService.OnCarrinhoAtualizado += AtualizarStatusCarrinho;
+        AtualizarStatusCarrinho();
 
         var usuarioLogado = UsuarioSessao.UsuarioLogado;
         if (usuarioLogado != null)
         {
             IniciaisUsuario = ObterIniciais(usuarioLogado.Nome);
+        }
+
+        // Dispara a busca de dados assim que a tela é instanciada
+        _ = CarregarEstoqueAsync();
+    }
+
+    private void AtualizarStatusCarrinho()
+    {
+        QuantidadeCarrinho = _cartService.TotalItens;
+        TemItensNoCarrinho = QuantidadeCarrinho > 0;
+    }
+
+    [RelayCommand]
+    private async Task AbrirOpcoesProdutoAsync(ItemEstoqueModel produtoSelecionado)
+    {
+        if (produtoSelecionado == null) return;
+
+        if (produtoSelecionado.Quantidade == 0)
+        {
+            await Shell.Current.DisplayAlert("Aviso", "Este item está indisponível no momento.", "OK");
+            return;
+        }
+
+        var popup = new QuantidadePopup(produtoSelecionado.NomePeca, produtoSelecionado.Quantidade);
+        var resultado = await Shell.Current.ShowPopupAsync(popup);
+
+        if (resultado is int qtdSelecionada && qtdSelecionada > 0)
+        {
+            _cartService.AdicionarItem(produtoSelecionado, qtdSelecionada);
+        }
+    }
+
+    [RelayCommand]
+    private async Task IrParaCarrinhoAsync()
+    {
+        await Shell.Current.DisplayAlert("Carrinho", $"Você tem {QuantidadeCarrinho} itens. Em breve o ecrã de checkout!", "OK");
+    }
+
+    [RelayCommand]
+    public async Task CarregarEstoqueAsync()
+    {
+        if (EstaCarregando) return;
+
+        try
+        {
+            EstaCarregando = true;
+            _todasAsPecasCache.Clear();
+
+            // Busca os dados reais da API/Firestore
+            var pecasDoBanco = await _firebaseService.GetProdutosAsync();
+
+            if (pecasDoBanco != null && pecasDoBanco.Any())
+            {
+                foreach (var peca in pecasDoBanco)
+                {
+                    var item = new ItemEstoqueModel
+                    {
+                        Id = peca.Id,
+                        NomePeca = peca.Nome,
+                        Sku = peca.NumCode.ToString(),
+                        Quantidade = peca.QtdEstoque,
+                        DataAtualizacao = peca.UpdatedAt.ToString("dd/MM/yyyy HH:mm")
+                    };
+
+                    if (peca.QtdEstoque <= 0)
+                        item.Status = "Indisponível";
+                    else if (peca.QtdEstoque <= peca.EstoqueMinimo)
+                        item.Status = "Baixo Estoque";
+                    else
+                        item.Status = "Disponível";
+
+                    _todasAsPecasCache.Add(item);
+                }
+            }
+            else
+            {
+                await Shell.Current.DisplayAlert("Aviso", "Nenhum produto encontrado no banco de dados.", "OK");
+            }
+
+            FiltrarTodos();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao buscar estoque: {ex.Message}");
+            await Shell.Current.DisplayAlert("Erro de Conexão", "Não foi possível acessar a API do banco de dados.", "OK");
+        }
+        finally
+        {
+            EstaCarregando = false;
+        }
+    }
+
+    // LÓGICA DE PESQUISA (NOME OU NUMCODE)
+    private void ExecutarPesquisa()
+    {
+        if (string.IsNullOrWhiteSpace(TermoPesquisa))
+        {
+            FiltrarTodos();
+            return;
+        }
+
+        var termo = TermoPesquisa.ToLowerInvariant();
+
+        PecasEstoque.Clear();
+        var filtrados = _todasAsPecasCache.Where(p =>
+            p.NomePeca.ToLowerInvariant().Contains(termo) ||
+            p.Sku.Contains(termo)
+        );
+
+        foreach (var item in filtrados)
+        {
+            PecasEstoque.Add(item);
+        }
+    }
+
+    [RelayCommand]
+    private void FiltrarTodos()
+    {
+        PecasEstoque.Clear();
+        foreach (var item in _todasAsPecasCache)
+        {
+            PecasEstoque.Add(item);
+        }
+    }
+
+    [RelayCommand]
+    private void FiltrarIndisponivel()
+    {
+        PecasEstoque.Clear();
+        var filtrados = _todasAsPecasCache.Where(p => p.Status == "Indisponível");
+        foreach (var item in filtrados)
+        {
+            PecasEstoque.Add(item);
         }
     }
 
@@ -61,96 +236,7 @@ public partial class EstoqueViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task IrParaPerfilAsync()
-    {
-        await _navigationService.NavigateToAsync(nameof(PerfilPage));
-    }
-
-    [RelayCommand]
-    public async Task CarregarEstoqueAsync()
-    {
-        if (_estaCarregando) return;
-        if (_todasAsPecasCache.Any())
-        {
-            ExecuteFiltrarTodos();
-            return;
-        }
-
-        try
-        {
-            _estaCarregando = true;
-            var pecasDoBanco = await _mediator.Send(new GetEstoqueQuery());
-            _todasAsPecasCache.Clear();
-
-            foreach (var peca in pecasDoBanco)
-            {
-                var item = new ItemEstoqueModel
-                {
-                    Id = peca.Id.ToString(),
-                    NomePeca = peca.NomePeca,
-                    Sku = peca.DescricaoTecnica,
-                    Quantidade = peca.Quantidade,
-                    DataAtualizacao = DateTime.Now.ToString("dd/MM/yyyy")
-                };
-
-                if (peca.Quantidade == 0)
-                {
-                    item.TextoStatus = "Indisponível";
-                    item.CorFundoStatus = "#FBE6E6";
-                    item.CorBordaStatus = "#DA0004";
-                    item.CorTextoStatus = "#DA0004";
-                }
-                else if (peca.Quantidade <= 20)
-                {
-                    item.TextoStatus = "Baixo Estoque";
-                    item.CorFundoStatus = "#FCFDEA";
-                    item.CorBordaStatus = "#DFE92B";
-                    item.CorTextoStatus = "#9A9A00";
-                }
-                else
-                {
-                    item.TextoStatus = "Normal";
-                    item.CorFundoStatus = "#E6F8E8";
-                    item.CorBordaStatus = "#03BA15";
-                    item.CorTextoStatus = "#03BA15";
-                }
-
-                _todasAsPecasCache.Add(item);
-            }
-            ExecuteFiltrarTodos();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erro ao buscar estoque: {ex.Message}");
-        }
-        finally
-        {
-            _estaCarregando = false;
-        }
-    }
-
-    [RelayCommand]
-    private void ExecuteFiltrarTodos()
-    {
-        PecasEstoque.Clear();
-        foreach (var item in _todasAsPecasCache) PecasEstoque.Add(item);
-    }
-
-    [RelayCommand]
-    private void ExecuteFiltrarBaixoEstoque()
-    {
-        PecasEstoque.Clear();
-        var filtrados = _todasAsPecasCache.Where(p => p.Quantidade > 0 && p.Quantidade <= 20);
-        foreach (var item in filtrados) PecasEstoque.Add(item);
-    }
-
-    [RelayCommand]
-    private void ExecuteFiltrarIndisponivel()
-    {
-        PecasEstoque.Clear();
-        var filtrados = _todasAsPecasCache.Where(p => p.Quantidade == 0);
-        foreach (var item in filtrados) PecasEstoque.Add(item);
-    }
+    private async Task IrParaPerfilAsync() => await _navigationService.NavigateToAsync(nameof(PerfilPage));
 
     private string ObterIniciais(string? nome)
     {

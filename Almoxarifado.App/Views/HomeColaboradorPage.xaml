@@ -72,19 +72,9 @@
             </CollectionView>
         </Grid>
 
-        <Grid Grid.Row="2" BackgroundColor="#1A336E" Padding="20,10" ColumnDefinitions="*,*" ColumnSpacing="15">
+        <Grid Grid.Row="2" BackgroundColor="#1A336E" Padding="20,10">
             <Button
-                Text="Nova Solicitação"
-                Command="{Binding NovoPedidoCommand}"
-                BackgroundColor="White"
-                TextColor="#1A336E"
-                FontAttributes="Bold"
-                CornerRadius="12"
-                HeightRequest="50" />
-
-            <Button
-                Grid.Column="1"
-                Text="Estoque"
+                Text="Ver Estoque e Fazer Pedido"
                 Command="{Binding VerEstoqueCommand}"
                 BackgroundColor="White"
                 TextColor="#1A336E"

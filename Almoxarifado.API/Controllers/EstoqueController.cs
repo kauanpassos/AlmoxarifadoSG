@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using Almoxarifado.Application.Queries;
 using Almoxarifado.Domain.Entities;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Almoxarifado.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/produtos")] // <-- CORREÇÃO: Rota fixa apontando para "api/produtos"
 public sealed class EstoqueController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -14,7 +16,7 @@ public sealed class EstoqueController : ControllerBase
     public EstoqueController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Estoque>>> Get()
+    public async Task<ActionResult<IEnumerable<Produto>>> Get()
     {
         var query = new GetEstoqueQuery();
         var result = await _mediator.Send(query);

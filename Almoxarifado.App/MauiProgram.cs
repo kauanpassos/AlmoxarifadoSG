@@ -6,6 +6,7 @@ using CommunityToolkit.Maui;
 using Firebase.Auth;
 using Firebase.Auth.Providers;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Almoxarifado.App;
 
@@ -63,15 +64,17 @@ public static class MauiProgram
             };
         });
 
+        // Services
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<INavigationService, NavigationService>();
+        builder.Services.AddScoped<IFirebaseService, HttpFirebaseService>();
+        builder.Services.AddSingleton<ICartService, CartService>();
 
         // ViewModels
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<EstoqueViewModel>();
         builder.Services.AddTransient<GestaoFilaViewModel>();
         builder.Services.AddTransient<HomeColaboradorViewModel>();
-        builder.Services.AddTransient<NovaSolicitacaoViewModel>();
         builder.Services.AddTransient<PerfilViewModel>();
 
         // Pages
@@ -80,7 +83,6 @@ public static class MauiProgram
         builder.Services.AddTransient<EstoquePage>();
         builder.Services.AddTransient<MainPage>();
         builder.Services.AddTransient<HomeColaboradorPage>();
-        builder.Services.AddTransient<NovaSolicitacaoPage>();
         builder.Services.AddTransient<PerfilPage>();
 
         return builder.Build();

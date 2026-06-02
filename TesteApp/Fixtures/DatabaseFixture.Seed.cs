@@ -1,5 +1,5 @@
-using Almoxarifado.Domain;
 using Almoxarifado.Domain.Entities;
+using System.Threading.Tasks;
 
 namespace TesteApp.Fixtures;
 
@@ -7,16 +7,18 @@ public sealed partial class DatabaseFixture
 {
     public async Task SeedTestData()
     {
-        var estoques = new[]
+        // Corrigido: Inicialização baseada na ordem exata de tipos do construtor de Produto
+        var produtos = new[]
         {
-            new Estoque { Id = 1, NomePeca = "Correia", DescricaoTecnica = "Correia de transmissão", Quantidade = 50, Localizacao = "A1" },
-            new Estoque { Id = 2, NomePeca = "Parafuso", DescricaoTecnica = "Parafuso M10", Quantidade = 200, Localizacao = "A2" },
-            new Estoque { Id = 3, NomePeca = "Polia", DescricaoTecnica = "Polia 30mm", Quantidade = 15, Localizacao = "B1" }
+            new Produto("1", 1001, "Correia", "Correia de transmissão", "A1", 50),
+            new Produto("2", 1002, "Parafuso", "Parafuso M10", "A2", 200),
+            new Produto("3", 1003, "Polia", "Polia 30mm", "B1", 15)
         };
 
-        foreach (var estoque in estoques)
+        foreach (var produto in produtos)
         {
-            await _estoqueEngine.AddAsync(estoque);
+            // Alterado de _estoqueEngine para _produtoEngine
+            await _produtoEngine.AddAsync(produto);
         }
     }
 }

@@ -1,4 +1,6 @@
 using Almoxarifado.Domain.Entities;
+using System;
+using System.Collections.Generic;
 
 namespace TesteApp.Fixtures;
 
@@ -6,7 +8,7 @@ public static class SolicitacaoFixture
 {
     private const string StatusPendente = "Pendente";
 
-    public static Solicitacao Criar(string id = "test-id", string usuarioId = "user-1", string observacao = "Test") 
+    public static Solicitacao Criar(string id = "test-id", string usuarioId = "user-1", string observacao = "Test")
     {
         return new Solicitacao(id, usuarioId, observacao);
     }
@@ -22,21 +24,25 @@ public static class SolicitacaoFixture
     }
 }
 
-public static class EstoqueFixture
+public static class ProdutoFixture
 {
-    public static Estoque Criar(int id = 0, string nome = "Correia", string descricao = "Correia de transmissão", int qtd = 50, string local = "A1") => new()
+    // Ajustado os parâmetros padrão para bater com a ordem e tipos corretos do construtor
+    public static Produto Criar(
+        string id = "prod-test-id",
+        long numCode = 1001,
+        string nome = "Correia",
+        string descricao = "Correia de transmissão",
+        string localizacao = "A1",
+        long qtd = 50)
     {
-        Id = id,
-        NomePeca = nome,
-        DescricaoTecnica = descricao,
-        Quantidade = qtd,
-        Localizacao = local
-    };
+        // Enviando os argumentos na ordem exata identificada pelo compilador
+        return new Produto(id, numCode, nome, descricao, localizacao, qtd);
+    }
 
-    public static IReadOnlyList<Estoque> CriarListaPadrao() => new[]
+    public static IReadOnlyList<Produto> CriarListaPadrao() => new[]
     {
-        Criar(1, "Correia", "Correia"),
-        Criar(2, "Parafuso", "Parafuso", 200, "A2"),
-        Criar(3, "Polia", "Polia", 15, "B1")
+        Criar("id-1", 1001, "Correia", "Correia de transmissão", "A1", 50),
+        Criar("id-2", 1002, "Parafuso", "Parafuso M10", "A2", 200),
+        Criar("id-3", 1003, "Polia", "Polia 30mm", "B1", 15)
     };
 }

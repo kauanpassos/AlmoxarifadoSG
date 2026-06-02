@@ -3,7 +3,10 @@ using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.App.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.ViewModels;
 
@@ -43,12 +46,6 @@ public partial class HomeColaboradorViewModel : ObservableObject
     private async Task IrParaPerfilAsync()
     {
         await _navigationService.NavigateToAsync(nameof(PerfilPage));
-    }
-
-    [RelayCommand]
-    private async Task NovoPedidoAsync()
-    {
-        await Shell.Current.GoToAsync($"//{nameof(NovaSolicitacaoPage)}");
     }
 
     [RelayCommand]

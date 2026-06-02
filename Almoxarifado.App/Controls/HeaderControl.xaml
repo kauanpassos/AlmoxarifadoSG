@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Almoxarifado.App.Controls.HeaderControl"
+             x:Name="thisControl">
+
+    <Border BackgroundColor="{StaticResource BrandPrimary}" Stroke="{StaticResource BlackBrush}" StrokeThickness="1" Padding="20,38,20,6" Margin="0,0,0,18">
+        <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Start">
+
+            <ImageButton Grid.Column="0" 
+                         Command="{Binding VoltarCommand}"
+                         Source="{FontImageSource FontFamily=OpenSansSemibold, Glyph='❮', Size=24, Color={StaticResource White}}"
+                         BackgroundColor="Transparent" 
+                         VerticalOptions="Center" WidthRequest="40" HeightRequest="40" Margin="0,0,15,0"
+                         IsVisible="{Binding Source={x:Reference thisControl}, Path=MostrarBotaoVoltar}" />
+
+            <Label Grid.Column="1" 
+                   Text="{Binding Source={x:Reference thisControl}, Path=Titulo}" 
+                   TextColor="{StaticResource White}" FontSize="24" FontAttributes="Bold" VerticalOptions="Center" />
+
+            <Border Grid.Column="2" BackgroundColor="{StaticResource White}" Padding="8,8" StrokeThickness="0" VerticalOptions="Center" WidthRequest="40" HeightRequest="40">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="20"/>
+                </Border.StrokeShape>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding IrParaPerfilCommand}" />
+                </Border.GestureRecognizers>
+                <Label Text="{Binding IniciaisUsuario}" TextColor="{StaticResource BrandPrimary}" FontSize="15" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+            </Border>
+
+        </Grid>
+    </Border>
+</ContentView>

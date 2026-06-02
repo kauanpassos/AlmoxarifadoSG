@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
+             x:Class="Almoxarifado.App.Controls.ItemEstoqueCard"
+             x:DataType="vm:ItemEstoqueModel">
+
+    <Border Stroke="{StaticResource BrandAccent}" StrokeThickness="1" BackgroundColor="{StaticResource White}" Margin="28,0,28,20" Padding="0,17,0,0">
+
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AbrirOpcoesProdutoCommand}" CommandParameter="{Binding .}" />
+        </Border.GestureRecognizers>
+
+        <Border.StrokeShape>
+            <RoundRectangle CornerRadius="5" />
+        </Border.StrokeShape>
+        <Border.Shadow>
+            <Shadow Brush="{StaticResource BlackBrush}" Offset="0,4" Radius="4" Opacity="0.25" />
+        </Border.Shadow>
+
+        <VerticalStackLayout>
+            <Grid ColumnDefinitions="Auto, *" Margin="11,0,11,7" ColumnSpacing="14">
+                <Border Grid.Column="0" WidthRequest="80" HeightRequest="80" BackgroundColor="{StaticResource ImagePlaceholderBackground}" Stroke="{StaticResource ImagePlaceholderBackground}" StrokeThickness="5">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10"/>
+                    </Border.StrokeShape>
+                </Border>
+
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="{Binding NomePeca}" TextColor="{StaticResource TextPrimary}" FontSize="18" FontAttributes="Bold" Margin="0,0,0,1" />
+                    <Label Text="{Binding Sku}" TextColor="{StaticResource TextSecondary}" FontSize="12" FontAttributes="Bold" Margin="0,0,0,8" />
+
+                    <Border HorizontalOptions="End" StrokeThickness="1" Padding="17,8">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10"/>
+                        </Border.StrokeShape>
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="BackgroundColor" Value="{StaticResource StatusSuccessBackground}" />
+                                <Setter Property="Stroke" Value="{StaticResource StatusSuccessBorder}" />
+                                <Style.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="Baixo Estoque">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource StatusWarningBackground}" />
+                                        <Setter Property="Stroke" Value="{StaticResource StatusWarningBorder}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="Indisponível">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource StatusErrorBackground}" />
+                                        <Setter Property="Stroke" Value="{StaticResource StatusErrorBorder}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+
+                        <Label Text="{Binding Status}" FontSize="15" FontAttributes="Bold" HorizontalTextAlignment="Center">
+                            <Label.Style>
+                                <Style TargetType="Label">
+                                    <Setter Property="TextColor" Value="{StaticResource StatusSuccessText}" />
+                                    <Style.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding Status}" Value="Baixo Estoque">
+                                            <Setter Property="TextColor" Value="{StaticResource StatusWarningText}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding Status}" Value="Indisponível">
+                                            <Setter Property="TextColor" Value="{StaticResource StatusErrorText}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Label.Style>
+                        </Label>
+                    </Border>
+
+                </VerticalStackLayout>
+            </Grid>
+
+            <Grid ColumnDefinitions="*, *" Margin="13,0,13,5">
+                <Label Grid.Column="0" Text="{Binding Quantidade, StringFormat='{0} un'}" TextColor="{StaticResource Black}" FontSize="20" FontAttributes="Bold" HorizontalOptions="Start" />
+                <Label Grid.Column="1" Text="{Binding DataAtualizacao}" TextColor="{StaticResource Black}" FontSize="12" FontAttributes="Bold" HorizontalOptions="End" VerticalOptions="Center" />
+            </Grid>
+        </VerticalStackLayout>
+    </Border>
+</ContentView>

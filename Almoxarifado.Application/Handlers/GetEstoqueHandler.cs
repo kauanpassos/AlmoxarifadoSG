@@ -2,10 +2,16 @@ using MediatR;
 using Almoxarifado.Domain.Interfaces;
 using Almoxarifado.Application.Queries;
 using Almoxarifado.Domain.Entities;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Almoxarifado.Application.Handlers;
-public sealed class GetEstoqueHandler(IReadOnlyRepository<Estoque> repository) : IRequestHandler<GetEstoqueQuery, IEnumerable<Estoque>>
+
+// Trocamos todas as menções de Estoque por Produto
+public sealed class GetEstoqueHandler(IReadOnlyRepository<Produto> repository) : IRequestHandler<GetEstoqueQuery, IEnumerable<Produto>>
 {
-    public async Task<IEnumerable<Estoque>> Handle(GetEstoqueQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Produto>> Handle(GetEstoqueQuery request, CancellationToken cancellationToken)
     {
         return await repository.GetAllAsync();
     }
