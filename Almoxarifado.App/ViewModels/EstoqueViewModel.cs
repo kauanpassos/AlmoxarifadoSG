@@ -45,7 +45,6 @@ public partial class EstoqueViewModel : ObservableObject
         get => _termoPesquisa;
         set
         {
-            // SetProperty atualiza o valor. Se for alterado, executa a pesquisa
             if (SetProperty(ref _termoPesquisa, value))
             {
                 ExecutarPesquisa();
@@ -91,7 +90,6 @@ public partial class EstoqueViewModel : ObservableObject
             IniciaisUsuario = ObterIniciais(usuarioLogado.Nome);
         }
 
-        // Dispara a busca de dados assim que a tela é instanciada
         _ = CarregarEstoqueAsync();
     }
 
@@ -137,7 +135,6 @@ public partial class EstoqueViewModel : ObservableObject
             EstaCarregando = true;
             _todasAsPecasCache.Clear();
 
-            // Busca os dados reais da API/Firestore
             var pecasDoBanco = await _firebaseService.GetProdutosAsync();
 
             if (pecasDoBanco != null && pecasDoBanco.Any())
@@ -181,7 +178,6 @@ public partial class EstoqueViewModel : ObservableObject
         }
     }
 
-    // LÓGICA DE PESQUISA (NOME OU NUMCODE)
     private void ExecutarPesquisa()
     {
         if (string.IsNullOrWhiteSpace(TermoPesquisa))

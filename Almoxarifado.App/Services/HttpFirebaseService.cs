@@ -20,8 +20,6 @@ public class HttpFirebaseService : IFirebaseService
 
     public async Task<List<Produto>> GetProdutosAsync()
     {
-        // REMOVIDO o try/catch que "engolia" a falha. 
-        // Agora, se der erro de IP ou de servidor, ele joga o erro real para a tela!
         var resposta = await _httpClient.GetAsync("api/produtos");
 
         if (!resposta.IsSuccessStatusCode)

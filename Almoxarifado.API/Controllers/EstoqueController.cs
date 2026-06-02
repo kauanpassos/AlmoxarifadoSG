@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Almoxarifado.API.Controllers;
 
 [ApiController]
-[Route("api/produtos")] // <-- CORREÇÃO: Rota fixa apontando para "api/produtos"
+[Route("api/produtos")]
 public sealed class EstoqueController : ControllerBase
 {
     private readonly IMediator _mediator;

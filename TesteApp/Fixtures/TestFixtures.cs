@@ -26,7 +26,6 @@ public static class SolicitacaoFixture
 
 public static class ProdutoFixture
 {
-    // Ajustado os parâmetros padrão para bater com a ordem e tipos corretos do construtor
     public static Produto Criar(
         string id = "prod-test-id",
         long numCode = 1001,
@@ -35,7 +34,6 @@ public static class ProdutoFixture
         string localizacao = "A1",
         long qtd = 50)
     {
-        // Enviando os argumentos na ordem exata identificada pelo compilador
         return new Produto(id, numCode, nome, descricao, localizacao, qtd);
     }
 

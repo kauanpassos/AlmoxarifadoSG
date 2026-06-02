@@ -98,7 +98,6 @@ public static class MauiProgram
         services.AddTransient<EstoqueViewModel>();
         services.AddTransient<GestaoFilaViewModel>();
         services.AddTransient<HomeColaboradorViewModel>();
-        services.AddTransient<NovaSolicitacaoViewModel>();
         services.AddTransient<PerfilViewModel>();
 
         // ADICIONADO: ViewModel da sua colega
@@ -112,7 +111,6 @@ public static class MauiProgram
         services.AddTransient<EstoquePage>();
         services.AddTransient<MainPage>();
         services.AddTransient<HomeColaboradorPage>();
-        services.AddTransient<NovaSolicitacaoPage>();
         services.AddTransient<PerfilPage>();
 
         // ADICIONADO: Página da sua colega

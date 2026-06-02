@@ -1,5 +1,6 @@
 using Almoxarifado.App.ViewModels;
 using Microsoft.Maui.Controls;
+using System;
 
 namespace Almoxarifado.App.Views;
 
@@ -13,7 +14,10 @@ public partial class LoginPage : ContentPage
 
     private void ToggleSenha_Clicked(object sender, EventArgs e)
     {
-        EntrySenha.IsPassword = !EntrySenha.IsPassword;
-        BtnToggleSenha.Source = EntrySenha.IsPassword ? "eye_closed.png" : "eye_open.png";
+        if (EntrySenha != null && BtnToggleSenha != null)
+        {
+            EntrySenha.IsPassword = !EntrySenha.IsPassword;
+            BtnToggleSenha.Source = EntrySenha.IsPassword ? "eye_closed.png" : "eye_open.png";
+        }
     }
 }

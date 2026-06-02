@@ -18,7 +18,6 @@ public sealed partial class DatabaseFixture : IAsyncLifetime
     {
         try
         {
-            // Alterado de _estoqueEngine para _produtoEngine
             await _produtoEngine.DeleteAsync("0");
         }
         catch { }

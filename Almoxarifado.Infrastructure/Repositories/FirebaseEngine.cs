@@ -87,7 +87,6 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
             }
         }
 
-        // CORREÇÃO APLICADA: Permite ler números que estão gravados como texto no banco
         var options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
@@ -109,8 +108,6 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
 
             if (valor != null)
             {
-                // O Firestore exige que as datas sejam em formato Universal (UTC).
-                // Isso garante que ele grave como Timestamp lá no painel.
                 if (valor is DateTime data)
                 {
                     valor = data.Kind == DateTimeKind.Unspecified

@@ -5,29 +5,18 @@ namespace Almoxarifado.Domain.Entities;
 
 public sealed class Produto : IEntity
 {
-    // Construtor vazio obrigatório para o JsonSerializer conseguir montar o objeto
     public Produto() { }
-
-    // Identificadores (Os private sets foram removidos para permitir a leitura do banco)
     public string Id { get; set; } = string.Empty;
     public long NumCode { get; set; }
-
-    // Dados do Catálogo
     public string Nome { get; set; } = string.Empty;
     public string NomeLower { get; set; } = string.Empty;
     public string Categoria { get; set; } = string.Empty;
     public string UnidadeMedida { get; set; } = string.Empty;
-
-    // Dados de Estoque
     public long QtdEstoque { get; set; }
     public long EstoqueMinimo { get; set; }
-
-    // Status e Auditoria
     public bool Ativo { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-
-    // Construtor completo para criação de um Novo Produto via código
     public Produto(string id, long numCode, string nome, string categoria, string unidadeMedida, long estoqueMinimo)
     {
         if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("O ID do produto é obrigatório.", nameof(id));

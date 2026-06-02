@@ -7,7 +7,6 @@ public sealed partial class DatabaseFixture
 {
     public async Task SeedTestData()
     {
-        // Corrigido: Inicialização baseada na ordem exata de tipos do construtor de Produto
         var produtos = new[]
         {
             new Produto("1", 1001, "Correia", "Correia de transmissão", "A1", 50),
@@ -17,7 +16,6 @@ public sealed partial class DatabaseFixture
 
         foreach (var produto in produtos)
         {
-            // Alterado de _estoqueEngine para _produtoEngine
             await _produtoEngine.AddAsync(produto);
         }
     }

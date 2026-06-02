@@ -6,7 +6,7 @@
 
     <Grid BackgroundColor="#F4F6F8">
         <ScrollView VerticalOptions="CenterAndExpand">
-            
+
             <Border Margin="20"
                     Padding="40,50"
                     MaximumWidthRequest="450"
@@ -15,7 +15,7 @@
                     Stroke="{StaticResource Primary}"
                     StrokeThickness="1"
                     BackgroundColor="White">
-                
+
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="24" />
                 </Border.StrokeShape>
@@ -78,7 +78,7 @@
                                    ReturnType="Done"
                                    FontSize="16"
                                    VerticalOptions="Center"/>
-                            
+
                             <ImageButton x:Name="BtnToggleSenha"
                                      Grid.Column="1"
                                      Source="eye_closed.png"
@@ -101,26 +101,6 @@
                             HeightRequest="60"
                             CornerRadius="16"
                             Margin="0,20,0,10">
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <VisualState.Setters>
-                                        <Setter Property="Opacity" Value="1" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="PointerOver">
-                                    <VisualState.Setters>
-                                        <Setter Property="Opacity" Value="0.85" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Pressed">
-                                    <VisualState.Setters>
-                                        <Setter Property="Opacity" Value="0.65" />
-                                        <Setter Property="Scale" Value="0.98" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
                         <Button.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                 <GradientStop Color="#2A4D85" Offset="0.0" />

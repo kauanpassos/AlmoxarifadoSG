@@ -32,8 +32,6 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
                 {
                     services.Remove(descriptor);
                 }
-
-                // Substituído Estoque por Produto no escopo de Mocking da injeção de dependência
                 services.AddSingleton<IEngine<Produto>, Mocks.MockEngine<Produto>>();
                 services.AddSingleton<IEngine<Solicitacao>, Mocks.MockEngine<Solicitacao>>();
 
@@ -65,8 +63,6 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task ObterEstoque_DeveRetornarOk()
     {
-        // A rota permanece "/api/estoque" porque o EstoqueController mapeia esse endpoint interno, 
-        // mas ele agora responde entregando a lista de Produtos unificada.
         var response = await _client.GetAsync("/api/estoque");
         Assert.Equal(200, (int)response.StatusCode);
     }
