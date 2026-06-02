@@ -33,7 +33,9 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 		<Compile Remove="Services\HttpFirebaseService.xaml.cs" />
 		<MauiXaml Remove="Services\HttpFirebaseService.xaml" />
-		<EmbeddedResource Include="appsettings.json" LogicalName="appsettings.json" />
+		<MauiAsset Include="appsettings.json" LogicalName="appsettings.json">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</MauiAsset>
 	</ItemGroup>
 
 	<ItemGroup>
