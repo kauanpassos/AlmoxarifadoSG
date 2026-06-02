@@ -1,54 +1,159 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
              x:Class="Almoxarifado.App.Views.LoginPage"
-             x:DataType="vm:LoginViewModel"
-             BackgroundColor="White"
-             Shell.NavBarIsVisible="False">
+             NavigationPage.HasNavigationBar="False">
 
-    <VerticalStackLayout Spacing="25" 
-                         Padding="30" 
-                         VerticalOptions="Center">
+    <Grid BackgroundColor="#F4F6F8">
+        <ScrollView VerticalOptions="CenterAndExpand">
+            
+            <Border Margin="20"
+                    Padding="40,50"
+                    MaximumWidthRequest="450"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Stroke="{StaticResource Primary}"
+                    StrokeThickness="1"
+                    BackgroundColor="White">
+                
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="24" />
+                </Border.StrokeShape>
 
-        <Label Text="Almoxarifado SG"
-               FontSize="32"
-               FontAttributes="Bold"
-               HorizontalOptions="Center"
-               TextColor="#2B0B98" />
+                <Border.Shadow>
+                    <Shadow Brush="#1A3160" Offset="0,15" Radius="40" Opacity="0.08" />
+                </Border.Shadow>
 
-        <Label Text="Faça login para solicitar peças"
-               FontSize="16"
-               HorizontalOptions="Center"
-               TextColor="Gray"
-               Margin="0, -15, 0, 20"/>
+                <VerticalStackLayout Spacing="25">
 
-        <Entry Text="{Binding Email}"
-               Placeholder="E-mail Cadastrado"
-               Keyboard="Email"
-               ClearButtonVisibility="WhileEditing" 
-               TextColor="Black"/>
+                    <Label Text="AlmoxarifadoSG"
+                           FontSize="36"
+                           FontAttributes="Bold"
+                           TextColor="#1A3160"
+                           HorizontalOptions="Center" 
+                           CharacterSpacing="1"/>
 
-        <Entry Text="{Binding Password}"
-               Placeholder="Senha"
-               IsPassword="True"
-               ClearButtonVisibility="WhileEditing" 
-               TextColor="Black"/>
+                    <Label Text="Faça login para solicitar as peças"
+                           FontSize="16"
+                           TextColor="#6B7C93"
+                           HorizontalOptions="Center"
+                           Margin="0,-15,0,25"/>
 
-        <Button Text="ENTRAR"
-                Command="{Binding LoginCommand}"
-                IsEnabled="{Binding IsNotBusy}"
-                FontAttributes="Bold"
-                CornerRadius="8"
-                BackgroundColor="#2B0B98"
-                TextColor="White"
-                HeightRequest="50"
-                Margin="0, 15, 0, 0" />
+                    <Border Stroke="{StaticResource Primary}"
+                            StrokeThickness="1.5"
+                            StrokeShape="RoundRectangle 16"
+                            BackgroundColor="#FFFFFF"
+                            Padding="15,5"
+                            HeightRequest="60">
+                        <Border.Shadow>
+                            <Shadow Brush="{StaticResource Primary}" Offset="0,4" Radius="10" Opacity="0.1" />
+                        </Border.Shadow>
+                        <Entry Text="{Binding Email}"
+                               Placeholder="Usuário ou Crachá"
+                               PlaceholderColor="#8C9AA9"
+                               TextColor="#1E3A60"
+                               FontSize="16"
+                               Keyboard="Email"
+                               ReturnType="Next"
+                               VerticalOptions="Center"/>
+                    </Border>
 
-        <ActivityIndicator IsRunning="{Binding IsBusy}"
-                           IsVisible="{Binding IsBusy}"
-                           Color="#2B0B98"
-                           HorizontalOptions="Center" />
+                    <Border Stroke="{StaticResource Primary}"
+                            StrokeThickness="1.5"
+                            StrokeShape="RoundRectangle 16"
+                            BackgroundColor="#FFFFFF"
+                            Padding="15,5"
+                            HeightRequest="60">
+                        <Border.Shadow>
+                            <Shadow Brush="{StaticResource Primary}" Offset="0,4" Radius="10" Opacity="0.1" />
+                        </Border.Shadow>
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Entry Grid.Column="0"
+                                   x:Name="EntrySenha"
+                                   Text="{Binding Password}"
+                                   Placeholder="Senha"
+                                   PlaceholderColor="#8C9AA9"
+                                   TextColor="#1E3A60"
+                                   IsPassword="True"
+                                   ReturnType="Done"
+                                   FontSize="16"
+                                   VerticalOptions="Center"/>
+                            
+                            <ImageButton x:Name="BtnToggleSenha"
+                                     Grid.Column="1"
+                                     Source="eye_closed.png"
+                                     HeightRequest="24"
+                                     WidthRequest="24"
+                                     VerticalOptions="Center"
+                                     HorizontalOptions="End"
+                                     Margin="0,0,5,0"
+                                     BackgroundColor="Transparent"
+                                     Clicked="ToggleSenha_Clicked"/>
+                        </Grid>
+                    </Border>
 
-    </VerticalStackLayout>
+                    <Button Text="Entrar no Sistema"
+                            Command="{Binding LoginCommand}"
+                            IsEnabled="{Binding IsNotBusy}"
+                            TextColor="White"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            HeightRequest="60"
+                            CornerRadius="16"
+                            Margin="0,20,0,10">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter Property="Opacity" Value="1" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Property="Opacity" Value="0.85" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Property="Opacity" Value="0.65" />
+                                        <Setter Property="Scale" Value="0.98" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Button.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#2A4D85" Offset="0.0" />
+                                <GradientStop Color="#1A3160" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Button.Background>
+                        <Button.Shadow>
+                            <Shadow Brush="#1A3160" Offset="0,8" Radius="15" Opacity="0.4" />
+                        </Button.Shadow>
+                    </Button>
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       Color="#1A3160"
+                                       HorizontalOptions="Center" />
+
+                    <HorizontalStackLayout HorizontalOptions="Center" Margin="0,15,0,0" Spacing="5">
+                        <Label Text="Não tem uma conta?" 
+                               TextColor="#6B7C93" 
+                               FontSize="15"/>
+                        <Label Text="Cadastre-se aqui" 
+                               TextColor="#1A3160" 
+                               FontAttributes="Bold" 
+                               TextDecorations="Underline"
+                               FontSize="15">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding GoToCadastroCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </HorizontalStackLayout>
+
+                </VerticalStackLayout>
+            </Border>
+        </ScrollView>
+    </Grid>
 </ContentPage>

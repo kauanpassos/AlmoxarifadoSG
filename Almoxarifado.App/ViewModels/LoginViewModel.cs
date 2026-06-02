@@ -33,6 +33,8 @@ public partial class LoginViewModel : ObservableObject
     {
         if (IsBusy) return;
 
+        if (Shell.Current is null) return;
+
         if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
         {
             await Shell.Current.DisplayAlert("Aviso", "Preencha o e-mail e a senha.", "OK");
@@ -44,27 +46,22 @@ public partial class LoginViewModel : ObservableObject
             IsBusy = true;
             var user = await _authService.LoginAsync(Email, Password);
 
-            if (user != null)
-            {
-                UsuarioSessao.UsuarioLogado = user;
-
-                if (user.Tipo == TipoUsuario.Almoxarife)
-                {
-                    await Shell.Current.GoToAsync($"//{nameof(GestaoFilaPage)}");
-                }
-                else if (user.Tipo == TipoUsuario.Colaborador)
-                {
-                    await Shell.Current.GoToAsync($"//{nameof(HomeColaboradorPage)}");
-                }
-                else
-                {
-                    await Shell.Current.GoToAsync($"//{nameof(EstoquePage)}");
-                }
-            }
-            else
+            if (user is null)
             {
                 await Shell.Current.DisplayAlert("Erro de Login", "Credenciais inválidas. Verifique seu e-mail e senha.", "OK");
+                return;
             }
+
+            UsuarioSessao.UsuarioLogado = user;
+
+            var rota = user.Tipo switch
+            {
+                TipoUsuario.Almoxarife => $"//{nameof(GestaoFilaPage)}",
+                TipoUsuario.Colaborador => $"//{nameof(HomeColaboradorPage)}",
+                _ => $"//{nameof(EstoquePage)}"
+            };
+
+            await Shell.Current.GoToAsync(rota);
         }
         catch (Exception ex)
         {
@@ -73,6 +70,15 @@ public partial class LoginViewModel : ObservableObject
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task GoToCadastroAsync()
+    {
+        if (Shell.Current is not null)
+        {
+            await Shell.Current.GoToAsync(nameof(CadastroPage));
         }
     }
 }

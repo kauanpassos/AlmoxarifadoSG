@@ -24,65 +24,90 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
+#if WINDOWS
+        Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoBorder", (h, v) =>
+        {
+            h.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+            h.PlatformView.Background = null;
+        });
+        Microsoft.Maui.Handlers.PickerHandler.Mapper.AppendToMapping("NoBorder", (h, v) =>
+        {
+            h.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+            h.PlatformView.Background = null;
+        });
+#endif
+
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
 
+        RegistrarFirebase(builder.Services);
+        RegistrarHttpClients(builder.Services);
+        RegistrarServicos(builder.Services);
+        RegistrarViewModels(builder.Services);
+        RegistrarPaginas(builder.Services);
+
+        return builder.Build();
+    }
+
+    private static void RegistrarFirebase(IServiceCollection services)
+    {
         var config = new FirebaseAuthConfig
         {
             ApiKey = "AIzaSyCD1hywuoaY2Bmls2sz5hXzJG-KyruJVYE",
             AuthDomain = "almoxarifado-sg.firebaseapp.com",
-            Providers = new FirebaseAuthProvider[]
-            {
-                new EmailProvider()
-            }
+            Providers = [new EmailProvider()]
         };
 
-        builder.Services.AddSingleton(new FirebaseAuthClient(config));
+        services.AddSingleton(new FirebaseAuthClient(config));
+    }
 
-        string apiBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
+    private static void RegistrarHttpClients(IServiceCollection services)
+    {
+        var apiBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
             ? "https://10.0.2.2:7185/"
             : "https://localhost:7185/";
 
-        builder.Services.AddTransient<AuthenticatedHttpHandler>();
+        services.AddTransient<AuthenticatedHttpHandler>();
 
-        builder.Services.AddScoped(sp =>
+        services.AddScoped(sp =>
         {
             var authHandler = sp.GetRequiredService<AuthenticatedHttpHandler>();
-
-            var innerHandler = new HttpClientHandler
+            authHandler.InnerHandler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
             };
 
-            authHandler.InnerHandler = innerHandler;
-
-            return new HttpClient(authHandler)
-            {
-                BaseAddress = new Uri(apiBaseUrl)
-            };
+            return new HttpClient(authHandler) { BaseAddress = new Uri(apiBaseUrl) };
         });
+    }
 
-        builder.Services.AddScoped<IAuthService, AuthService>();
-        builder.Services.AddScoped<INavigationService, NavigationService>();
+    private static void RegistrarServicos(IServiceCollection services)
+    {
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<INavigationService, NavigationService>();
+    }
 
-        // ViewModels
-        builder.Services.AddTransient<LoginViewModel>();
-        builder.Services.AddTransient<EstoqueViewModel>();
-        builder.Services.AddTransient<GestaoFilaViewModel>();
-        builder.Services.AddTransient<HomeColaboradorViewModel>();
-        builder.Services.AddTransient<NovaSolicitacaoViewModel>();
-        builder.Services.AddTransient<PerfilViewModel>();
+    private static void RegistrarViewModels(IServiceCollection services)
+    {
+        services.AddTransient<LoginViewModel>();
+        services.AddTransient<EstoqueViewModel>();
+        services.AddTransient<GestaoFilaViewModel>();
+        services.AddTransient<HomeColaboradorViewModel>();
+        services.AddTransient<NovaSolicitacaoViewModel>();
+        services.AddTransient<PerfilViewModel>();
+        services.AddTransient<CadastroViewModel>();
+    }
 
-        // Pages
-        builder.Services.AddTransient<LoginPage>();
-        builder.Services.AddTransient<GestaoFilaPage>();
-        builder.Services.AddTransient<EstoquePage>();
-        builder.Services.AddTransient<MainPage>();
-        builder.Services.AddTransient<HomeColaboradorPage>();
-        builder.Services.AddTransient<NovaSolicitacaoPage>();
-        builder.Services.AddTransient<PerfilPage>();
-
-        return builder.Build();
+    private static void RegistrarPaginas(IServiceCollection services)
+    {
+        services.AddTransient<LoginPage>();
+        services.AddTransient<GestaoFilaPage>();
+        services.AddTransient<EstoquePage>();
+        services.AddTransient<MainPage>();
+        services.AddTransient<HomeColaboradorPage>();
+        services.AddTransient<NovaSolicitacaoPage>();
+        services.AddTransient<PerfilPage>();
+        services.AddTransient<CadastroPage>();
     }
 }
