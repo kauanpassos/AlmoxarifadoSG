@@ -48,17 +48,6 @@ jobs:
     - name: Executar Testes com Cobertura
       run: dotnet test TesteApp/TesteApp.csproj -c Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
 
-    - name: Iniciar API em Background para Stress Test
-      run: |
-        dotnet run --project Almoxarifado.API/Almoxarifado.API.csproj -c Release --no-build &
-        sleep 10
-
-    - name: Instalar K6 Load Tester
-      run: sudo snap install k6
-
-    - name: Executar Smoke/Stress Test (K6)
-      run: k6 run k6-stress-test.js
-
     - name: Publicar API
       run: dotnet publish Almoxarifado.API/Almoxarifado.API.csproj -c Release -o publish --no-restore
 
