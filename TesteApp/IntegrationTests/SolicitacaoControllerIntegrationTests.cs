@@ -63,7 +63,7 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task ObterEstoque_DeveRetornarOk()
     {
-        var response = await _client.GetAsync("/api/estoque");
+        var response = await _client.GetAsync("/api/produtos");
         Assert.Equal(200, (int)response.StatusCode);
     }
 

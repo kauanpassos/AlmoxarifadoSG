@@ -16,7 +16,7 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
     public async Task<T?> GetByIdAsync(string id)
     {
         var snapshot = await Collection.Document(id).GetSnapshotAsync();
-        if (!snapshot.Exists) return null;
+        if (snapshot.Exists is false) return default;
 
         return ConverterDocumentoParaEntidade(snapshot);
     }
@@ -28,7 +28,18 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
         return snapshot.Documents
             .Where(d => d.Exists)
             .Select(ConverterDocumentoParaEntidade)
-            .Where(e => e != null)!;
+            .Where(e => e is not null)!;
+    }
+
+    public async Task<IEnumerable<T>> GetByFieldAsync(string fieldName, object value)
+    {
+        var query = Collection.WhereEqualTo(fieldName, value);
+        var snapshot = await query.GetSnapshotAsync();
+
+        return snapshot.Documents
+            .Where(d => d.Exists)
+            .Select(ConverterDocumentoParaEntidade)
+            .Where(e => e is not null)!;
     }
 
     public async Task AddAsync(T entity)
@@ -38,14 +49,14 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
 
         var dicionario = ConverterEntidadeParaDicionario(entity);
 
-        if (!string.IsNullOrEmpty(id))
+        if (string.IsNullOrEmpty(id) is false)
         {
             await Collection.Document(id).SetAsync(dicionario);
         }
         else
         {
             var docRef = await Collection.AddAsync(dicionario);
-            if (idProperty != null && idProperty.CanWrite)
+            if (idProperty is not null && idProperty.CanWrite)
             {
                 idProperty.SetValue(entity, docRef.Id);
             }
@@ -68,8 +79,7 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
         var idProperty = typeof(T).GetProperty("Id");
         var id = idProperty?.GetValue(entity)?.ToString();
 
-        if (string.IsNullOrEmpty(id))
-            throw new ArgumentException("A entidade não possui um Id válido para atualização.");
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
 
         return UpdateAsync(id, entity);
     }
@@ -106,7 +116,7 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
         {
             var valor = prop.GetValue(entity);
 
-            if (valor != null)
+            if (valor is not null)
             {
                 if (valor is DateTime data)
                 {

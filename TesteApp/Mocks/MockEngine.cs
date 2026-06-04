@@ -13,6 +13,18 @@ public class MockEngine<T> : IEngine<T> where T : class
     {
         return Task.FromResult<IEnumerable<T>>(_data.Values);
     }
+
+    public Task<IEnumerable<T>> GetByFieldAsync(string fieldName, object value)
+    {
+        var result = _data.Values.Where(item => 
+        {
+            var prop = typeof(T).GetProperty(fieldName, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            if (prop == null) return false;
+            var propValue = prop.GetValue(item);
+            return object.Equals(propValue, value);
+        });
+        return Task.FromResult<IEnumerable<T>>(result.ToList());
+    }
     public Task AddAsync(T entity)
     {
         var idProperty = typeof(T).GetProperty("Id");

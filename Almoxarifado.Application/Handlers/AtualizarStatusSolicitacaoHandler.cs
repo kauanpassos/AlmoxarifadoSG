@@ -2,31 +2,36 @@ using MediatR;
 using Almoxarifado.Domain.Interfaces;
 using Almoxarifado.Application.Commands;
 using Almoxarifado.Domain.Entities;
+using Almoxarifado.Application.DTOs;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System;
+
 namespace Almoxarifado.Application.Handlers;
+
 public sealed class AtualizarStatusSolicitacaoHandler(
     IReadOnlyRepository<Solicitacao> readRepository,
     IWriteOnlyRepository<Solicitacao> writeRepository)
-    : IRequestHandler<AtualizarStatusSolicitacaoCommand, Solicitacao>
+    : IRequestHandler<AtualizarStatusSolicitacaoCommand, SolicitacaoDto>
 {
-    public async Task<Solicitacao> Handle(AtualizarStatusSolicitacaoCommand request, CancellationToken cancellationToken)
+    public async Task<SolicitacaoDto> Handle(AtualizarStatusSolicitacaoCommand request, CancellationToken cancellationToken)
     {
-        var solicitacao = await readRepository.GetByIdAsync(request.SolicitacaoId)
-            ?? throw new KeyNotFoundException($"Solicitação '{request.SolicitacaoId}' não encontrada.");
-        switch (request.NovoStatus)
+        var solicitacao = await readRepository.GetByIdAsync(request.Id)
+            ?? throw new KeyNotFoundException($"Solicitação '{request.Id}' não encontrada.");
+
+        Action acao = request.NovoStatus switch
         {
-            case "Aprovada":
-                solicitacao.Aprovar();
-                break;
-            case "Recusada":
-                solicitacao.Recusar();
-                break;
-            case "Entregue":
-                solicitacao.FinalizarEntrega();
-                break;
-            default:
-                throw new ArgumentException($"Status '{request.NovoStatus}' inválido. Use: Aprovada, Recusada ou Entregue.");
-        }
+            "Aprovada" => solicitacao.Aprovar,
+            "Recusada" => solicitacao.Recusar,
+            "Entregue" => solicitacao.FinalizarEntrega,
+            _ => throw new ArgumentException($"Status '{request.NovoStatus}' inválido. Use: Aprovada, Recusada ou Entregue.")
+        };
+
+        acao();
+
         await writeRepository.UpdateAsync(solicitacao);
-        return solicitacao;
+        
+        return solicitacao.ToDto();
     }
 }

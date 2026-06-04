@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Almoxarifado.Domain.Entities;
 
@@ -8,16 +8,16 @@ public sealed class Solicitacao
     public string UsuarioId { get; }
     public string Observacao { get; private set; }
     public string Status { get; private set; }
-    public string? Sku { get; private set; }
+    private readonly List<ItemSolicitacao> _itens = new();
+    public IReadOnlyCollection<ItemSolicitacao> Itens => _itens.AsReadOnly();
+
     public DateTime CreatedAt { get; }
     public DateTime UpdatedAt { get; private set; }
+
     public Solicitacao(string id, string usuarioId, string observacao)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("O ID da solicitação é obrigatório.", nameof(id));
-
-        if (string.IsNullOrWhiteSpace(usuarioId))
-            throw new ArgumentException("O ID do usuário (solicitante) é obrigatório.", nameof(usuarioId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(usuarioId);
 
         Id = id;
         UsuarioId = usuarioId;
@@ -26,9 +26,17 @@ public sealed class Solicitacao
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public void AdicionarItem(ItemSolicitacao item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        
+        _itens.Add(item);
+        AtualizarData();
+    }
     public void Aprovar()
     {
-        if (Status != "Pendente")
+        if (Status is not "Pendente")
             throw new InvalidOperationException("Apenas solicitações pendentes podem ser aprovadas.");
 
         Status = "Aprovada";
@@ -36,7 +44,7 @@ public sealed class Solicitacao
     }
     public void Recusar()
     {
-        if (Status != "Pendente")
+        if (Status is not "Pendente")
             throw new InvalidOperationException("Apenas solicitações pendentes podem ser recusadas.");
 
         Status = "Recusada";
@@ -44,7 +52,7 @@ public sealed class Solicitacao
     }
     public void FinalizarEntrega()
     {
-        if (Status != "Aprovada")
+        if (Status is not "Aprovada")
             throw new InvalidOperationException("Apenas solicitações aprovadas podem ser entregues.");
 
         Status = "Entregue";

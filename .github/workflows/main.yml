@@ -13,7 +13,7 @@ env:
   DOTNET_VERSION: '9.0.x'
 
 jobs:
-  # Job 1: Validação da API e Testes (Roda no Linux, é rápido e mais barato)
+  # Job 1: Validação da API e Testes (Ubuntu)
   backend-ci:
     name: Backend Build & Test
     runs-on: ubuntu-latest
@@ -46,9 +46,8 @@ jobs:
         dotnet build Almoxarifado.API/Almoxarifado.API.csproj -c Release --no-restore
         dotnet build TesteApp/TesteApp.csproj -c Release --no-restore
 
-    - name: Executar Testes com Cobertura (Code Coverage)
+    - name: Executar Testes com Cobertura
       run: dotnet test TesteApp/TesteApp.csproj -c Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
-
 
     - name: Publicar API
       run: dotnet publish Almoxarifado.API/Almoxarifado.API.csproj -c Release -o publish --no-restore
@@ -59,20 +58,18 @@ jobs:
         name: api-publish-${{ github.run_number }}
         path: publish
 
-  # Job 2: Build do MAUI Android (Roda no Windows, só inicia se o backend passar)
+  # Job 2: Build do MAUI Android (Windows)
   mobile-android:
     name: Mobile Build (Android)
     runs-on: windows-latest
-    needs: backend-ci # Fail-Fast
-    # Roda se for push na main OU se for PR que alterou arquivos do Mobile
-    if: github.event_name == 'push' || contains(github.event.pull_request.changed_files, 'Almoxarifado.App/')
+    needs: backend-ci # Fail-Fast garante que só roda se a API passar
     timeout-minutes: 30
     
     steps:
     - name: Checkout do código
       uses: actions/checkout@v4
 
-    - name: Configurar Java 17 (Requisito para Android)
+    - name: Configurar Java 17
       uses: actions/setup-java@v4
       with:
         distribution: 'microsoft'
@@ -91,20 +88,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget-mobile-
 
-    - name: Cache do Workload MAUI
-      uses: actions/cache@v4
-      with:
-        path: ~/.dotnet/workloads
-        key: ${{ runner.os }}-maui-workload-${{ env.DOTNET_VERSION }}
-        restore-keys: |
-          ${{ runner.os }}-maui-workload-
-
-    - name: Instalar Workload MAUI
-      run: dotnet workload install maui
+    - name: Instalar Workload MAUI (Apenas Android para otimizar tempo)
+      run: dotnet workload install maui-android
 
     - name: Restaurar dependências do Mobile
       run: dotnet restore Almoxarifado.App/Almoxarifado.App.csproj
-
 
     - name: Compilar o Projeto Mobile (Release)
       run: dotnet build Almoxarifado.App/Almoxarifado.App.csproj -c Release -f net9.0-android --no-restore

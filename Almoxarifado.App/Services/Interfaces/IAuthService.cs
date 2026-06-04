@@ -1,13 +1,15 @@
 using Almoxarifado.App.Models;
-using Almoxarifado.Domain.Entities;
+using Almoxarifado.Application.DTOs;
 using Almoxarifado.Domain.Enums;
+using System.Threading.Tasks;
 
 namespace Almoxarifado.App.Services.Interfaces;
 
 public interface IAuthService
 {
-    Task<Usuario?> LoginAsync(string email, string password);
+    Task<UsuarioDto?> LoginAsync(string email, string password);
     Task RegistrarAsync(RegistrarUsuarioRequest request);
-    Task<Usuario?> VerificarSessaoAtivaAsync();
+    Task<UsuarioDto?> VerificarSessaoAtivaAsync();
     Task LogoutAsync();
+    string? ObterUsuarioIdAtual();
 }

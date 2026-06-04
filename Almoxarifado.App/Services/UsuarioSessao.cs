@@ -1,8 +1,8 @@
-﻿using Almoxarifado.Domain.Entities;
+using Almoxarifado.Application.DTOs;
 
 namespace Almoxarifado.App.Services;
 
 public static class UsuarioSessao
 {
-    public static Usuario? UsuarioLogado { get; set; }
+    public static UsuarioDto? UsuarioLogado { get; set; }
 }

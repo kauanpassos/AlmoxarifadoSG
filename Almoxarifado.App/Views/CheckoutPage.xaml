@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:Almoxarifado.App.ViewModels"
+             x:Class="Almoxarifado.App.Views.CheckoutPage"
+             Title="Revisão do Pedido"
+             x:DataType="viewmodels:CheckoutViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Padding="20">
+        
+        <Label Grid.Row="0" Text="Itens no Carrinho" FontSize="20" FontAttributes="Bold" Margin="0,0,0,10" />
+
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Itens}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Padding="10" Margin="0,5" CornerRadius="8" BorderColor="LightGray">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0" Text="{Binding Produto.Nome}" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding Quantidade, StringFormat='Qtd: {0}'}" FontAttributes="Bold" VerticalOptions="Center" />
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.EmptyView>
+                <Label Text="Seu carrinho está vazio." HorizontalOptions="Center" VerticalOptions="Center" />
+            </CollectionView.EmptyView>
+        </CollectionView>
+
+        <StackLayout Grid.Row="2" Margin="0,20">
+            <Label Text="Justificativa do Pedido" FontAttributes="Bold" Margin="0,0,0,5" />
+            <Editor Text="{Binding Justificativa}" 
+                    Placeholder="Ex: Manutenção preventiva da máquina 02..." 
+                    HeightRequest="100" 
+                    IsEnabled="{Binding IsNotBusy}" />
+        </StackLayout>
+
+        <Grid Grid.Row="3">
+            <Button Text="Confirmar Pedido" 
+                    Command="{Binding FinalizarPedidoCommand}" 
+                    IsVisible="{Binding IsNotBusy}" 
+                    BackgroundColor="{StaticResource Primary}" 
+                    TextColor="White" 
+                    CornerRadius="8" 
+                    HeightRequest="50" />
+                    
+            <ActivityIndicator IsRunning="True" 
+                               IsVisible="{Binding IsBusy}" 
+                               HorizontalOptions="Center" />
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

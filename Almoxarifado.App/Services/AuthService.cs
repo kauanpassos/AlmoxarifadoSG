@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Almoxarifado.App.Models;
 using Almoxarifado.App.Services.Interfaces;
-using Almoxarifado.Domain.Entities;
+using Almoxarifado.Application.DTOs;
 using Almoxarifado.Domain.Enums;
 using Firebase.Auth;
 using Microsoft.Maui.Storage;
@@ -12,13 +12,13 @@ namespace Almoxarifado.App.Services;
 
 public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClient httpClient) : IAuthService
 {
-    public async Task<Usuario?> LoginAsync(string email, string password)
+    public async Task<UsuarioDto?> LoginAsync(string email, string password)
     {
         return await ExecutarRequisicaoSeguraAsync(async () =>
         {
             var response = await httpClient.PostAsJsonAsync("api/auth/login", new { email, password });
 
-            if (!response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode is false)
                 throw new UnauthorizedAccessException("E-mail ou senha inválidos. Verifique suas credenciais.");
 
             using var jsonDocResponse = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -42,7 +42,7 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
             var payload = new { nome = request.Nome, email = request.Email, senha = request.Senha, setor = request.Setor, tipo = (int)request.Tipo };
             var response = await httpClient.PostAsJsonAsync("api/auth/registrar", payload);
 
-            if (!response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode is false)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 throw new InvalidOperationException($"Falha no cadastro: {errorContent}");
@@ -62,21 +62,13 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
         {
             throw new InvalidOperationException("Não foi possível conectar ao servidor. Verifique sua conexão com a internet.");
         }
-        catch (UnauthorizedAccessException)
-        {
-            throw;
-        }
-        catch (InvalidOperationException)
-        {
-            throw;
-        }
-        catch (Exception)
+        catch (Exception ex) when (ex is not UnauthorizedAccessException && ex is not InvalidOperationException)
         {
             throw new InvalidOperationException("Erro inesperado de comunicação. Tente novamente mais tarde.");
         }
     }
 
-    public async Task<Usuario?> VerificarSessaoAtivaAsync()
+    public async Task<UsuarioDto?> VerificarSessaoAtivaAsync()
     {
         try
         {
@@ -107,9 +99,14 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
         return Task.CompletedTask;
     }
 
-    private async Task<Usuario> FetchUserProfileAsync(string token, string defaultEmail)
+    public string? ObterUsuarioIdAtual()
     {
-        var baseUser = ExtractUserFromJwt(token) ?? new Usuario(string.Empty, defaultEmail, defaultEmail, "Não Informado", TipoUsuario.Colaborador);
+        return UsuarioSessao.UsuarioLogado?.Id;
+    }
+
+    private async Task<UsuarioDto> FetchUserProfileAsync(string token, string defaultEmail)
+    {
+        var baseUser = ExtractUserFromJwt(token) ?? new UsuarioDto(string.Empty, defaultEmail, defaultEmail, "Não Informado", TipoUsuario.Colaborador);
 
         try
         {
@@ -117,7 +114,7 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var response = await httpClient.SendAsync(request);
-            if (!response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode is false)
                 return baseUser;
 
             var content = await response.Content.ReadAsStringAsync();
@@ -132,12 +129,12 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
             if (root.TryGetProperty("tipo", out var roleProp) || root.TryGetProperty("Tipo", out roleProp))
                 role = (TipoUsuario)roleProp.GetInt32();
 
-            return new Usuario(
-                id: baseUser.Id, 
-                nome: GetStringFallback("nome", "Nome", baseUser.Nome), 
-                email: baseUser.Email, 
-                setor: GetStringFallback("setor", "Setor", baseUser.Setor), 
-                tipo: role);
+            return new UsuarioDto(
+                baseUser.Id, 
+                baseUser.Email, 
+                GetStringFallback("nome", "Nome", baseUser.Nome), 
+                GetStringFallback("setor", "Setor", baseUser.Setor),
+                role);
         }
         catch
         {
@@ -145,7 +142,7 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
         }
     }
 
-    private Usuario? ExtractUserFromJwt(string token)
+    private UsuarioDto? ExtractUserFromJwt(string token)
     {
         try
         {
@@ -169,7 +166,7 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
                     role = TipoUsuario.Almoxarife;
             }
 
-            return new Usuario(id, name, email, "Não Informado", role);
+            return new UsuarioDto(id, email, name, "Não Informado", role);
         }
         catch
         {
