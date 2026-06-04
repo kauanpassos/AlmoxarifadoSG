@@ -13,7 +13,6 @@ env:
   DOTNET_VERSION: '9.0.x'
 
 jobs:
-  # Job 1: Validação da API e Testes (Ubuntu)
   backend-ci:
     name: Backend Build & Test
     runs-on: ubuntu-latest
@@ -49,6 +48,17 @@ jobs:
     - name: Executar Testes com Cobertura
       run: dotnet test TesteApp/TesteApp.csproj -c Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
 
+    - name: Iniciar API em Background para Stress Test
+      run: |
+        dotnet run --project Almoxarifado.API/Almoxarifado.API.csproj -c Release --no-build &
+        sleep 10
+
+    - name: Instalar K6 Load Tester
+      run: sudo snap install k6
+
+    - name: Executar Smoke/Stress Test (K6)
+      run: k6 run k6-stress-test.js
+
     - name: Publicar API
       run: dotnet publish Almoxarifado.API/Almoxarifado.API.csproj -c Release -o publish --no-restore
 
@@ -58,11 +68,10 @@ jobs:
         name: api-publish-${{ github.run_number }}
         path: publish
 
-  # Job 2: Build do MAUI Android (Windows)
   mobile-android:
     name: Mobile Build (Android)
     runs-on: windows-latest
-    needs: backend-ci # Fail-Fast garante que só roda se a API passar
+    needs: backend-ci
     timeout-minutes: 30
     
     steps:
@@ -88,13 +97,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget-mobile-
 
-    - name: Instalar Workload MAUI (Apenas Android para otimizar tempo)
-      run: dotnet workload install maui-android
+    - name: Instalar Workload MAUI
+      run: dotnet workload restore Almoxarifado.App/Almoxarifado.App.csproj
 
     - name: Restaurar dependências do Mobile
       run: dotnet restore Almoxarifado.App/Almoxarifado.App.csproj
 
-    - name: Compilar o Projeto Mobile (Release)
+    - name: Compilar o Projeto Mobile
       run: dotnet build Almoxarifado.App/Almoxarifado.App.csproj -c Release -f net9.0-android --no-restore
 
     - name: Publicar APK Android
