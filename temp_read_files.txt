@@ -1,8 +1,0 @@
-Files to read:
-1. Almoxarifado.App/App.xaml.cs
-2. Almoxarifado.App/AppShell.xaml.cs
-3. Almoxarifado.App/ViewModels/PerfilViewModel.cs
-4. Almoxarifado.App/ViewModels/LoginViewModel.cs
-5. Almoxarifado.App/Services/AuthService.cs
-6. Almoxarifado.App/Services/UsuarioSessao.cs
-7. Almoxarifado.App/Views/PerfilPage.xaml.cs

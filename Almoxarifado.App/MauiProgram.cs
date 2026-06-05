@@ -64,9 +64,11 @@ public static class MauiProgram
 
     private static void RegistrarHttpClients(IServiceCollection services)
     {
+        // CORREÇÃO DEFINITIVA: 
+        // Usando 127.0.0.1 em vez de localhost para furar o isolamento de rede do Windows App
         var apiBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
-            ? "https://10.0.2.2:7185/"
-            : "https://localhost:7185/";
+            ? "http://10.0.2.2:5144/"
+            : "http://127.0.0.1:5144/";
 
         services.AddTransient<AuthenticatedHttpHandler>();
 
@@ -86,6 +88,8 @@ public static class MauiProgram
     {
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<INavigationService, NavigationService>();
+
+        // Serviços vitais de Estoque
         services.AddScoped<IFirebaseService, HttpFirebaseService>();
         services.AddSingleton<ICartService, CartService>();
     }
@@ -97,6 +101,8 @@ public static class MauiProgram
         services.AddTransient<GestaoFilaViewModel>();
         services.AddTransient<HomeColaboradorViewModel>();
         services.AddTransient<PerfilViewModel>();
+
+        // ViewModel da colega
         services.AddTransient<CadastroViewModel>();
     }
 
@@ -108,6 +114,8 @@ public static class MauiProgram
         services.AddTransient<MainPage>();
         services.AddTransient<HomeColaboradorPage>();
         services.AddTransient<PerfilPage>();
+
+        // Página da colega
         services.AddTransient<CadastroPage>();
     }
 }
