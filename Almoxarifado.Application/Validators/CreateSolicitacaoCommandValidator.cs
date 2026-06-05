@@ -6,13 +6,16 @@ public sealed class CreateSolicitacaoCommandValidator : AbstractValidator<Create
 {
     public CreateSolicitacaoCommandValidator()
     {
-        RuleFor(x => x.Solicitacao)
-            .NotNull().WithMessage("A solicitação não pode ser nula.");
-
-        RuleFor(x => x.Solicitacao.UsuarioId)
+        RuleFor(x => x.UsuarioId)
             .NotEmpty().WithMessage("O ID do usuário solicitante é obrigatório.");
 
-        RuleFor(x => x.Solicitacao.Status)
-            .Equal("Pendente").WithMessage("Uma nova solicitação deve iniciar com o status 'Pendente'.");
+        RuleFor(x => x.Itens)
+            .NotEmpty().WithMessage("A solicitação deve conter pelo menos um item.");
+            
+        RuleForEach(x => x.Itens).ChildRules(itens => 
+        {
+            itens.RuleFor(i => i.Sku).NotEmpty().WithMessage("O SKU do item é obrigatório.");
+            itens.RuleFor(i => i.Quantidade).GreaterThan(0).WithMessage("A quantidade do item deve ser maior que zero.");
+        });
     }
 }

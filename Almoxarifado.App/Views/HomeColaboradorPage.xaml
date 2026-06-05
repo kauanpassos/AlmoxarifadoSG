@@ -4,10 +4,18 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
+    xmlns:models="clr-namespace:Almoxarifado.App.Models"
+    xmlns:converters="clr-namespace:Almoxarifado.App.Converters"
     x:DataType="vm:HomeColaboradorViewModel"
     BackgroundColor="White"
     NavigationPage.HasNavigationBar="False"
     Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StatusToColorConverter x:Key="StatusToColor" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*,Auto">
 
@@ -56,14 +64,14 @@
 
             <CollectionView Grid.Row="1" ItemsSource="{Binding ListaSolicitacoes}">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:SolicitacaoModel">
-                        <Frame BackgroundColor="White" BorderColor="{Binding CorHexStatus}" CornerRadius="8" Padding="18,15" HasShadow="True" Margin="0,0,0,15">
+                    <DataTemplate x:DataType="models:SolicitacaoModel">
+                        <Frame BackgroundColor="White" BorderColor="{Binding NomeStatus, Converter={StaticResource StatusToColor}}" CornerRadius="8" Padding="18,15" HasShadow="True" Margin="0,0,0,15">
                             <VerticalStackLayout Spacing="10">
                                 <Label Text="{Binding NomePeca}" FontSize="18" FontAttributes="Bold" TextColor="#1A1A1A" />
                                 <Label Text="{Binding Sku, StringFormat='SKU: {0}'}" FontSize="12" FontAttributes="Bold" TextColor="#757575" />
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Label Text="{Binding Quantidade, StringFormat='{0} un'}" FontSize="20" FontAttributes="Bold" VerticalOptions="Center" TextColor="Black" />
-                                    <Button Grid.Column="1" Text="{Binding NomeStatus}" BackgroundColor="{Binding CorHexStatus}" TextColor="White" CornerRadius="10" Padding="20,8" FontAttributes="Bold" />
+                                    <Button Grid.Column="1" Text="{Binding NomeStatus}" BackgroundColor="{Binding NomeStatus, Converter={StaticResource StatusToColor}}" TextColor="White" CornerRadius="10" Padding="20,8" FontAttributes="Bold" />
                                 </Grid>
                             </VerticalStackLayout>
                         </Frame>

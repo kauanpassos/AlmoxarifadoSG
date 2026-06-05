@@ -1,13 +1,17 @@
+using MediatR;
+using Almoxarifado.Domain.Interfaces;
 using Almoxarifado.Application.Queries;
 using Almoxarifado.Domain.Entities;
-using Almoxarifado.Domain.Interfaces;
-using MediatR;
+using Almoxarifado.Application.DTOs;
+using System.Linq;
+
 namespace Almoxarifado.Application.Handlers;
-public sealed class GetSolicitacoesByUserHandler(IReadOnlyRepository<Solicitacao> repository)
-    : IRequestHandler<GetSolicitacoesByUserQuery, IEnumerable<Solicitacao>>
+public sealed class GetSolicitacoesByUserHandler(IReadOnlyRepository<Solicitacao> repository) 
+    : IRequestHandler<GetSolicitacoesByUserQuery, IEnumerable<SolicitacaoDto>>
 {
-    public async Task<IEnumerable<Solicitacao>> Handle(GetSolicitacoesByUserQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<SolicitacaoDto>> Handle(GetSolicitacoesByUserQuery request, CancellationToken cancellationToken)
     {
-        return await repository.GetByUserIdAsync(request.UsuarioId);
+        var result = await repository.GetByUserIdAsync(request.UsuarioId);
+        return (result ?? []).Select(s => s.ToDto());
     }
 }

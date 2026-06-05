@@ -1,32 +1,40 @@
 using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
-using Almoxarifado.Domain.Entities;
+using Almoxarifado.Application.DTOs;
 using Almoxarifado.Domain.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System;
+using System.Threading.Tasks;
 
 namespace Almoxarifado.App.ViewModels;
 
-public partial class PerfilViewModel : ObservableObject
+public sealed partial class PerfilViewModel : ObservableObject
 {
     private readonly IAuthService _authService;
     private readonly INavigationService _navigationService;
+    private readonly IDialogService _dialogService;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Iniciais))]
     [NotifyPropertyChangedFor(nameof(IsAlmoxarife))]
     [NotifyPropertyChangedFor(nameof(IsColaborador))]
-    private Usuario? _usuarioAtual;
+    private UsuarioDto? _usuarioAtual;
 
     public string Iniciais => ObterIniciais(UsuarioAtual?.Nome);
 
-    public bool IsAlmoxarife => UsuarioAtual?.Tipo == TipoUsuario.Almoxarife;
-    public bool IsColaborador => UsuarioAtual?.Tipo == TipoUsuario.Colaborador;
+    public bool IsAlmoxarife => UsuarioAtual?.Tipo is TipoUsuario.Almoxarife;
+    public bool IsColaborador => UsuarioAtual?.Tipo is TipoUsuario.Colaborador;
 
-    public PerfilViewModel(IAuthService authService, INavigationService navigationService)
+    public PerfilViewModel(IAuthService authService, INavigationService navigationService, IDialogService dialogService)
     {
-        _authService = authService ?? throw new ArgumentNullException(nameof(authService));
-        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        ArgumentNullException.ThrowIfNull(authService);
+        ArgumentNullException.ThrowIfNull(navigationService);
+        ArgumentNullException.ThrowIfNull(dialogService);
+
+        _authService = authService;
+        _navigationService = navigationService;
+        _dialogService = dialogService;
 
         UsuarioAtual = UsuarioSessao.UsuarioLogado;
     }
@@ -42,7 +50,7 @@ public partial class PerfilViewModel : ObservableObject
     {
         try
         {
-            bool confirmar = await Shell.Current.DisplayAlert(
+            bool confirmar = await _dialogService.ShowConfirmationAsync(
                 "Sair",
                 "Deseja realmente encerrar sua sessão?",
                 "Sair",
@@ -53,11 +61,9 @@ public partial class PerfilViewModel : ObservableObject
                 await _navigationService.NavigateToLoginAsync();
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"Erro ao sair: {ex.Message}\n{ex.StackTrace}");
-
-            await Shell.Current.DisplayAlert("Erro", "Ocorreu um erro ao sair. Tente novamente.", "OK");
+            await _dialogService.ShowAlertAsync("Erro", "Ocorreu um erro ao tentar sair. Tente novamente.");
         }
     }
 
@@ -70,8 +76,10 @@ public partial class PerfilViewModel : ObservableObject
     private string ObterIniciais(string? nome)
     {
         if (string.IsNullOrWhiteSpace(nome)) return "US";
+        
         var partes = nome.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (partes.Length == 1) return partes[0].Substring(0, Math.Min(2, partes[0].Length)).ToUpper();
+        if (partes.Length is 1) return partes[0].Substring(0, Math.Min(2, partes[0].Length)).ToUpper();
+        
         return $"{partes[0][0]}{partes[^1][0]}".ToUpper();
     }
 }

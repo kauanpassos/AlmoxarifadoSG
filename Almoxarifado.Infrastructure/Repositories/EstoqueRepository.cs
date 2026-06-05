@@ -7,22 +7,19 @@ using System.Threading.Tasks;
 
 namespace Almoxarifado.Infrastructure.Repositories;
 
-public sealed class EstoqueRepository : IReadOnlyRepository<Produto>
+public sealed class EstoqueRepository(FirestoreDb firestoreDb) : IReadOnlyRepository<Produto>, IWriteOnlyRepository<Produto>
 {
-    private readonly FirebaseEngine<Produto> _engine;
+    private readonly FirebaseEngine<Produto> _engine = new(firestoreDb, "Produtos");
 
-    public EstoqueRepository(FirestoreDb firestoreDb)
-    {
-        _engine = new FirebaseEngine<Produto>(firestoreDb, "Produtos");
-    }
+    public Task<Produto?> GetByIdAsync(string id) => _engine.GetByIdAsync(id);
 
-    public async Task<Produto?> GetByIdAsync(string id) => await _engine.GetByIdAsync(id);
+    public Task<IEnumerable<Produto>> GetAllAsync() => _engine.GetAllAsync();
 
-    public async Task<IEnumerable<Produto>> GetAllAsync() => await _engine.GetAllAsync();
+    public Task<IEnumerable<Produto>> GetByFieldAsync(string fieldName, object value) => _engine.GetByFieldAsync(fieldName, value);
 
-    public async Task AddAsync(Produto entity) => await _engine.AddAsync(entity);
+    public Task AddAsync(Produto entity) => _engine.AddAsync(entity);
 
-    public async Task UpdateAsync(Produto entity) => await _engine.UpdateAsync(entity.Id, entity);
+    public Task UpdateAsync(Produto entity) => _engine.UpdateAsync(entity);
 
-    public async Task DeleteAsync(string id) => await _engine.DeleteAsync(id);
+    public Task DeleteAsync(string id) => _engine.DeleteAsync(id);
 }

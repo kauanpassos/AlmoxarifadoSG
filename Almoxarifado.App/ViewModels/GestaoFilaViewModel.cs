@@ -1,37 +1,28 @@
 using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
-using Almoxarifado.App.Views;
-using Almoxarifado.Domain.Entities;
-using Almoxarifado.Domain.Enums;
+using Almoxarifado.Application.DTOs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui.Storage;
+using System;
 using System.Collections.ObjectModel;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using System.Windows.Input;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.ViewModels;
 
-public partial class GestaoFilaViewModel : ObservableObject
+public sealed partial class GestaoFilaViewModel : ObservableObject
 {
-    private readonly HttpClient _httpClient;
-    private readonly List<Solicitacao> _filaCompleta = new();
+    private readonly IFirebaseService _firebaseService;
+    private readonly INavigationService _navigationService;
+    private readonly IDialogService _dialogService;
 
-    public ObservableCollection<Solicitacao> Solicitacoes { get; } = new();
+    public ObservableCollection<SolicitacaoDto> Solicitacoes { get; } = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsEmpty))]
-    private bool isBusy;
+    private bool _isBusy;
 
-    [ObservableProperty]
-    private string textoPesquisa = string.Empty;
-
-    [ObservableProperty]
-    private string filtroStatus = "Todos";
-
-    public bool IsEmpty => Solicitacoes.Count == 0 && !IsBusy;
+    public bool IsEmpty => Solicitacoes.Count is 0 && IsBusy is false;
 
     public string IniciaisUsuario
     {
@@ -39,70 +30,62 @@ public partial class GestaoFilaViewModel : ObservableObject
         {
             var nome = UsuarioSessao.UsuarioLogado?.Nome;
             if (string.IsNullOrWhiteSpace(nome)) return "US";
+            
             var partes = nome.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (partes.Length == 1) return partes[0].Substring(0, Math.Min(2, partes[0].Length)).ToUpper();
+            if (partes.Length is 1) return partes[0].Substring(0, Math.Min(2, partes[0].Length)).ToUpper();
+            
             return $"{partes[0][0]}{partes[^1][0]}".ToUpper();
         }
     }
 
-    public GestaoFilaViewModel(HttpClient httpClient)
+    public GestaoFilaViewModel(
+        IFirebaseService firebaseService,
+        INavigationService navigationService,
+        IDialogService dialogService)
     {
-        _httpClient = httpClient;
+        ArgumentNullException.ThrowIfNull(firebaseService);
+        ArgumentNullException.ThrowIfNull(navigationService);
+        ArgumentNullException.ThrowIfNull(dialogService);
+
+        _firebaseService = firebaseService;
+        _navigationService = navigationService;
+        _dialogService = dialogService;
     }
 
     [RelayCommand]
     private async Task IrParaPerfilAsync()
     {
-        await Shell.Current.GoToAsync(nameof(PerfilPage));
+        await _navigationService.NavigateToAsync("//PerfilPage");
     }
 
     [RelayCommand]
     private async Task IrParaEstoqueAsync()
     {
-        await Shell.Current.GoToAsync(nameof(EstoquePage));
+        await Shell.Current.GoToAsync("EstoquePage");
     }
-
-    partial void OnTextoPesquisaChanged(string value) => AplicarFiltros();
 
     [RelayCommand]
     public async Task LoadAsync()
     {
         if (IsBusy) return;
+
         try
         {
             IsBusy = true;
             Solicitacoes.Clear();
 
-            var usuario = UsuarioSessao.UsuarioLogado;
-            if (usuario == null) return;
+            if (UsuarioSessao.UsuarioLogado is null) return;
 
-            var idToken = await SecureStorage.Default.GetAsync("auth_token") ?? string.Empty;
-            var url = "api/Solicitacao";
+            var dados = await _firebaseService.GetSolicitacoesPendentesAsync();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
-
-            var resp = await _httpClient.SendAsync(request);
-            if (!resp.IsSuccessStatusCode)
+            foreach (var item in dados)
             {
-                var err = await resp.Content.ReadAsStringAsync();
-                await Shell.Current.DisplayAlert("Erro", $"Não foi possível carregar as solicitações: {err}", "OK");
-                return;
+                Solicitacoes.Add(item);
             }
-
-            var content = await resp.Content.ReadAsStringAsync();
-            var dados = JsonSerializer.Deserialize<List<Solicitacao>>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            }) ?? new List<Solicitacao>();
-
-            _filaCompleta.Clear();
-            _filaCompleta.AddRange(dados);
-            AplicarFiltros();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            await Shell.Current.DisplayAlert("Erro ao carregar", ex.Message, "OK");
+            await _dialogService.ShowAlertAsync("Erro de Comunicação", "Não foi possível carregar a fila de solicitações no momento.");
         }
         finally
         {
@@ -111,77 +94,35 @@ public partial class GestaoFilaViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void MudarFiltro(string status)
-    {
-        FiltroStatus = status;
-        AplicarFiltros();
-    }
-
-    [RelayCommand]
-    private async Task AprovarAsync(Solicitacao solicitacao)
+    private async Task AprovarAsync(SolicitacaoDto solicitacao)
     {
         await AlterarStatusAsync(solicitacao, "Aprovada");
     }
 
     [RelayCommand]
-    private async Task RecusarAsync(Solicitacao solicitacao)
+    private async Task RecusarAsync(SolicitacaoDto solicitacao)
     {
         await AlterarStatusAsync(solicitacao, "Recusada");
     }
 
-    private async Task AlterarStatusAsync(Solicitacao solicitacao, string novoStatus)
+    private async Task AlterarStatusAsync(SolicitacaoDto solicitacao, string novoStatus)
     {
         if (IsBusy) return;
+
         try
         {
             IsBusy = true;
-            var idToken = await SecureStorage.Default.GetAsync("auth_token") ?? string.Empty;
-            var url = $"api/Solicitacao/{solicitacao.Id}/status";
-            var body = JsonSerializer.Serialize(new { NovoStatus = novoStatus });
-
-            var request = new HttpRequestMessage(HttpMethod.Patch, url)
-            {
-                Content = new StringContent(body, Encoding.UTF8, "application/json")
-            };
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
-
-            var resp = await _httpClient.SendAsync(request);
-            if (!resp.IsSuccessStatusCode)
-            {
-                var err = await resp.Content.ReadAsStringAsync();
-                await Shell.Current.DisplayAlert("Erro", $"Não foi possível atualizar a solicitação: {err}", "OK");
-                return;
-            }
-
+            
+            await _firebaseService.AtualizarStatusSolicitacaoAsync(solicitacao.Id, novoStatus);
             await LoadAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            await Shell.Current.DisplayAlert("Erro inesperado", ex.Message, "OK");
+            await _dialogService.ShowAlertAsync("Erro na Atualização", "Houve uma falha inesperada ao tentar atualizar o status da solicitação.");
         }
         finally
         {
             IsBusy = false;
         }
-    }
-
-    private void AplicarFiltros()
-    {
-        var temp = _filaCompleta.AsEnumerable();
-
-        if (FiltroStatus != "Todos")
-            temp = temp.Where(s => s.Status.Equals(FiltroStatus, StringComparison.OrdinalIgnoreCase));
-
-        if (!string.IsNullOrWhiteSpace(TextoPesquisa))
-            temp = temp.Where(s =>
-                s.Id.Contains(TextoPesquisa, StringComparison.OrdinalIgnoreCase) ||
-                (s.Observacao != null && s.Observacao.Contains(TextoPesquisa, StringComparison.OrdinalIgnoreCase)) ||
-                (s.Sku != null && s.Sku.Contains(TextoPesquisa, StringComparison.OrdinalIgnoreCase)));
-
-        Solicitacoes.Clear();
-        foreach (var item in temp)
-            Solicitacoes.Add(item);
-
-        OnPropertyChanged(nameof(IsEmpty));
     }
 }

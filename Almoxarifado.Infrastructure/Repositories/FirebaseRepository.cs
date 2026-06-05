@@ -1,4 +1,4 @@
-﻿using Almoxarifado.API.Repositories;
+using Almoxarifado.API.Repositories;
 using Almoxarifado.Domain.Interfaces;
 using Google.Cloud.Firestore;
 using System;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Almoxarifado.Infrastructure.Repositories;
 
-public class FirebaseRepository<T> : IReadOnlyRepository<T>, IWriteOnlyRepository<T> where T : class
+public sealed class FirebaseRepository<T> : IReadOnlyRepository<T>, IWriteOnlyRepository<T> where T : class
 {
     private readonly FirebaseEngine<T> _engine;
 
@@ -30,20 +30,11 @@ public class FirebaseRepository<T> : IReadOnlyRepository<T>, IWriteOnlyRepositor
 
     public Task<IEnumerable<T>> GetAllAsync() => _engine.GetAllAsync();
 
+    public Task<IEnumerable<T>> GetByFieldAsync(string fieldName, object value) => _engine.GetByFieldAsync(fieldName, value);
+
     public Task AddAsync(T entity) => _engine.AddAsync(entity);
 
-    public async Task UpdateAsync(T entity)
-    {
-        var idProp = typeof(T).GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
-        if (idProp == null)
-            throw new InvalidOperationException($"O tipo {typeof(T).Name} precisa expor uma propriedade pública chamada 'Id'.");
-
-        var idValue = idProp.GetValue(entity)?.ToString();
-        if (string.IsNullOrWhiteSpace(idValue))
-            throw new InvalidOperationException($"O valor do Id não pode ser nulo ou vazio para {typeof(T).Name}.");
-
-        await _engine.UpdateAsync(idValue, entity);
-    }
+    public Task UpdateAsync(T entity) => _engine.UpdateAsync(entity);
 
     public Task DeleteAsync(string id) => _engine.DeleteAsync(id);
 }

@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
+             xmlns:dto="clr-namespace:Almoxarifado.Application.DTOs;assembly=Almoxarifado.Application"
              x:Class="Almoxarifado.App.Views.GestaoFilaPage"
              x:DataType="vm:GestaoFilaViewModel"
              Title="Gestão de Fila"
@@ -52,12 +53,12 @@
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="dto:SolicitacaoDto">
                         <Frame Margin="0,0,0,15" Padding="15" CornerRadius="5" BorderColor="#E0E0E0" BackgroundColor="White" HasShadow="True">
                             <VerticalStackLayout Spacing="8">
                                 <Grid ColumnDefinitions="*, Auto">
                                     <VerticalStackLayout Grid.Column="0">
-                                        <Label Text="{Binding Sku}" FontAttributes="Bold" TextColor="#1A1A1A" FontSize="18" />
+                                        <Label Text="{Binding Id, StringFormat='Pedido #{0}'}" FontAttributes="Bold" TextColor="#1A1A1A" FontSize="18" />
                                         <Label Text="{Binding UsuarioId, StringFormat='Solicitante: {0}'}" TextColor="#757575" FontSize="12" Margin="0,2,0,0" />
                                         <Label Text="{Binding Observacao}" TextColor="#555555" FontSize="12" Margin="0,2,0,0" />
                                     </VerticalStackLayout>
