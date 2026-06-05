@@ -34,6 +34,8 @@ public sealed class Solicitacao
         _itens.Add(item);
         AtualizarData();
     }
+
+
     public void Aprovar()
     {
         if (Status is not "Pendente")
