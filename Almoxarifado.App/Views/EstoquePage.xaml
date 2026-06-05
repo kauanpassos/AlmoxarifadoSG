@@ -5,53 +5,58 @@
              xmlns:controls="clr-namespace:Almoxarifado.App.Controls"
              x:Class="Almoxarifado.App.Views.EstoquePage"
              x:DataType="vm:EstoqueViewModel"
-             BackgroundColor="{StaticResource PageBackground}"
+             BackgroundColor="#F4F6F8"
              Shell.NavBarIsVisible="False">
 
     <Grid>
-        <Grid RowDefinitions="Auto, *, Auto" BackgroundColor="{StaticResource PageBackground}">
+        <Grid RowDefinitions="Auto, *, Auto" BackgroundColor="#F4F6F8">
 
             <VerticalStackLayout Grid.Row="0">
 
                 <controls:HeaderControl Titulo="Estoque" MostrarBotaoVoltar="True" />
 
-                <Border Stroke="{StaticResource InputBorder}" StrokeThickness="1" BackgroundColor="{StaticResource InputBackground}" Margin="28,0,28,16" Padding="13,0,19,0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="20" />
-                    </Border.StrokeShape>
+                <Border Stroke="{StaticResource Primary}"
+                        StrokeThickness="1.5"
+                        StrokeShape="RoundRectangle 8"
+                        BackgroundColor="#FAFAFA"
+                        HeightRequest="50"
+                        Margin="28,0,28,16">
                     <Grid ColumnDefinitions="Auto, *">
-                        <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" HorizontalOptions="Center" Margin="0,0,4,0">
-                            <BoxView WidthRequest="13" HeightRequest="13" Color="{StaticResource Gray500}" />
-                            <BoxView WidthRequest="7" HeightRequest="7" Color="{StaticResource Black}" HorizontalOptions="Center" />
-                        </VerticalStackLayout>
-                        <Entry Grid.Column="1" 
-                               Text="{Binding TermoPesquisa}" 
-                               Placeholder="Nome ou Número do Produto" 
-                               PlaceholderColor="{StaticResource TextSecondary}" 
-                               TextColor="{StaticResource TextSecondary}" 
-                               FontSize="15" 
-                               BackgroundColor="Transparent" />
+                        <Label Grid.Column="0"
+                               Text="🔍"
+                               FontSize="16"
+                               VerticalOptions="Center"
+                               Margin="12,0,4,0" />
+                        <Entry Grid.Column="1"
+                               Text="{Binding TermoPesquisa}"
+                               Placeholder="Nome ou Número do Produto"
+                               PlaceholderColor="{StaticResource Primary}"
+                               TextColor="{StaticResource Black}"
+                               FontSize="15"
+                               BackgroundColor="Transparent"
+                               VerticalOptions="Center"
+                               Margin="0,0,10,0" />
                     </Grid>
-                </Border>
+                </Border>   
 
                 <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Margin="28,0,0,27">
                     <HorizontalStackLayout Spacing="16">
 
-                        <Border BackgroundColor="{StaticResource BrandSecondary}" Stroke="{StaticResource BrandSecondary}" StrokeThickness="1" Padding="9,3">
+                        <Border BackgroundColor="{StaticResource BrandSecondary}" Stroke="{StaticResource BrandSecondary}" StrokeThickness="1.5" Padding="9,3">
                             <Border.StrokeShape>
                                 <RoundRectangle CornerRadius="10" />
                             </Border.StrokeShape>
-                            <Label Text="Todos" TextColor="{StaticResource White}" FontSize="15" FontAttributes="Bold" />
+                            <Label Text="Todos" TextColor="{StaticResource White}" FontSize="14" FontAttributes="Bold" />
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding FiltrarTodosCommand}" />
                             </Border.GestureRecognizers>
                         </Border>
 
-                        <Border BackgroundColor="{StaticResource FilterInactiveBackground}" Stroke="{StaticResource BrandPrimary}" StrokeThickness="1" Padding="6,5" Margin="0,0,28,0">
+                        <Border BackgroundColor="{StaticResource FilterInactiveBackground}" Stroke="{StaticResource BrandPrimary}" StrokeThickness="1.5" Padding="6,5" Margin="0,0,28,0">
                             <Border.StrokeShape>
                                 <RoundRectangle CornerRadius="10" />
                             </Border.StrokeShape>
-                            <Label Text="Indisponível" TextColor="{StaticResource BrandPrimary}" FontSize="15" FontAttributes="Bold" />
+                            <Label Text="Indisponível" TextColor="{StaticResource BrandPrimary}" FontSize="14" FontAttributes="Bold" />
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding FiltrarIndisponivelCommand}" />
                             </Border.GestureRecognizers>
@@ -69,16 +74,12 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <Grid Grid.Row="2" HeightRequest="51">
-                <Border BackgroundColor="{StaticResource BrandPrimary}" Stroke="{StaticResource BlackBrush}" StrokeThickness="1" Margin="0" Padding="0" />
-                <Grid ColumnDefinitions="*, Auto, Auto, *">
-                    <BoxView Grid.Column="1" WidthRequest="51" HeightRequest="51" Color="Transparent" Margin="0,0,25,0" />
-                    <BoxView Grid.Column="2" WidthRequest="51" HeightRequest="51" Color="Transparent" Margin="25,0,0,0" />
-                </Grid>
+            <Grid Grid.Row="2"
+                  BackgroundColor="#1A336E"
+                  HeightRequest="51" />
             </Grid>
-        </Grid>
 
-        <Border BackgroundColor="{StaticResource CartButtonColor}" StrokeThickness="0" WidthRequest="65" HeightRequest="65"
+        <Border BackgroundColor="{StaticResource Primary}" StrokeThickness="0" WidthRequest="65" HeightRequest="65"
                 HorizontalOptions="End" VerticalOptions="End" Margin="0,0,25,80"
                 IsVisible="{Binding TemItensNoCarrinho}">
             <Border.StrokeShape>
@@ -92,18 +93,17 @@
             </Border.GestureRecognizers>
 
             <Grid>
-                <Label Text="🛒" TextColor="{StaticResource White}" FontSize="28" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Image Source="icone_carrinho.png" HeightRequest="45" WidthRequest="45" HorizontalOptions="Center" VerticalOptions="Center" />
 
-                <Border BackgroundColor="{StaticResource White}" Stroke="{StaticResource CartButtonColor}" StrokeThickness="1" WidthRequest="24" HeightRequest="24"
-                        HorizontalOptions="End" VerticalOptions="Start" Margin="0,0,-5,-5">
+                <Border BackgroundColor="{StaticResource White}" Stroke="{StaticResource CartButtonColor}" StrokeThickness="1" MinimumWidthRequest="28" HeightRequest="28" Padding="6,0" HorizontalOptions="End" VerticalOptions="Start" Margin="0">
                     <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="12"/>
+                        <RoundRectangle CornerRadius="15"/>
                     </Border.StrokeShape>
                     <Label Text="{Binding QuantidadeCarrinho}" TextColor="{StaticResource CartButtonColor}" FontSize="12" FontAttributes="Bold"
                            HorizontalOptions="Center" VerticalOptions="Center" />
                 </Border>
             </Grid>
-        </Border>
+         </Border>
 
     </Grid>
 </ContentPage>

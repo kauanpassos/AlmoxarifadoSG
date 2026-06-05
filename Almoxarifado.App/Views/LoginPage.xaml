@@ -5,10 +5,10 @@
              NavigationPage.HasNavigationBar="False">
 
     <Grid BackgroundColor="#F4F6F8">
-        <ScrollView VerticalOptions="CenterAndExpand">
+        <ScrollView VerticalOptions="Center">
 
             <Border Margin="20"
-                    Padding="40,50"
+                    Padding="30,40"
                     MaximumWidthRequest="450"
                     HorizontalOptions="Center"
                     VerticalOptions="Center"
@@ -24,7 +24,7 @@
                     <Shadow Brush="#1A3160" Offset="0,15" Radius="40" Opacity="0.08" />
                 </Border.Shadow>
 
-                <VerticalStackLayout Spacing="25">
+                <VerticalStackLayout Spacing="15">
 
                     <Label Text="AlmoxarifadoSG"
                            FontSize="36"
@@ -34,39 +34,32 @@
                            CharacterSpacing="1"/>
 
                     <Label Text="Faça login para solicitar as peças"
-                           FontSize="16"
+                           FontSize="15"
                            TextColor="#6B7C93"
                            HorizontalOptions="Center"
-                           Margin="0,-15,0,25"/>
+                           Margin="0,0,0,10"/>
 
                     <Border Stroke="{StaticResource Primary}"
                             StrokeThickness="1.5"
-                            StrokeShape="RoundRectangle 16"
-                            BackgroundColor="#FFFFFF"
-                            Padding="15,5"
-                            HeightRequest="60">
-                        <Border.Shadow>
-                            <Shadow Brush="{StaticResource Primary}" Offset="0,4" Radius="10" Opacity="0.1" />
-                        </Border.Shadow>
+                            StrokeShape="RoundRectangle 8"
+                            BackgroundColor="#FAFAFA"
+                            HeightRequest="50">
                         <Entry Text="{Binding Email}"
                                Placeholder="Usuário ou Crachá"
-                               PlaceholderColor="#8C9AA9"
-                               TextColor="#1E3A60"
-                               FontSize="16"
+                               PlaceholderColor="{StaticResource Gray400}"
+                               TextColor="{StaticResource Black}"
+                               FontSize="15"
                                Keyboard="Email"
                                ReturnType="Next"
-                               VerticalOptions="Center"/>
+                               VerticalOptions="Center"
+                               Margin="15,0"/>
                     </Border>
 
                     <Border Stroke="{StaticResource Primary}"
                             StrokeThickness="1.5"
-                            StrokeShape="RoundRectangle 16"
-                            BackgroundColor="#FFFFFF"
-                            Padding="15,5"
-                            HeightRequest="60">
-                        <Border.Shadow>
-                            <Shadow Brush="{StaticResource Primary}" Offset="0,4" Radius="10" Opacity="0.1" />
-                        </Border.Shadow>
+                            StrokeShape="RoundRectangle 8"
+                            BackgroundColor="#FAFAFA"
+                            HeightRequest="50">
                         <Grid ColumnDefinitions="*, Auto">
                             <Entry Grid.Column="0"
                                    x:Name="EntrySenha"
@@ -77,7 +70,8 @@
                                    IsPassword="True"
                                    ReturnType="Done"
                                    FontSize="16"
-                                   VerticalOptions="Center"/>
+                                   VerticalOptions="Center"
+                                   Margin="15,0"/>
 
                             <ImageButton x:Name="BtnToggleSenha"
                                      Grid.Column="1"
@@ -86,7 +80,7 @@
                                      WidthRequest="24"
                                      VerticalOptions="Center"
                                      HorizontalOptions="End"
-                                     Margin="0,0,5,0"
+                                     Margin="0,0,10,0"
                                      BackgroundColor="Transparent"
                                      Clicked="ToggleSenha_Clicked"/>
                         </Grid>
@@ -95,12 +89,10 @@
                     <Button Text="Entrar no Sistema"
                             Command="{Binding LoginCommand}"
                             IsEnabled="{Binding IsNotBusy}"
-                            TextColor="White"
-                            FontSize="18"
-                            FontAttributes="Bold"
-                            HeightRequest="60"
+                            FontSize="20"
+                            HeightRequest="55"
                             CornerRadius="16"
-                            Margin="0,20,0,10">
+                            Margin="0,15,0,0">
                         <Button.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                 <GradientStop Color="#2A4D85" Offset="0.0" />
@@ -114,10 +106,10 @@
 
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
                                        IsVisible="{Binding IsBusy}"
-                                       Color="#1A3160"
+                                       Color="{StaticResource Primary}"
                                        HorizontalOptions="Center" />
 
-                    <HorizontalStackLayout HorizontalOptions="Center" Margin="0,15,0,0" Spacing="5">
+                    <HorizontalStackLayout HorizontalOptions="Center" Margin="0,10,0,0" Spacing="5">
                         <Label Text="Não tem uma conta?" 
                                TextColor="#6B7C93" 
                                FontSize="15"/>
