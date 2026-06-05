@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Google.Cloud.Firestore;
+using Almoxarifado.Domain.Enums;
 
 namespace Almoxarifado.Application.Queries;
 
@@ -22,13 +23,30 @@ public class GetPerfilUsuarioHandler : IRequestHandler<GetPerfilUsuarioQuery, Pe
             return null;
         }
 
+        var nome = snapshot.TryGetValue("Nome", out string nomeStr) ? nomeStr : "Usuário";
+        var email = snapshot.TryGetValue("Email", out string emailStr) ? emailStr : string.Empty;
+        var setor = snapshot.TryGetValue("Setor", out string setorStr) ? setorStr : "Não Informado";
+
+        var tipoNome = "Colaborador";
+        if (snapshot.TryGetValue("Tipo", out int tipoInt))
+        {
+            if (Enum.IsDefined(typeof(TipoUsuario), tipoInt))
+            {
+                tipoNome = ((TipoUsuario)tipoInt).ToString();
+            }
+        }
+        else if (snapshot.TryGetValue("Tipo", out string tipoStrFallback))
+        {
+            tipoNome = tipoStrFallback;
+        }
+
         return new PerfilUsuarioDto
         {
             Id = request.Uid,
-            Nome = snapshot.TryGetValue("Nome", out string nome) ? nome : "Usuário",
-            Email = snapshot.TryGetValue("Email", out string email) ? email : string.Empty,
-            Setor = snapshot.TryGetValue("Setor", out string setor) ? setor : "Não Informado",
-            Tipo = snapshot.TryGetValue("Tipo", out string tipo) ? tipo : "Colaborador"
+            Nome = nome,
+            Email = email,
+            Setor = setor,
+            Tipo = tipoNome
         };
     }
 }

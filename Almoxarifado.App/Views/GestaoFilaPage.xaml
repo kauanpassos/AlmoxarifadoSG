@@ -68,7 +68,7 @@
 
                                 <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                                     <Button Grid.Column="0"
-                                            Text="✔ Aprovar"
+                                            Text="Aprovar"
                                             BackgroundColor="#03BA15"
                                             TextColor="White"
                                             FontSize="13"
@@ -77,7 +77,7 @@
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GestaoFilaViewModel}}, Path=AprovarCommand}"
                                             CommandParameter="{Binding .}" />
                                     <Button Grid.Column="1"
-                                            Text="✖ Recusar"
+                                            Text="Recusar"
                                             BackgroundColor="#DA0004"
                                             TextColor="White"
                                             FontSize="13"
@@ -100,6 +100,17 @@
                                Scale="1.5" />
         </Grid>
 
-        <BoxView Grid.Row="3" BackgroundColor="#1A336E" HeightRequest="51" HorizontalOptions="Fill" />
+        <Grid Grid.Row="3" BackgroundColor="#1A336E" HeightRequest="55" ColumnDefinitions="*, *">
+            <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" HorizontalOptions="Center">
+                <Label Text="Fila" TextColor="White" FontSize="14" FontAttributes="Bold" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Center">
+                <VerticalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding IrParaEstoqueCommand}" />
+                </VerticalStackLayout.GestureRecognizers>
+                <Label Text="Estoque" TextColor="White" FontSize="14" Opacity="0.6" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Grid>
     </Grid>
 </ContentPage>

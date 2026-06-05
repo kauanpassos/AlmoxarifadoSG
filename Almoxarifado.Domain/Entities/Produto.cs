@@ -17,6 +17,7 @@ public sealed class Produto : IEntity
     public bool Ativo { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+
     public Produto(string id, long numCode, string nome, string categoria, string unidadeMedida, long estoqueMinimo)
     {
         if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("O ID do produto é obrigatório.", nameof(id));

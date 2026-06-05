@@ -93,17 +93,18 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
     {
         try
         {
-            firebaseAuthClient.SignOut();
+            if (firebaseAuthClient.User != null)
+            {
+                firebaseAuthClient.SignOut();
+            }
         }
-        catch 
-        { 
-            
-        }
+        catch
+        { }
         finally
         {
             SecureStorage.Default.Remove("auth_token");
         }
-        
+
         return Task.CompletedTask;
     }
 
@@ -130,13 +131,25 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
 
             var role = baseUser.Tipo;
             if (root.TryGetProperty("tipo", out var roleProp) || root.TryGetProperty("Tipo", out roleProp))
-                role = (TipoUsuario)roleProp.GetInt32();
+            {
+                if (roleProp.ValueKind == JsonValueKind.Number)
+                {
+                    role = (TipoUsuario)roleProp.GetInt32();
+                }
+                else if (roleProp.ValueKind == JsonValueKind.String)
+                {
+                    if (Enum.TryParse<TipoUsuario>(roleProp.GetString(), true, out var parsedRole))
+                    {
+                        role = parsedRole;
+                    }
+                }
+            }
 
             return new Usuario(
-                id: baseUser.Id, 
-                nome: GetStringFallback("nome", "Nome", baseUser.Nome), 
-                email: baseUser.Email, 
-                setor: GetStringFallback("setor", "Setor", baseUser.Setor), 
+                id: baseUser.Id,
+                nome: GetStringFallback("nome", "Nome", baseUser.Nome),
+                email: baseUser.Email,
+                setor: GetStringFallback("setor", "Setor", baseUser.Setor),
                 tipo: role);
         }
         catch
@@ -154,7 +167,7 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
                 return default;
 
             var root = jsonDoc.RootElement;
-            
+
             var id = root.TryGetProperty("sub", out var subProp) ? subProp.GetString() : string.Empty;
             if (string.IsNullOrWhiteSpace(id))
                 return default;

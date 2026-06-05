@@ -86,8 +86,6 @@ public static class MauiProgram
     {
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<INavigationService, NavigationService>();
-
-        // ADICIONADO: Seus serviços vitais de Estoque
         services.AddScoped<IFirebaseService, HttpFirebaseService>();
         services.AddSingleton<ICartService, CartService>();
     }
@@ -99,8 +97,6 @@ public static class MauiProgram
         services.AddTransient<GestaoFilaViewModel>();
         services.AddTransient<HomeColaboradorViewModel>();
         services.AddTransient<PerfilViewModel>();
-
-        // ADICIONADO: ViewModel da sua colega
         services.AddTransient<CadastroViewModel>();
     }
 
@@ -112,8 +108,6 @@ public static class MauiProgram
         services.AddTransient<MainPage>();
         services.AddTransient<HomeColaboradorPage>();
         services.AddTransient<PerfilPage>();
-
-        // ADICIONADO: Página da sua colega
         services.AddTransient<CadastroPage>();
     }
 }

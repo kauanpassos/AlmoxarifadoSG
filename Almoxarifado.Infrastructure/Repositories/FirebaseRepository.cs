@@ -14,8 +14,16 @@ public class FirebaseRepository<T> : IReadOnlyRepository<T>, IWriteOnlyRepositor
 
     public FirebaseRepository(FirestoreDb firestoreDb)
     {
-        var node = typeof(T).Name.ToLower();
-        _engine = new FirebaseEngine<T>(firestoreDb, node);
+        var typeName = typeof(T).Name;
+
+        var collectionName = typeName switch
+        {
+            "Usuario" => "Usuarios",
+            "Solicitacao" => "Solicitacoes",
+            _ => typeName.EndsWith("s", StringComparison.OrdinalIgnoreCase) ? typeName : typeName + "s"
+        };
+
+        _engine = new FirebaseEngine<T>(firestoreDb, collectionName);
     }
 
     public Task<T?> GetByIdAsync(string id) => _engine.GetByIdAsync(id);

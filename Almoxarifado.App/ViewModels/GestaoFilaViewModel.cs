@@ -56,6 +56,12 @@ public partial class GestaoFilaViewModel : ObservableObject
         await Shell.Current.GoToAsync(nameof(PerfilPage));
     }
 
+    [RelayCommand]
+    private async Task IrParaEstoqueAsync()
+    {
+        await Shell.Current.GoToAsync(nameof(EstoquePage));
+    }
+
     partial void OnTextoPesquisaChanged(string value) => AplicarFiltros();
 
     [RelayCommand]
