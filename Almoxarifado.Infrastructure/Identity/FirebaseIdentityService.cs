@@ -14,12 +14,14 @@ public sealed class FirebaseIdentityService : IIdentityService
 {
     private readonly HttpClient _httpClient;
     private readonly string _firebaseApiKey;
+
     public FirebaseIdentityService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
         _firebaseApiKey = configuration["Firebase:ApiKey"]
             ?? throw new ArgumentNullException(nameof(configuration), "A ApiKey do Firebase não foi configurada no appsettings.json da API.");
     }
+
     public async Task<string> AuthenticateAsync(string email, string password)
     {
         var url = $"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={_firebaseApiKey}";
@@ -61,6 +63,7 @@ public sealed class FirebaseIdentityService : IIdentityService
 
     public Task DeleteUserAsync(string uid) => FirebaseAuth.DefaultInstance.DeleteUserAsync(uid);
 }
+
 public sealed record AuthResponse
 {
     [JsonPropertyName("idToken")]

@@ -8,9 +8,23 @@ using System.Threading.Tasks;
 
 namespace Almoxarifado.Infrastructure.Repositories;
 
-public sealed class FirebaseRepository<T>(FirestoreDb firestoreDb) : IReadOnlyRepository<T>, IWriteOnlyRepository<T> where T : class
+public sealed class FirebaseRepository<T> : IReadOnlyRepository<T>, IWriteOnlyRepository<T> where T : class
 {
-    private readonly FirebaseEngine<T> _engine = new(firestoreDb, typeof(T).Name.ToLower());
+    private readonly FirebaseEngine<T> _engine;
+
+    public FirebaseRepository(FirestoreDb firestoreDb)
+    {
+        var typeName = typeof(T).Name;
+
+        var collectionName = typeName switch
+        {
+            "Usuario" => "Usuarios",
+            "Solicitacao" => "Solicitacoes",
+            _ => typeName.EndsWith("s", StringComparison.OrdinalIgnoreCase) ? typeName : typeName + "s"
+        };
+
+        _engine = new FirebaseEngine<T>(firestoreDb, collectionName);
+    }
 
     public Task<T?> GetByIdAsync(string id) => _engine.GetByIdAsync(id);
 

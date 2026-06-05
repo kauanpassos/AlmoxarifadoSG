@@ -11,8 +11,10 @@ public partial class AppShell : Shell
     public AppShell()
     {
         InitializeComponent();
+
         Routing.RegisterRoute(nameof(PerfilPage), typeof(PerfilPage));
         Routing.RegisterRoute(nameof(CadastroPage), typeof(CadastroPage));
+        Routing.RegisterRoute(nameof(EstoquePage), typeof(EstoquePage));
 
         Loaded += (s, e) => Dispatcher.DispatchAsync(ChecarSessaoERoteamentoAsync);
     }
@@ -40,4 +42,4 @@ public partial class AppShell : Shell
 
         await Current.GoToAsync(rota);
     }
-} 
+}

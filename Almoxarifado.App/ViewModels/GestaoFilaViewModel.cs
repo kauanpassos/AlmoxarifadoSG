@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.ViewModels;
 
@@ -55,6 +56,12 @@ public sealed partial class GestaoFilaViewModel : ObservableObject
     private async Task IrParaPerfilAsync()
     {
         await _navigationService.NavigateToAsync("//PerfilPage");
+    }
+
+    [RelayCommand]
+    private async Task IrParaEstoqueAsync()
+    {
+        await Shell.Current.GoToAsync("EstoquePage");
     }
 
     [RelayCommand]
