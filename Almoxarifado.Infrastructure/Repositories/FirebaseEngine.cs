@@ -13,10 +13,22 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
 {
     private CollectionReference Collection => firestoreDb.Collection(collectionName);
 
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
+        TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver
+        {
+            Modifiers = { ModifyTypeInfo }
+        }
+    };
+
     public async Task<T?> GetByIdAsync(string id)
     {
         var snapshot = await Collection.Document(id).GetSnapshotAsync();
-        if (snapshot.Exists is false) return default;
+        
+        if (snapshot.Exists is false) 
+            return default;
 
         return ConverterDocumentoParaEntidade(snapshot);
     }
@@ -24,42 +36,34 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
     public async Task<IEnumerable<T>> GetAllAsync()
     {
         var snapshot = await Collection.GetSnapshotAsync();
-
-        return snapshot.Documents
-            .Where(d => d.Exists)
-            .Select(ConverterDocumentoParaEntidade)
-            .Where(e => e is not null)!;
+        return ExtrairEntidadesDaSnapshot(snapshot);
     }
 
     public async Task<IEnumerable<T>> GetByFieldAsync(string fieldName, object value)
     {
         var query = Collection.WhereEqualTo(fieldName, value);
         var snapshot = await query.GetSnapshotAsync();
-
-        return snapshot.Documents
-            .Where(d => d.Exists)
-            .Select(ConverterDocumentoParaEntidade)
-            .Where(e => e is not null)!;
+        
+        return ExtrairEntidadesDaSnapshot(snapshot);
     }
 
     public async Task AddAsync(T entity)
     {
         var idProperty = typeof(T).GetProperty("Id");
-        var id = idProperty?.GetValue(entity)?.ToString();
-
+        var id = ObterValorDaPropriedadeId(entity, idProperty);
         var dicionario = ConverterEntidadeParaDicionario(entity);
 
-        if (string.IsNullOrEmpty(id) is false)
+        if (string.IsNullOrWhiteSpace(id) is false)
         {
             await Collection.Document(id).SetAsync(dicionario);
+            return;
         }
-        else
+
+        var docRef = await Collection.AddAsync(dicionario);
+        
+        if (idProperty is not null && idProperty.CanWrite)
         {
-            var docRef = await Collection.AddAsync(dicionario);
-            if (idProperty is not null && idProperty.CanWrite)
-            {
-                idProperty.SetValue(entity, docRef.Id);
-            }
+            idProperty.SetValue(entity, docRef.Id);
         }
     }
 
@@ -69,19 +73,33 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
         await Collection.Document(key).SetAsync(dicionario, SetOptions.Overwrite);
     }
 
+    public Task UpdateAsync(T entity)
+    {
+        var idProperty = typeof(T).GetProperty("Id");
+        var id = ObterValorDaPropriedadeId(entity, idProperty);
+
+        if (string.IsNullOrWhiteSpace(id))
+            throw new InvalidOperationException("Não é possível atualizar a entidade porque o identificador (Id) está nulo ou vazio.");
+
+        return UpdateAsync(id, entity);
+    }
+
     public async Task DeleteAsync(string id)
     {
         await Collection.Document(id).DeleteAsync();
     }
 
-    public Task UpdateAsync(T entity)
+    private IEnumerable<T> ExtrairEntidadesDaSnapshot(QuerySnapshot snapshot)
     {
-        var idProperty = typeof(T).GetProperty("Id");
-        var id = idProperty?.GetValue(entity)?.ToString();
+        return snapshot.Documents
+            .Where(d => d.Exists)
+            .Select(ConverterDocumentoParaEntidade)
+            .Where(e => e is not null)!;
+    }
 
-        ArgumentException.ThrowIfNullOrWhiteSpace(id);
-
-        return UpdateAsync(id, entity);
+    private static string? ObterValorDaPropriedadeId(T entity, PropertyInfo? idProperty)
+    {
+        return idProperty?.GetValue(entity)?.ToString();
     }
 
     private T? ConverterDocumentoParaEntidade(DocumentSnapshot document)
@@ -97,14 +115,51 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
             }
         }
 
-        var options = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
-        };
+        var json = JsonSerializer.Serialize(dict, _jsonOptions);
+        return JsonSerializer.Deserialize<T>(json, _jsonOptions);
+    }
 
-        var json = JsonSerializer.Serialize(dict, options);
-        return JsonSerializer.Deserialize<T>(json, options);
+    private static void ModifyTypeInfo(System.Text.Json.Serialization.Metadata.JsonTypeInfo ti)
+    {
+        if (ti.Kind is not System.Text.Json.Serialization.Metadata.JsonTypeInfoKind.Object)
+            return;
+
+        foreach (var property in ti.Properties)
+        {
+            if (property.Set is null)
+            {
+                var propInfo = ti.Type.GetProperty(property.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                if (propInfo is not null && propInfo.CanWrite)
+                {
+                    property.Set = propInfo.SetValue;
+                }
+            }
+        }
+
+        foreach (var field in ti.Type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
+        {
+            var propName = field.Name.TrimStart('_');
+            if (field.FieldType.IsGenericType && field.FieldType.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var itemType = field.FieldType.GetGenericArguments()[0];
+                var jsonProp = ti.CreateJsonPropertyInfo(typeof(IEnumerable<>).MakeGenericType(itemType), propName);
+                
+                jsonProp.Set = (obj, value) =>
+                {
+                    var list = field.GetValue(obj);
+                    var addRange = field.FieldType.GetMethod("AddRange");
+                    if (list is not null && value is not null && addRange is not null)
+                    {
+                        addRange.Invoke(list, new[] { value });
+                    }
+                };
+                
+                if (!ti.Properties.Any(p => p.Name.Equals(propName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    ti.Properties.Add(jsonProp);
+                }
+            }
+        }
     }
 
     private Dictionary<string, object> ConverterEntidadeParaDicionario(T entity)

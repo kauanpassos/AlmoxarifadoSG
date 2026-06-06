@@ -1,11 +1,11 @@
-﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App;
 public partial class App : Microsoft.Maui.Controls.Application
 {
-    public App()
+    public App(AppShell shell)
     {
         InitializeComponent();
-        MainPage = new AppShell();
+        MainPage = shell;
     }
 }

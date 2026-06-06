@@ -114,5 +114,7 @@ public static class MauiProgram
 
         // Página da colega
         services.AddTransient<CadastroPage>();
+
+        services.AddSingleton<AppShell>();
     }
 }
