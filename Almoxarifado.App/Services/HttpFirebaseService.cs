@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization; // 🔥 ADICIONADO AQUI
 using System.Threading.Tasks;
 using System.Linq;
 using Almoxarifado.App.Services.Interfaces;
@@ -21,6 +22,9 @@ public sealed class HttpFirebaseService : IFirebaseService
 
         _httpClient = httpClient;
         _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+        // 🔥 CORREÇÃO AQUI: Ensina o JSON a traduzir os Enums (como o TipoUsuario)
+        _jsonOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
     public async Task<IEnumerable<ProdutoDto>> GetProdutosAsync()
@@ -31,8 +35,8 @@ public sealed class HttpFirebaseService : IFirebaseService
             throw new HttpRequestException($"Falha na comunicação com o servidor de produtos. Código: {resposta.StatusCode}");
 
         var produtos = await resposta.Content.ReadFromJsonAsync<List<ProdutoDto>>(_jsonOptions);
-        
-        return produtos ?? [];
+
+        return produtos ?? new List<ProdutoDto>();
     }
 
     public async Task<UsuarioDto> GetUsuarioAsync(string uid)
@@ -45,7 +49,7 @@ public sealed class HttpFirebaseService : IFirebaseService
             throw new HttpRequestException($"Não foi possível obter os dados do usuário. Código do servidor: {resposta.StatusCode}");
 
         var usuario = await resposta.Content.ReadFromJsonAsync<UsuarioDto>(_jsonOptions);
-        
+
         if (usuario is null)
             throw new InvalidOperationException("O servidor retornou um perfil de usuário vazio ou inválido.");
 
@@ -57,7 +61,7 @@ public sealed class HttpFirebaseService : IFirebaseService
         ArgumentNullException.ThrowIfNull(produto);
 
         var resposta = await _httpClient.PostAsJsonAsync("api/produtos", produto);
-        
+
         if (resposta.IsSuccessStatusCode is false)
             throw new HttpRequestException($"Falha ao registrar o produto na base remota. Código: {resposta.StatusCode}");
     }
@@ -74,11 +78,16 @@ public sealed class HttpFirebaseService : IFirebaseService
         {
             UsuarioId = usuarioId,
             Observacao = observacao,
-            Itens = itens.Select(i => new { i.Sku, i.Quantidade }).ToList()
+            Itens = itens.Select(i => new
+            {
+                Sku = i.Sku,
+                NomeProduto = i.NomeProduto,
+                Quantidade = i.Quantidade
+            }).ToList()
         };
 
         var resposta = await _httpClient.PostAsJsonAsync("api/solicitacoes", payload);
-        
+
         if (resposta.IsSuccessStatusCode is false)
             throw new HttpRequestException($"O lote de solicitações foi recusado pelo servidor. Código: {resposta.StatusCode}");
     }
@@ -87,14 +96,14 @@ public sealed class HttpFirebaseService : IFirebaseService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(usuarioId);
 
-        var resposta = await _httpClient.GetAsync($"api/solicitacao/usuario/{usuarioId}");
+        var resposta = await _httpClient.GetAsync($"api/solicitacoes/usuario/{usuarioId}");
 
         if (resposta.IsSuccessStatusCode is false)
             throw new HttpRequestException($"Erro ao carregar as solicitações do usuário. Código: {resposta.StatusCode}");
 
         var solicitacoes = await resposta.Content.ReadFromJsonAsync<List<SolicitacaoDto>>(_jsonOptions);
-        
-        return solicitacoes ?? [];
+
+        return solicitacoes ?? new List<SolicitacaoDto>();
     }
 
     public async Task<IEnumerable<SolicitacaoDto>> GetSolicitacoesPendentesAsync()
@@ -105,8 +114,8 @@ public sealed class HttpFirebaseService : IFirebaseService
             throw new HttpRequestException($"Erro ao carregar o catálogo de solicitações pendentes. Código: {resposta.StatusCode}");
 
         var solicitacoes = await resposta.Content.ReadFromJsonAsync<List<SolicitacaoDto>>(_jsonOptions);
-        
-        return solicitacoes ?? [];
+
+        return solicitacoes ?? new List<SolicitacaoDto>();
     }
 
     public async Task AtualizarStatusSolicitacaoAsync(string id, string novoStatus)
@@ -115,7 +124,8 @@ public sealed class HttpFirebaseService : IFirebaseService
         ArgumentException.ThrowIfNullOrWhiteSpace(novoStatus);
 
         var payload = new { NovoStatus = novoStatus };
-        var resposta = await _httpClient.PatchAsJsonAsync($"api/Solicitacao/{id}/status", payload);
+
+        var resposta = await _httpClient.PatchAsJsonAsync($"api/solicitacoes/{id}/status", payload);
 
         if (resposta.IsSuccessStatusCode is false)
             throw new HttpRequestException($"Falha ao atualizar status da solicitação. Código: {resposta.StatusCode}");

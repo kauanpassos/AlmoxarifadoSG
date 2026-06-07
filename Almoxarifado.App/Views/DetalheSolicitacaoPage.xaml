@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Almoxarifado.App.Views.DetalheSolicitacaoPage"
+             Title="Status da Solicitação"
+             BackgroundColor="#F4F6F8">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="15" Spacing="20">
+
+            <Button Text="← Voltar" 
+                    Command="{Binding VoltarCommand}" 
+                    BackgroundColor="Transparent" 
+                    TextColor="#254A9A" 
+                    FontSize="16" 
+                    FontAttributes="Bold"
+                    Padding="0"
+                    Margin="0,0,0,-10"
+                    HorizontalOptions="Start"/>
+
+            <Border StrokeThickness="0" BackgroundColor="White" Padding="10,20">
+                <Border.Shadow>
+                    <Shadow Brush="#000000" Opacity="0.08" Offset="0,2" Radius="5" />
+                </Border.Shadow>
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+
+                <Grid ColumnDefinitions="*, *, *" RowDefinitions="Auto, Auto">
+                    <BoxView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HeightRequest="3" Color="#EAEAEA" VerticalOptions="Center" Margin="30,0,-30,0" ZIndex="0"/>
+                    <BoxView Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" HeightRequest="3" Color="#EAEAEA" VerticalOptions="Center" Margin="30,0,-30,0" ZIndex="0"/>
+
+                    <VerticalStackLayout Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Spacing="8" HorizontalOptions="Center" ZIndex="1">
+                        <Ellipse WidthRequest="24" HeightRequest="24" Fill="#FF9665" HorizontalOptions="Center"/>
+                        <Label Text="Pendente" FontSize="12" FontAttributes="Bold" TextColor="#FF9665" HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Spacing="8" HorizontalOptions="Center" ZIndex="1">
+                        <Ellipse WidthRequest="24" HeightRequest="24" Fill="#254A9A" HorizontalOptions="Center"/>
+                        <Label Text="Em Análise" FontSize="12" FontAttributes="Bold" TextColor="#254A9A" HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Spacing="8" HorizontalOptions="Center" ZIndex="1">
+                        <Ellipse WidthRequest="24" HeightRequest="24" Fill="#D3D3D3" HorizontalOptions="Center"/>
+                        <Label Text="{Binding SolicitacaoSelecionada.Status}" FontSize="12" FontAttributes="Bold" TextColor="#777777" HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Informações Gerais" FontSize="16" FontAttributes="Bold" TextColor="#333333" Margin="5,0,0,0"/>
+
+                <Border StrokeThickness="0" BackgroundColor="White" Padding="15">
+                    <Border.Shadow>
+                        <Shadow Brush="#000000" Opacity="0.05" Offset="0,2" Radius="4" />
+                    </Border.Shadow>
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Label Grid.Column="0" Text="Data:" FontAttributes="Bold" TextColor="#555555" WidthRequest="90"/>
+                            <Label Grid.Column="1" Text="{Binding SolicitacaoSelecionada.CreatedAt, StringFormat='{0:dd/MM/yyyy HH:mm}'}" TextColor="#333333" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Label Grid.Column="0" Text="Solicitante:" FontAttributes="Bold" TextColor="#555555" WidthRequest="90"/>
+                            <Label Grid.Column="1" Text="{Binding NomeSolicitante}" TextColor="#333333" />
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="#EEEEEE" Margin="0,5" />
+
+                        <Label Text="Justificativa:" FontAttributes="Bold" TextColor="#555555" />
+                        <Label Text="{Binding SolicitacaoSelecionada.Observacao, TargetNullValue='---', FallbackValue='---'}" TextColor="#333333" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Itens Solicitados" FontSize="16" FontAttributes="Bold" TextColor="#333333" Margin="5,0,0,0"/>
+
+                <CollectionView ItemsSource="{Binding Itens}" SelectionMode="None">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border StrokeThickness="1" Stroke="#EEEEEE" BackgroundColor="White" Padding="15">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8" />
+                                </Border.StrokeShape>
+                                <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                                    <Label Grid.Row="0" Grid.Column="0" Text="{Binding NomeProduto}" FontAttributes="Bold" FontSize="15" TextColor="#333333" Margin="0,0,10,0"/>
+                                    <Label Grid.Row="1" Grid.Column="0" Text="{Binding Sku, StringFormat='SKU: {0}'}" FontSize="12" TextColor="#777777" />
+
+                                    <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Text="{Binding Quantidade, StringFormat='{0} un'}" FontAttributes="Bold" FontSize="16" TextColor="#254A9A" VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <Button Text="Cancelar Solicitação" 
+                    BackgroundColor="#DA0004" 
+                    TextColor="White" 
+                    FontAttributes="Bold"
+                    CornerRadius="8" 
+                    HeightRequest="50" 
+                    Margin="0,10,0,20" 
+                    Command="{Binding CancelarSolicitacaoCommand}" 
+                    IsVisible="{Binding PodeCancelar}"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

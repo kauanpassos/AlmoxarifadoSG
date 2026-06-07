@@ -7,6 +7,6 @@ public static class CartItemExtensions
 {
     public static CartItemDto ToDto(this CartItemModel model)
     {
-        return new CartItemDto(model.Produto.Sku, model.Quantidade);
+        return new CartItemDto(model.Produto.Sku, model.Quantidade, model.Produto.NomePeca);
     }
 }

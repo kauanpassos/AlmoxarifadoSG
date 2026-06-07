@@ -13,7 +13,7 @@ public static class SolicitacaoMapper
             entity.Observacao,
             entity.Status,
             entity.CreatedAt,
-            entity.Itens.Select(i => new ItemSolicitacaoDto(i.ProdutoId, i.Quantidade)).ToList().AsReadOnly()
+            entity.Itens.Select(i => new ItemSolicitacaoDto(i.ProdutoId, i.Quantidade, i.NomeProduto)).ToList().AsReadOnly()
         );
     }
 }

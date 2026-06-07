@@ -1,18 +1,49 @@
 using System;
+using System.Collections.Generic;
+using Google.Cloud.Firestore;
 
 namespace Almoxarifado.Domain.Entities;
 
+[FirestoreData]
 public sealed class Solicitacao
 {
-    public string Id { get; }
-    public string UsuarioId { get; }
+    [FirestoreProperty]
+    public string Id { get; private set; }
+
+    [FirestoreProperty]
+    public string UsuarioId { get; private set; }
+
+    [FirestoreProperty]
     public string Observacao { get; private set; }
+
+    [FirestoreProperty]
     public string Status { get; private set; }
+
     private readonly List<ItemSolicitacao> _itens = new();
+
+    // Mantemos a coleção de leitura segura para a aplicação
     public IReadOnlyCollection<ItemSolicitacao> Itens => _itens.AsReadOnly();
 
-    public DateTime CreatedAt { get; }
+    // Propriedade exclusiva para o Firestore gravar/ler a lista sem quebrar o encapsulamento
+    [FirestoreProperty("Itens")]
+    public List<ItemSolicitacao> ItensDb
+    {
+        get => _itens;
+        set
+        {
+            _itens.Clear();
+            if (value != null) _itens.AddRange(value);
+        }
+    }
+
+    [FirestoreProperty]
+    public DateTime CreatedAt { get; private set; }
+
+    [FirestoreProperty]
     public DateTime UpdatedAt { get; private set; }
+
+    // Construtor vazio exigido pelo SDK do Firestore
+    public Solicitacao() { }
 
     public Solicitacao(string id, string usuarioId, string observacao)
     {
@@ -30,11 +61,10 @@ public sealed class Solicitacao
     public void AdicionarItem(ItemSolicitacao item)
     {
         ArgumentNullException.ThrowIfNull(item);
-        
+
         _itens.Add(item);
         AtualizarData();
     }
-
 
     public void Aprovar()
     {
@@ -44,6 +74,7 @@ public sealed class Solicitacao
         Status = "Aprovada";
         AtualizarData();
     }
+
     public void Recusar()
     {
         if (Status is not "Pendente")
@@ -52,6 +83,7 @@ public sealed class Solicitacao
         Status = "Recusada";
         AtualizarData();
     }
+
     public void FinalizarEntrega()
     {
         if (Status is not "Aprovada")
@@ -59,6 +91,16 @@ public sealed class Solicitacao
 
         Status = "Entregue";
         AtualizarData();
+    }
+
+    // 🔥 CORREÇÃO: Método Cancelar adicionado para que o Handler possa chamá-lo
+    public void Cancelar()
+    {
+        if (Status != "Pendente" && Status != "Em análise")
+            throw new InvalidOperationException("Apenas solicitações pendentes ou em análise podem ser canceladas.");
+
+        Status = "Cancelado";
+        AtualizarData(); // Atualiza a data de modificação automaticamente
     }
 
     private void AtualizarData()

@@ -2,11 +2,14 @@ using MediatR;
 using Almoxarifado.Domain.Interfaces;
 using Almoxarifado.Application.Commands;
 using Almoxarifado.Domain.Entities;
-
 using Almoxarifado.Application.DTOs;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Almoxarifado.Application.Handlers;
-public sealed class CreateSolicitacaoHandler(IWriteOnlyRepository<Solicitacao> repository) 
+
+public sealed class CreateSolicitacaoHandler(IWriteOnlyRepository<Solicitacao> repository)
     : IRequestHandler<CreateSolicitacaoCommand, SolicitacaoDto>
 {
     public async Task<SolicitacaoDto> Handle(CreateSolicitacaoCommand request, CancellationToken cancellationToken)
@@ -15,10 +18,18 @@ public sealed class CreateSolicitacaoHandler(IWriteOnlyRepository<Solicitacao> r
 
         foreach (var item in request.Itens ?? [])
         {
-            solicitacao.AdicionarItem(new ItemSolicitacao(Guid.NewGuid().ToString(), solicitacao.Id, item.Sku, item.Quantidade));
+            // CORREÇÃO AQUI: Passando o item.NomeProduto como quarto parâmetro
+            solicitacao.AdicionarItem(new ItemSolicitacao(
+                Guid.NewGuid().ToString(),
+                solicitacao.Id,
+                item.Sku,
+                item.NomeProduto, // <-- O nome que o construtor estava exigindo!
+                item.Quantidade
+            ));
         }
 
         await repository.AddAsync(solicitacao);
+
         return solicitacao.ToDto();
     }
 }

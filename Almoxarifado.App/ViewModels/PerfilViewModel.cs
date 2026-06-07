@@ -58,6 +58,14 @@ public sealed partial class PerfilViewModel : ObservableObject
 
             if (confirmar)
             {
+                // CORREÇÃO: Limpar a sessão atual da memória
+                UsuarioSessao.UsuarioLogado = null;
+                UsuarioAtual = null;
+
+                // Se o seu IAuthService tiver um método para limpar cache/tokens, chame-o aqui. 
+                // Exemplo: await _authService.LogoutAsync();
+
+                // Navega para o Login (e como a sessão está nula, ele vai parar lá de verdade)
                 await _navigationService.NavigateToLoginAsync();
             }
         }
@@ -76,10 +84,10 @@ public sealed partial class PerfilViewModel : ObservableObject
     private string ObterIniciais(string? nome)
     {
         if (string.IsNullOrWhiteSpace(nome)) return "US";
-        
+
         var partes = nome.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (partes.Length is 1) return partes[0].Substring(0, Math.Min(2, partes[0].Length)).ToUpper();
-        
+
         return $"{partes[0][0]}{partes[^1][0]}".ToUpper();
     }
-}
+} 

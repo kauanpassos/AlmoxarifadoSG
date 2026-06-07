@@ -2,9 +2,11 @@ using Almoxarifado.App.Models;
 using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.App.Views;
+using Almoxarifado.Application.DTOs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +19,8 @@ public partial class HomeColaboradorViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly IFirebaseService _firebaseService;
 
+    private List<SolicitacaoDto> _solicitacoesOriginais = new();
+
     [ObservableProperty]
     private string _iniciaisUsuario = string.Empty;
 
@@ -27,11 +31,8 @@ public partial class HomeColaboradorViewModel : ObservableObject
 
     public HomeColaboradorViewModel(INavigationService navigationService, IFirebaseService firebaseService)
     {
-        ArgumentNullException.ThrowIfNull(navigationService);
-        ArgumentNullException.ThrowIfNull(firebaseService);
-
-        _navigationService = navigationService;
-        _firebaseService = firebaseService;
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _firebaseService = firebaseService ?? throw new ArgumentNullException(nameof(firebaseService));
 
         var usuarioLogado = UsuarioSessao.UsuarioLogado;
         if (usuarioLogado is not null)
@@ -52,29 +53,59 @@ public partial class HomeColaboradorViewModel : ObservableObject
         try
         {
             ListaSolicitacoes.Clear();
+            _solicitacoesOriginais.Clear();
+
             var usuario = UsuarioSessao.UsuarioLogado;
-            
             if (usuario is null) return;
 
             var solicitacoes = await _firebaseService.GetSolicitacoesUsuarioAsync(usuario.Id);
-            
-            var modelos = solicitacoes.SelectMany(s => s.Itens.Select(i => new SolicitacaoModel
-            {
-                NomePeca = i.Sku,
-                Sku = i.Sku,
-                Quantidade = i.Quantidade,
-                NomeStatus = s.Status
-            }));
 
-            foreach (var model in modelos)
+            if (solicitacoes != null)
             {
-                ListaSolicitacoes.Add(model);
+                // 🔥 CORREÇÃO AQUI: Filtramos para ignorar as solicitações canceladas
+                var solicitacoesAtivas = solicitacoes.Where(s => s.Status != "Cancelado").ToList();
+
+                _solicitacoesOriginais = solicitacoesAtivas;
+
+                // Construímos o modelo usando o NomeProduto quando disponível, caso contrário mostramos o Sku
+                var modelos = solicitacoesAtivas.SelectMany(s => s.Itens.Select(i => new SolicitacaoModel
+                {
+                    NomeProduto = string.IsNullOrWhiteSpace(i.NomeProduto) ? i.Sku : i.NomeProduto,
+                    Sku = i.Sku,
+                    Quantidade = i.Quantidade,
+                    NomeStatus = s.Status
+                }));
+
+                foreach (var model in modelos)
+                {
+                    ListaSolicitacoes.Add(model);
+                }
             }
         }
         catch (Exception)
         {
             if (Microsoft.Maui.Controls.Application.Current?.MainPage is not null)
-                await Microsoft.Maui.Controls.Application.Current.MainPage.DisplayAlert("Erro", "Não foi possível carregar o dashboard via Firebase.", "OK");
+                await Microsoft.Maui.Controls.Application.Current.MainPage.DisplayAlert("Erro", "Não foi possível carregar o dashboard.", "OK");
+        }
+    }
+
+    [RelayCommand]
+    private async Task AbrirDetalhesSolicitacaoAsync(SolicitacaoModel itemSelecionado)
+    {
+        if (itemSelecionado == null) return;
+
+        var solicitacao = _solicitacoesOriginais.FirstOrDefault(s =>
+            s.Status == itemSelecionado.NomeStatus &&
+            s.Itens.Any(i => i.Sku == itemSelecionado.Sku));
+
+        if (solicitacao != null)
+        {
+            var parametros = new Dictionary<string, object>
+            {
+                { "SolicitacaoSelecionada", solicitacao }
+            };
+
+            await Shell.Current.GoToAsync(nameof(DetalheSolicitacaoPage), parametros);
         }
     }
 
@@ -82,9 +113,9 @@ public partial class HomeColaboradorViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(nome)) return "CO";
         var partes = nome.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        
-        return partes.Length is 1 
-            ? partes[0][..Math.Min(2, partes[0].Length)].ToUpper() 
+
+        return partes.Length is 1
+            ? partes[0][..Math.Min(2, partes[0].Length)].ToUpper()
             : $"{partes[0][0]}{partes[^1][0]}".ToUpper();
     }
 }

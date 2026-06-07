@@ -2,4 +2,5 @@ namespace Almoxarifado.Application.DTOs;
 
 public record CartItemDto(
     string Sku,
-    int Quantidade);
+    int Quantidade,
+    string NomeProduto);
