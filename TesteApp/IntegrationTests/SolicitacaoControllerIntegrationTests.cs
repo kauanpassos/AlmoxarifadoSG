@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Net.Http;
+using System.Net;
 using System.Threading.Tasks;
 using System.Text.Json;
 using Xunit;
@@ -73,10 +74,24 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
         var request = new { id = Guid.NewGuid().ToString(), usuarioId = "user123", observacao = "Teste" };
         var json = JsonSerializer.Serialize(request);
         var httpContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        
         var response = await _client.PostAsync("/api/solicitacao", httpContent);
-        Assert.True(response.IsSuccessStatusCode ||
-                      response.StatusCode == System.Net.HttpStatusCode.BadRequest ||
-                      response.StatusCode == System.Net.HttpStatusCode.Unauthorized);
+
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.True(
+            response.IsSuccessStatusCode ||
+            response.StatusCode == HttpStatusCode.BadRequest ||
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"""
+            StatusCode: {(int)response.StatusCode} ({response.StatusCode})
+
+            Content-Type: {response.Content.Headers.ContentType}
+
+            Body:
+            {body}
+            """
+        );
     }
 
     [Fact]
