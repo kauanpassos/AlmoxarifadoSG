@@ -99,8 +99,12 @@ public static class MauiProgram
         services.AddTransient<HomeColaboradorViewModel>();
         services.AddTransient<PerfilViewModel>();
 
+        // --> ADICIONADO AQUI: Registrando o ViewModel do Checkout
+        services.AddTransient<CheckoutViewModel>();
+
         // ViewModel da colega
         services.AddTransient<CadastroViewModel>();
+        services.AddTransient<DetalheSolicitacaoViewModel>();
     }
 
     private static void RegistrarPaginas(IServiceCollection services)
@@ -111,6 +115,9 @@ public static class MauiProgram
         services.AddTransient<MainPage>();
         services.AddTransient<HomeColaboradorPage>();
         services.AddTransient<PerfilPage>();
+
+        // --> ADICIONADO AQUI: Registrando a Page do Checkout
+        services.AddTransient<CheckoutPage>();
 
         // Página da colega
         services.AddTransient<CadastroPage>();

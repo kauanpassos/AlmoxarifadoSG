@@ -8,4 +8,5 @@ public partial class App : Microsoft.Maui.Controls.Application
         InitializeComponent();
         MainPage = shell;
     }
+
 }

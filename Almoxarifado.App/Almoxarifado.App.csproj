@@ -68,6 +68,9 @@
 		<MauiXaml Update="Popups\QuantidadePopup.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Views\DetalheSolicitacaoPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Views\EstoquePage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>

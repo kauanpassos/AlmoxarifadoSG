@@ -19,7 +19,7 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
             var response = await httpClient.PostAsJsonAsync("api/auth/login", new { email, password });
 
             if (response.IsSuccessStatusCode is false)
-                throw new UnauthorizedAccessException("E-mail ou senha inválidos. Verifique suas credenciais.");
+                throw new UnauthorizedAccessException("E-mail ou senha inválidos. Verifique as suas credenciais.");
 
             using var jsonDocResponse = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
             if (!jsonDocResponse.RootElement.TryGetProperty("token", out var tokenProperty))
@@ -45,7 +45,7 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
             if (response.IsSuccessStatusCode is false)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                throw new InvalidOperationException($"Falha no cadastro: {errorContent}");
+                throw new InvalidOperationException($"Falha no registo: {errorContent}");
             }
 
             return true;
@@ -60,7 +60,7 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
         }
         catch (HttpRequestException)
         {
-            throw new InvalidOperationException("Não foi possível conectar ao servidor. Verifique sua conexão com a internet.");
+            throw new InvalidOperationException("Não foi possível ligar ao servidor. Verifique a sua ligação à internet.");
         }
         catch (Exception ex) when (ex is not UnauthorizedAccessException && ex is not InvalidOperationException)
         {
@@ -95,6 +95,9 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
         finally
         {
             SecureStorage.Default.Remove("auth_token");
+
+            // --> CORREÇÃO AQUI: Limpar os dados do utilizador logado em memória
+            UsuarioSessao.UsuarioLogado = null;
         }
 
         return Task.CompletedTask;
@@ -143,9 +146,9 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
             }
 
             return new UsuarioDto(
-                baseUser.Id, 
-                baseUser.Email, 
-                GetStringFallback("nome", "Nome", baseUser.Nome), 
+                baseUser.Id,
+                baseUser.Email,
+                GetStringFallback("nome", "Nome", baseUser.Nome),
                 GetStringFallback("setor", "Setor", baseUser.Setor),
                 role);
         }

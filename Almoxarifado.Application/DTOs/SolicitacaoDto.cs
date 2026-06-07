@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Almoxarifado.Application.DTOs;
 
-public record ItemSolicitacaoDto(string Sku, int Quantidade);
+public record ItemSolicitacaoDto(string Sku, int Quantidade, string NomeProduto);
 
 public record SolicitacaoDto(
     string Id,

@@ -3,6 +3,7 @@ using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.App.Services;
 using Almoxarifado.Domain.Enums;
 using Microsoft.Maui.Controls;
+using System.Threading.Tasks;
 
 namespace Almoxarifado.App;
 
@@ -15,31 +16,12 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(PerfilPage), typeof(PerfilPage));
         Routing.RegisterRoute(nameof(CadastroPage), typeof(CadastroPage));
         Routing.RegisterRoute(nameof(EstoquePage), typeof(EstoquePage));
+        Routing.RegisterRoute(nameof(CheckoutPage), typeof(CheckoutPage));
 
-        Loaded += (s, e) => Dispatcher.DispatchAsync(ChecarSessaoERoteamentoAsync);
-    }
+        // Rota de Detalhes da Solicitação
+        Routing.RegisterRoute(nameof(DetalheSolicitacaoPage), typeof(DetalheSolicitacaoPage));
 
-    private async Task ChecarSessaoERoteamentoAsync()
-    {
-        var authService = Handler?.MauiContext?.Services.GetService<IAuthService>();
-
-        if (authService is null)
-            return;
-
-        var user = await authService.VerificarSessaoAtivaAsync();
-
-        if (user is null)
-            return;
-
-        UsuarioSessao.UsuarioLogado = user;
-
-        var rota = user.Tipo switch
-        {
-            TipoUsuario.Almoxarife => $"//{nameof(GestaoFilaPage)}",
-            TipoUsuario.Colaborador => $"//{nameof(HomeColaboradorPage)}",
-            _ => $"//{nameof(EstoquePage)}"
-        };
-
-        await Current.GoToAsync(rota);
+        // ❌ O evento "Loaded" que fazia a checagem automática foi removido daqui.
+        // O app agora iniciará estritamente na página padrão definida no AppShell.xaml.
     }
 }

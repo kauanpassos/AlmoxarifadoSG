@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Almoxarifado.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/solicitacoes")] // <-- ROTA CORRIGIDA PARA O PLURAL
 [Authorize]
 public sealed class SolicitacaoController : ControllerBase
 {
@@ -70,4 +70,5 @@ public sealed class SolicitacaoController : ControllerBase
         return Ok(result);
     }
 }
+
 public record AtualizarStatusRequest(string NovoStatus);

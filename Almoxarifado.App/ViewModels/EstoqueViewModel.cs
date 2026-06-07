@@ -130,7 +130,15 @@ public partial class EstoqueViewModel : ObservableObject
     private async Task IrParaCarrinhoAsync()
     {
         if (!PodeUsarCarrinho) return;
-        await Shell.Current.DisplayAlert("Carrinho", $"Você tem {QuantidadeCarrinho} itens. Em breve o ecrã de checkout!", "OK");
+
+        // --> ALTERADO AQUI: Navegando para a nova CheckoutPage
+        if (QuantidadeCarrinho == 0)
+        {
+            await Shell.Current.DisplayAlert("Aviso", "Seu carrinho está vazio. Adicione itens antes de prosseguir.", "OK");
+            return;
+        }
+
+        await Shell.Current.GoToAsync(nameof(CheckoutPage));
     }
 
     [RelayCommand]
