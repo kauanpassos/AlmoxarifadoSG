@@ -1,4 +1,4 @@
-using Almoxarifado.Domain.Entities;
+using Almoxarifado.Application.DTOs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,8 +6,11 @@ namespace Almoxarifado.App.Services.Interfaces;
 
 public interface IFirebaseService
 {
-    Task<Usuario> GetUsuarioAsync(string uid);
-    Task<List<Produto>> GetProdutosAsync();
-    Task SalvarProdutoAsync(Produto produto);
-    Task EnviarSolicitacaoAsync(string usuarioId, string sku, long quantidade, string justificativa, string idToken);
+    Task<UsuarioDto> GetUsuarioAsync(string uid);
+    Task<IEnumerable<ProdutoDto>> GetProdutosAsync();
+    Task SalvarProdutoAsync(ProdutoDto produto);
+    Task EnviarSolicitacaoLoteAsync(string usuarioId, string observacao, IEnumerable<CartItemDto> itens);
+    Task<IEnumerable<SolicitacaoDto>> GetSolicitacoesUsuarioAsync(string usuarioId);
+    Task<IEnumerable<SolicitacaoDto>> GetSolicitacoesPendentesAsync();
+    Task AtualizarStatusSolicitacaoAsync(string id, string novoStatus);
 }

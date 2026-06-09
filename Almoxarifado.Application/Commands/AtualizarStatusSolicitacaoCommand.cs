@@ -1,4 +1,5 @@
 using MediatR;
-using Almoxarifado.Domain.Entities;
+using Almoxarifado.Application.DTOs;
+
 namespace Almoxarifado.Application.Commands;
-public record AtualizarStatusSolicitacaoCommand(string SolicitacaoId, string NovoStatus) : IRequest<Solicitacao>;
+public record AtualizarStatusSolicitacaoCommand(string Id, string NovoStatus) : IRequest<SolicitacaoDto>;

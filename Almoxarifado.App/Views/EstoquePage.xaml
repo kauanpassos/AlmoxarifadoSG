@@ -3,10 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
              xmlns:controls="clr-namespace:Almoxarifado.App.Controls"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="Almoxarifado.App.Views.EstoquePage"
              x:DataType="vm:EstoqueViewModel"
              BackgroundColor="#F4F6F8"
              Shell.NavBarIsVisible="False">
+
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior EventName="Appearing"
+                                        Command="{Binding CarregarEstoqueCommand}" />
+    </ContentPage.Behaviors>
 
     <Grid>
         <Grid RowDefinitions="Auto, *, Auto" BackgroundColor="#F4F6F8">
@@ -37,26 +43,41 @@
                                VerticalOptions="Center"
                                Margin="0,0,10,0" />
                     </Grid>
-                </Border>   
+                </Border>
 
-                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Margin="28,0,0,27">
+                <ScrollView Orientation="Horizontal"
+                            HorizontalScrollBarVisibility="Never"
+                            Margin="28,0,0,27">
                     <HorizontalStackLayout Spacing="16">
 
-                        <Border BackgroundColor="{StaticResource BrandSecondary}" Stroke="{StaticResource BrandSecondary}" StrokeThickness="1.5" Padding="9,3">
+                        <Border BackgroundColor="{StaticResource BrandSecondary}"
+                                Stroke="{StaticResource BrandSecondary}"
+                                StrokeThickness="1.5"
+                                Padding="9,3">
                             <Border.StrokeShape>
                                 <RoundRectangle CornerRadius="10" />
                             </Border.StrokeShape>
-                            <Label Text="Todos" TextColor="{StaticResource White}" FontSize="14" FontAttributes="Bold" />
+                            <Label Text="Todos"
+                                   TextColor="{StaticResource White}"
+                                   FontSize="14"
+                                   FontAttributes="Bold" />
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding FiltrarTodosCommand}" />
                             </Border.GestureRecognizers>
                         </Border>
 
-                        <Border BackgroundColor="{StaticResource FilterInactiveBackground}" Stroke="{StaticResource BrandPrimary}" StrokeThickness="1.5" Padding="6,5" Margin="0,0,28,0">
+                        <Border BackgroundColor="{StaticResource FilterInactiveBackground}"
+                                Stroke="{StaticResource BrandPrimary}"
+                                StrokeThickness="1.5"
+                                Padding="6,5"
+                                Margin="0,0,28,0">
                             <Border.StrokeShape>
                                 <RoundRectangle CornerRadius="10" />
                             </Border.StrokeShape>
-                            <Label Text="Indisponível" TextColor="{StaticResource BrandPrimary}" FontSize="14" FontAttributes="Bold" />
+                            <Label Text="Indisponível"
+                                   TextColor="{StaticResource BrandPrimary}"
+                                   FontSize="14"
+                                   FontAttributes="Bold" />
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding FiltrarIndisponivelCommand}" />
                             </Border.GestureRecognizers>
@@ -66,7 +87,16 @@
                 </ScrollView>
             </VerticalStackLayout>
 
-            <CollectionView Grid.Row="1" ItemsSource="{Binding PecasEstoque}">
+            <ActivityIndicator Grid.Row="1"
+                               IsVisible="{Binding EstaCarregando}"
+                               IsRunning="{Binding EstaCarregando}"
+                               Color="{StaticResource Primary}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               ZIndex="2" />
+
+            <CollectionView Grid.Row="1"
+                            ItemsSource="{Binding PecasEstoque}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:ItemEstoqueModel">
                         <controls:ItemEstoqueCard />
@@ -77,33 +107,61 @@
             <Grid Grid.Row="2"
                   BackgroundColor="#1A336E"
                   HeightRequest="51" />
-            </Grid>
+        </Grid>
 
-        <Border BackgroundColor="{StaticResource Primary}" StrokeThickness="0" WidthRequest="65" HeightRequest="65"
-                HorizontalOptions="End" VerticalOptions="End" Margin="0,0,25,80"
+        <Border BackgroundColor="{StaticResource Primary}"
+                StrokeThickness="0"
+                WidthRequest="65"
+                HeightRequest="65"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Margin="0,0,25,80"
                 IsVisible="{Binding TemItensNoCarrinho}">
+
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="35" />
             </Border.StrokeShape>
+
             <Border.Shadow>
-                <Shadow Brush="{StaticResource BlackBrush}" Offset="0,5" Radius="5" Opacity="0.4" />
+                <Shadow Brush="{StaticResource BlackBrush}"
+                        Offset="0,5"
+                        Radius="5"
+                        Opacity="0.4" />
             </Border.Shadow>
+
             <Border.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding IrParaCarrinhoCommand}" />
             </Border.GestureRecognizers>
 
             <Grid>
-                <Image Source="icone_carrinho.png" HeightRequest="45" WidthRequest="45" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Image Source="icone_carrinho.png"
+                       HeightRequest="45"
+                       WidthRequest="45"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
 
-                <Border BackgroundColor="{StaticResource White}" Stroke="{StaticResource CartButtonColor}" StrokeThickness="1" MinimumWidthRequest="28" HeightRequest="28" Padding="6,0" HorizontalOptions="End" VerticalOptions="Start" Margin="0">
+                <Border BackgroundColor="{StaticResource White}"
+                        Stroke="{StaticResource CartButtonColor}"
+                        StrokeThickness="1"
+                        MinimumWidthRequest="28"
+                        HeightRequest="28"
+                        Padding="6,0"
+                        HorizontalOptions="End"
+                        VerticalOptions="Start">
+
                     <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="15"/>
+                        <RoundRectangle CornerRadius="15" />
                     </Border.StrokeShape>
-                    <Label Text="{Binding QuantidadeCarrinho}" TextColor="{StaticResource CartButtonColor}" FontSize="12" FontAttributes="Bold"
-                           HorizontalOptions="Center" VerticalOptions="Center" />
+
+                    <Label Text="{Binding QuantidadeCarrinho}"
+                           TextColor="{StaticResource CartButtonColor}"
+                           FontSize="12"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
                 </Border>
             </Grid>
-         </Border>
+        </Border>
 
     </Grid>
 </ContentPage>

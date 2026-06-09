@@ -64,8 +64,6 @@ public static class MauiProgram
 
     private static void RegistrarHttpClients(IServiceCollection services)
     {
-        // CORREÇÃO DEFINITIVA: 
-        // Usando 127.0.0.1 em vez de localhost para furar o isolamento de rede do Windows App
         var apiBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
             ? "http://10.0.2.2:5144/"
             : "http://127.0.0.1:5144/";
@@ -88,10 +86,9 @@ public static class MauiProgram
     {
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<INavigationService, NavigationService>();
-
-        // Serviços vitais de Estoque
         services.AddScoped<IFirebaseService, HttpFirebaseService>();
         services.AddSingleton<ICartService, CartService>();
+        services.AddSingleton<IDialogService, DialogService>();
     }
 
     private static void RegistrarViewModels(IServiceCollection services)
@@ -102,8 +99,12 @@ public static class MauiProgram
         services.AddTransient<HomeColaboradorViewModel>();
         services.AddTransient<PerfilViewModel>();
 
-        // ViewModel da sua colega
+        // --> ADICIONADO AQUI: Registrando o ViewModel do Checkout
+        services.AddTransient<CheckoutViewModel>();
+
+        // ViewModel da colega
         services.AddTransient<CadastroViewModel>();
+        services.AddTransient<DetalheSolicitacaoViewModel>();
     }
 
     private static void RegistrarPaginas(IServiceCollection services)
@@ -115,7 +116,12 @@ public static class MauiProgram
         services.AddTransient<HomeColaboradorPage>();
         services.AddTransient<PerfilPage>();
 
-        // Página da sua colega
+        // --> ADICIONADO AQUI: Registrando a Page do Checkout
+        services.AddTransient<CheckoutPage>();
+
+        // Página da colega
         services.AddTransient<CadastroPage>();
+
+        services.AddSingleton<AppShell>();
     }
 }

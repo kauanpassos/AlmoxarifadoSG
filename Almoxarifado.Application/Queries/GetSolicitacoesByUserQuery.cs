@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using MediatR;
-using Almoxarifado.Domain.Entities;
+using Almoxarifado.Application.DTOs;
 
 namespace Almoxarifado.Application.Queries;
-public record GetSolicitacoesByUserQuery(string UsuarioId) : IRequest<IEnumerable<Solicitacao>>;
+public record GetSolicitacoesByUserQuery(string UsuarioId) : IRequest<IEnumerable<SolicitacaoDto>>;

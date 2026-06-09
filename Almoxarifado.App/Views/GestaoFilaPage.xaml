@@ -2,90 +2,176 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
+             xmlns:dto="clr-namespace:Almoxarifado.Application.DTOs;assembly=Almoxarifado.Application"
              x:Class="Almoxarifado.App.Views.GestaoFilaPage"
              x:DataType="vm:GestaoFilaViewModel"
+             Title="Gestão de Fila"
              BackgroundColor="#F4F6F8">
-    
+
     <Grid RowDefinitions="Auto, Auto, *, Auto">
 
-        <Grid Grid.Row="0" BackgroundColor="#1A336E" ColumnDefinitions="*, Auto" Padding="20,45,20,20">
+        <Grid Grid.Row="0"
+              BackgroundColor="#1A336E"
+              ColumnDefinitions="*, Auto"
+              Padding="20,45,20,20">
+
             <Label Grid.Column="0"
                    Text="Gestão de Fila"
                    FontSize="24"
                    FontAttributes="Bold"
                    TextColor="White"
                    VerticalOptions="Center" />
-            <Border Grid.Column="1" WidthRequest="42" HeightRequest="42" BackgroundColor="#F0F4F8" Stroke="#AFD7FF" StrokeThickness="1.5" VerticalOptions="Center" HorizontalOptions="End">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="21" />
-                        </Border.StrokeShape>
-                        <Border.Shadow>
-                            <Shadow Brush="#1A3160" Offset="0,2" Radius="6" Opacity="0.25" />
-                        </Border.Shadow>
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding IrParaPerfilCommand}" />
-                        </Border.GestureRecognizers>
-                <Label Text="{Binding IniciaisUsuario}" FontAttributes="Bold" TextColor="#1A336E" FontSize="15" HorizontalOptions="Center" VerticalOptions="Center" />
+
+            <Border Grid.Column="1"
+                    WidthRequest="42"
+                    HeightRequest="42"
+                    BackgroundColor="#F0F4F8"
+                    Stroke="#AFD7FF"
+                    StrokeThickness="1.5"
+                    VerticalOptions="Center"
+                    HorizontalOptions="End">
+
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="21" />
+                </Border.StrokeShape>
+
+                <Border.Shadow>
+                    <Shadow Brush="#1A3160"
+                            Offset="0,2"
+                            Radius="6"
+                            Opacity="0.25" />
+                </Border.Shadow>
+
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding IrParaPerfilCommand}" />
+                </Border.GestureRecognizers>
+
+                <Label Text="{Binding IniciaisUsuario}"
+                       FontAttributes="Bold"
+                       TextColor="#1A336E"
+                       FontSize="15"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
             </Border>
         </Grid>
 
-        <VerticalStackLayout Grid.Row="1" Padding="15,20,15,10" Spacing="15">
-            <Border Stroke="{StaticResource Primary}" StrokeThickness="1.5" StrokeShape="RoundRectangle 8" BackgroundColor="#FAFAFA" HeightRequest="50">
-                <Grid ColumnDefinitions="Auto, *">
-                    <Label Grid.Column="0" Text="🔍" FontSize="16" VerticalOptions="Center" Margin="12,0,4,0" />
-                    <Entry Grid.Column="1" Text="{Binding TextoPesquisa, Mode=TwoWay}" Placeholder="Pesquisar por Peça, SKU ou Status" PlaceholderColor="{StaticResource Gray400}" TextColor="{StaticResource Black}" FontSize="15" BackgroundColor="Transparent" VerticalOptions="Center" Margin="0,0,10,0" />
+        <VerticalStackLayout Grid.Row="1"
+                             Padding="15,20,15,10"
+                             Spacing="15">
+
+            <Border Stroke="{StaticResource Primary}"
+                    StrokeThickness="1.5"
+                    StrokeShape="RoundRectangle 8"
+                    BackgroundColor="#FAFAFA"
+                    HeightRequest="50">
+
+                <Grid ColumnDefinitions="Auto,*">
+
+                    <Label Grid.Column="0"
+                           Text="🔍"
+                           FontSize="16"
+                           VerticalOptions="Center"
+                           Margin="12,0,4,0" />
+
+                    <Entry Grid.Column="1"
+                           Text="{Binding TextoPesquisa, Mode=TwoWay}"
+                           Placeholder="Pesquisar por Peça, SKU ou Status"
+                           PlaceholderColor="{StaticResource Gray400}"
+                           TextColor="{StaticResource Black}"
+                           FontSize="15"
+                           BackgroundColor="Transparent"
+                           VerticalOptions="Center"
+                           Margin="0,0,10,0" />
                 </Grid>
             </Border>
-            <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+
+            <ScrollView Orientation="Horizontal"
+                        HorizontalScrollBarVisibility="Never">
+
                 <HorizontalStackLayout Spacing="10">
 
-                    <Border BackgroundColor="#6E6E6E" Stroke="#6E6E6E" StrokeThickness="1.5" Padding="14,6">
+                    <Border BackgroundColor="#6E6E6E"
+                            Stroke="#6E6E6E"
+                            StrokeThickness="1.5"
+                            Padding="14,6">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="10"/>
                         </Border.StrokeShape>
-                            <Label Text="Todos" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                        <Label Text="Todos"
+                               TextColor="White"
+                               FontSize="13"
+                               FontAttributes="Bold" />
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding MudarFiltroCommand}" CommandParameter="Todos" />
+                            <TapGestureRecognizer Command="{Binding MudarFiltroCommand}"
+                                                  CommandParameter="Todos" />
                         </Border.GestureRecognizers>
                     </Border>
 
-                    <Border BackgroundColor="#FF9565" Stroke="#FF9565" StrokeThickness="1.5" Padding="14,6">
+                    <Border BackgroundColor="#FF9565"
+                            Stroke="#FF9565"
+                            StrokeThickness="1.5"
+                            Padding="14,6">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="10" />
                         </Border.StrokeShape>
-                        <Label Text="Pendente" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                        <Label Text="Pendente"
+                               TextColor="White"
+                               FontSize="13"
+                               FontAttributes="Bold" />
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding MudarFiltroCommand}" CommandParameter="Pendente" />
+                            <TapGestureRecognizer Command="{Binding MudarFiltroCommand}"
+                                                  CommandParameter="Pendente" />
                         </Border.GestureRecognizers>
                     </Border>
 
-                    <Border BackgroundColor="#254A9A" Stroke="#254A9A" StrokeThickness="1.5" Padding="14,6">
+                    <Border BackgroundColor="#254A9A"
+                            Stroke="#254A9A"
+                            StrokeThickness="1.5"
+                            Padding="14,6">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="10" />
                         </Border.StrokeShape>
-                        <Label Text="Aprovada" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                        <Label Text="Aprovada"
+                               TextColor="White"
+                               FontSize="13"
+                               FontAttributes="Bold" />
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding MudarFiltroCommand}" CommandParameter="Aprovada" />
+                            <TapGestureRecognizer Command="{Binding MudarFiltroCommand}"
+                                                  CommandParameter="Aprovada" />
                         </Border.GestureRecognizers>
                     </Border>
 
-                    <Border BackgroundColor="#DA0004" Stroke="#DA0004" StrokeThickness="1.5" Padding="14,6">
+                    <Border BackgroundColor="#DA0004"
+                            Stroke="#DA0004"
+                            StrokeThickness="1.5"
+                            Padding="14,6">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="10" />
                         </Border.StrokeShape>
-                        <Label Text="Recusada" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                        <Label Text="Recusada"
+                               TextColor="White"
+                               FontSize="13"
+                               FontAttributes="Bold" />
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding MudarFiltroCommand}" CommandParameter="Recusada" />
+                            <TapGestureRecognizer Command="{Binding MudarFiltroCommand}"
+                                                  CommandParameter="Recusada" />
                         </Border.GestureRecognizers>
                     </Border>
 
-                    <Border BackgroundColor="#03BA15" Stroke="#03BA15" StrokeThickness="1.5" Padding="14,6">
+                    <Border BackgroundColor="#03BA15"
+                            Stroke="#03BA15"
+                            StrokeThickness="1.5"
+                            Padding="14,6">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="10" />
                         </Border.StrokeShape>
-                        <Label Text="Entregue" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                        <Label Text="Entregue"
+                               TextColor="White"
+                               FontSize="13"
+                               FontAttributes="Bold" />
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding MudarFiltroCommand}" CommandParameter="Entregue" />
+                            <TapGestureRecognizer Command="{Binding MudarFiltroCommand}"
+                                                  CommandParameter="Entregue" />
                         </Border.GestureRecognizers>
                     </Border>
 
@@ -94,71 +180,153 @@
         </VerticalStackLayout>
 
         <Grid Grid.Row="2" Margin="15,5,15,0">
+
             <CollectionView ItemsSource="{Binding Solicitacoes}">
+
                 <CollectionView.EmptyView>
-                    <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="15">
-                        <Image Source="empty_box.png" HeightRequest="100" Opacity="0.5" />
-                        <Label Text="Não há solicitações na fila no momento." TextColor="Gray" FontSize="16" HorizontalTextAlignment="Center" />
+                    <VerticalStackLayout HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         Spacing="15"
+                                         IsVisible="{Binding IsEmpty}">
+                        <Image Source="empty_box.png"
+                               HeightRequest="100"
+                               Opacity="0.5" />
+                        <Label Text="Não há solicitações na fila no momento."
+                               TextColor="Gray"
+                               FontSize="16"
+                               HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
+
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:SolicitacaoModel">
-                        <Border Margin="0,0,0,15" Padding="16" BackgroundColor="White" Stroke="#E0E0E0" StrokeThickness="1">
+
+                    <DataTemplate x:DataType="dto:SolicitacaoDto">
+
+                        <Border Margin="0,0,0,15"
+                                Padding="16"
+                                BackgroundColor="White"
+                                Stroke="#E0E0E0"
+                                StrokeThickness="1">
+
                             <Border.StrokeShape>
                                 <RoundRectangle CornerRadius="8" />
                             </Border.StrokeShape>
+
                             <Border.Shadow>
-                                <Shadow Brush="{StaticResource BlackBrush}" Offset="0,3" Radius="8" Opacity="0.08" />
+                                <Shadow Brush="{StaticResource BlackBrush}"
+                                        Offset="0,3"
+                                        Radius="8"
+                                        Opacity="0.08" />
                             </Border.Shadow>
+
                             <VerticalStackLayout Spacing="8">
+
                                 <Grid ColumnDefinitions="*, Auto">
+
                                     <VerticalStackLayout Grid.Column="0">
-                                        <Label Text="{Binding Sku}" FontAttributes="Bold" TextColor="#1A1A1A" FontSize="18" />
-                                        <Label Text="{Binding UsuarioId, StringFormat='Solicitante: {0}'}" TextColor="#757575" FontSize="12" Margin="0,2,0,0" />
-                                        <Label Text="{Binding Observacao}" TextColor="#555555" FontSize="12" Margin="0,2,0,0" />
+
+                                        <Label Text="{Binding Id, StringFormat='Pedido #{0}'}"
+                                               FontAttributes="Bold"
+                                               TextColor="#1A1A1A"
+                                               FontSize="18" />
+
+                                        <Label Text="{Binding UsuarioId, StringFormat='Solicitante: {0}'}"
+                                               TextColor="#757575"
+                                               FontSize="12"
+                                               Margin="0,2,0,0" />
+
+                                        <Label Text="{Binding Observacao, StringFormat='Motivo: {0}'}"
+                                               TextColor="#555555"
+                                               FontSize="12"
+                                               Margin="0,2,0,0" />
                                     </VerticalStackLayout>
-                                    <Border Grid.Column="1" BackgroundColor="{StaticResource BrandSecondary}" Stroke="{StaticResource BrandSecondary}" StrokeThickness="0" Padding="10,5" VerticalOptions="Start">
-                                            <Border.StrokeShape>
-                                                <RoundRectangle CornerRadius="10" />
-                                            </Border.StrokeShape>
-                                        <Label Text="{Binding Status}" TextColor="White" FontSize="11" FontAttributes="Bold" />
+
+                                    <Border Grid.Column="1"
+                                            BackgroundColor="{StaticResource BrandSecondary}"
+                                            Stroke="{StaticResource BrandSecondary}"
+                                            Padding="10,5"
+                                            VerticalOptions="Start">
+
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="10" />
+                                        </Border.StrokeShape>
+
+                                        <Label Text="{Binding Status}"
+                                               TextColor="White"
+                                               FontSize="11"
+                                               FontAttributes="Bold" />
                                     </Border>
+
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                <BoxView HeightRequest="1"
+                                         Color="#EEEEEE"
+                                         Margin="0,5" />
+
+                                <Label Text="Materiais:"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="#1A1A1A" />
+
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Itens}"
+                                                     Spacing="2">
+
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <Label Grid.Column="0"
+                                                       Text="{Binding NomeProduto}"
+                                                       FontSize="12"
+                                                       TextColor="#555555" />
+
+                                                <Label Grid.Column="1"
+                                                       Text="{Binding Quantidade, StringFormat='{0} un'}"
+                                                       FontSize="12"
+                                                       FontAttributes="Bold"
+                                                       TextColor="#254A9A" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+
+                                </VerticalStackLayout>
+
+                                <BoxView HeightRequest="1"
+                                         Color="#EEEEEE"
+                                         Margin="0,5,0,10" />
+
+                                <Grid ColumnDefinitions="*,*"
+                                      ColumnSpacing="10">
+
                                     <Button Grid.Column="0"
-                                        Text="✔ Aprovar"
-                                        BackgroundColor="#03BA15"
-                                        TextColor="White"
-                                        FontSize="14"
-                                        FontAttributes="Bold"
-                                        CornerRadius="10"
-                                        HeightRequest="44"
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GestaoFilaViewModel}}, Path=AprovarCommand}"
-                                        CommandParameter="{Binding .}">
-                                        <Button.Shadow>
-                                            <Shadow Brush="#03BA15" Offset="0,4" Radius="8" Opacity="0.3" />
-                                        </Button.Shadow>
-                                    </Button>
+                                            Text="✔ Aprovar"
+                                            BackgroundColor="#03BA15"
+                                            TextColor="White"
+                                            FontSize="14"
+                                            FontAttributes="Bold"
+                                            CornerRadius="10"
+                                            HeightRequest="44"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GestaoFilaViewModel}}, Path=AprovarCommand}"
+                                            CommandParameter="{Binding .}" />
+
                                     <Button Grid.Column="1"
-                                        Text="✖ Recusar"
-                                        BackgroundColor="#DA0004"
-                                        TextColor="White"
-                                        FontSize="14"
-                                        FontAttributes="Bold"
-                                        CornerRadius="10"
-                                        HeightRequest="44"
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GestaoFilaViewModel}}, Path=RecusarCommand}"
-                                        CommandParameter="{Binding .}">
-                                     <Button.Shadow>
-                                        <Shadow Brush="#DA0004" Offset="0,4" Radius="8" Opacity="0.3" />
-                                      </Button.Shadow>
-                                    </Button>
+                                            Text="✖ Recusar"
+                                            BackgroundColor="#DA0004"
+                                            TextColor="White"
+                                            FontSize="14"
+                                            FontAttributes="Bold"
+                                            CornerRadius="10"
+                                            HeightRequest="44"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GestaoFilaViewModel}}, Path=RecusarCommand}"
+                                            CommandParameter="{Binding .}" />
                                 </Grid>
+
                             </VerticalStackLayout>
                         </Border>
+
                     </DataTemplate>
+
                 </CollectionView.ItemTemplate>
+
             </CollectionView>
 
             <ActivityIndicator IsRunning="{Binding IsBusy}"
@@ -167,8 +335,39 @@
                                VerticalOptions="Center"
                                Color="{StaticResource Primary}"
                                Scale="1.5" />
+
         </Grid>
 
-        <Grid Grid.Row="3" BackgroundColor="#1A336E" HeightRequest="51" />
+        <Grid Grid.Row="3"
+              BackgroundColor="#1A336E"
+              HeightRequest="55"
+              ColumnDefinitions="*,*">
+
+            <VerticalStackLayout Grid.Column="0"
+                                 VerticalOptions="Center"
+                                 HorizontalOptions="Center">
+                <Label Text="Fila"
+                       TextColor="White"
+                       FontSize="14"
+                       FontAttributes="Bold" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Column="1"
+                                 VerticalOptions="Center"
+                                 HorizontalOptions="Center">
+
+                <VerticalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding IrParaEstoqueCommand}" />
+                </VerticalStackLayout.GestureRecognizers>
+
+                <Label Text="Estoque"
+                       TextColor="White"
+                       FontSize="14"
+                       Opacity="0.6" />
+            </VerticalStackLayout>
+
+        </Grid>
+
     </Grid>
+
 </ContentPage>

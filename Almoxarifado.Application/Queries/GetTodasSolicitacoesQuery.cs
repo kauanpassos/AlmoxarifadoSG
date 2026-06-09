@@ -1,4 +1,6 @@
 using MediatR;
-using Almoxarifado.Domain.Entities;
+using System.Collections.Generic;
+using Almoxarifado.Application.DTOs;
+
 namespace Almoxarifado.Application.Queries;
-public record GetTodasSolicitacoesQuery() : IRequest<IEnumerable<Solicitacao>>;
+public record GetTodasSolicitacoesQuery : IRequest<IEnumerable<SolicitacaoDto>>;

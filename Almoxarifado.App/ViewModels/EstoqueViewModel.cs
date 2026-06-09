@@ -73,6 +73,13 @@ public partial class EstoqueViewModel : ObservableObject
         set => SetProperty(ref _temItensNoCarrinho, value);
     }
 
+    private bool _podeUsarCarrinho;
+    public bool PodeUsarCarrinho
+    {
+        get => _podeUsarCarrinho;
+        set => SetProperty(ref _podeUsarCarrinho, value);
+    }
+
     public ObservableCollection<ItemEstoqueModel> PecasEstoque { get; } = new();
 
     public EstoqueViewModel(IFirebaseService firebaseService, INavigationService navigationService, ICartService cartService)
@@ -81,27 +88,27 @@ public partial class EstoqueViewModel : ObservableObject
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _cartService = cartService ?? throw new ArgumentNullException(nameof(cartService));
 
-        _cartService.OnCarrinhoAtualizado += AtualizarStatusCarrinho;
-        AtualizarStatusCarrinho();
-
         var usuarioLogado = UsuarioSessao.UsuarioLogado;
         if (usuarioLogado != null)
         {
             IniciaisUsuario = ObterIniciais(usuarioLogado.Nome);
+            PodeUsarCarrinho = usuarioLogado.Tipo == TipoUsuario.Colaborador;
         }
 
-        _ = CarregarEstoqueAsync();
+        _cartService.OnCarrinhoAtualizado += AtualizarStatusCarrinho;
+        AtualizarStatusCarrinho();
     }
 
     private void AtualizarStatusCarrinho()
     {
         QuantidadeCarrinho = _cartService.TotalItens;
-        TemItensNoCarrinho = QuantidadeCarrinho > 0;
+        TemItensNoCarrinho = PodeUsarCarrinho && QuantidadeCarrinho > 0;
     }
 
     [RelayCommand]
     private async Task AbrirOpcoesProdutoAsync(ItemEstoqueModel produtoSelecionado)
     {
+        if (!PodeUsarCarrinho) return;
         if (produtoSelecionado == null) return;
 
         if (produtoSelecionado.Quantidade == 0)
@@ -122,7 +129,16 @@ public partial class EstoqueViewModel : ObservableObject
     [RelayCommand]
     private async Task IrParaCarrinhoAsync()
     {
-        await Shell.Current.DisplayAlert("Carrinho", $"Você tem {QuantidadeCarrinho} itens. Em breve o ecrã de checkout!", "OK");
+        if (!PodeUsarCarrinho) return;
+
+        // --> ALTERADO AQUI: Navegando para a nova CheckoutPage
+        if (QuantidadeCarrinho == 0)
+        {
+            await Shell.Current.DisplayAlert("Aviso", "Seu carrinho está vazio. Adicione itens antes de prosseguir.", "OK");
+            return;
+        }
+
+        await Shell.Current.GoToAsync(nameof(CheckoutPage));
     }
 
     [RelayCommand]
@@ -159,10 +175,6 @@ public partial class EstoqueViewModel : ObservableObject
 
                     _todasAsPecasCache.Add(item);
                 }
-            }
-            else
-            {
-                await Shell.Current.DisplayAlert("Aviso", "Nenhum produto encontrado no banco de dados.", "OK");
             }
 
             FiltrarTodos();

@@ -4,20 +4,32 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
+    xmlns:models="clr-namespace:Almoxarifado.App.Models"
+    xmlns:converters="clr-namespace:Almoxarifado.App.Converters"
     x:DataType="vm:HomeColaboradorViewModel"
     BackgroundColor="#F4F6F8"
     NavigationPage.HasNavigationBar="False"
     Shell.NavBarIsVisible="False">
 
-    <Grid RowDefinitions="Auto,*,Auto" Background="#f4f6f8">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StatusToColorConverter x:Key="StatusToColor" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
-        <Grid Grid.Row="0" BackgroundColor="#1A336E" Padding="20,45,20,20" ColumnDefinitions="*, Auto">
+    <Grid RowDefinitions="Auto,*,Auto" Background="#F4F6F8">
+
+        <Grid Grid.Row="0"
+              BackgroundColor="#1A336E"
+              Padding="20,45,20,20"
+              ColumnDefinitions="*,Auto">
+
             <Label Grid.Column="0"
-                Text="Suas Solicitações"
-                TextColor="White"
-                FontSize="26"
-                FontAttributes="Bold"
-                VerticalOptions="Center" />
+                   Text="Suas Solicitações"
+                   TextColor="White"
+                   FontSize="26"
+                   FontAttributes="Bold"
+                   VerticalOptions="Center" />
 
             <Border Grid.Column="1"
                     WidthRequest="42"
@@ -27,15 +39,22 @@
                     StrokeThickness="1.5"
                     VerticalOptions="Center"
                     HorizontalOptions="End">
+
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="21" />
                 </Border.StrokeShape>
+
                 <Border.Shadow>
-                    <Shadow Brush="#1A3160" Offset="0,2" Radius="6" Opacity="0.2" />
+                    <Shadow Brush="#1A3160"
+                            Offset="0,2"
+                            Radius="6"
+                            Opacity="0.2" />
                 </Border.Shadow>
+
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding IrParaPerfilCommand}" />
                 </Border.GestureRecognizers>
+
                 <Label Text="{Binding IniciaisUsuario}"
                        TextColor="#1A336E"
                        FontAttributes="Bold"
@@ -43,73 +62,138 @@
                        HorizontalOptions="Center"
                        VerticalOptions="Center" />
             </Border>
+
         </Grid>
 
-        <Grid Grid.Row="1" RowDefinitions="Auto,*" Padding="25,20,25,0">
+        <Grid Grid.Row="1"
+              RowDefinitions="Auto,*"
+              Padding="25,20,25,0">
 
             <Border Grid.Row="0"
-                Stroke="{StaticResource Primary}"
-                StrokeThickness="1.5"
-                StrokeShape="RoundRectangle 8"
-                BackgroundColor="#FAFAFA"
-                HeightRequest="50"
-                Margin="0,0,0,18">
-                <Grid ColumnDefinitions="Auto, *">
+                    Stroke="{StaticResource Primary}"
+                    StrokeThickness="1.5"
+                    StrokeShape="RoundRectangle 8"
+                    BackgroundColor="#FAFAFA"
+                    HeightRequest="50"
+                    Margin="0,0,0,18">
+
+                <Grid ColumnDefinitions="Auto,*">
+
                     <Label Grid.Column="0"
-                   Text="🔍"
-                   FontSize="16"
-                   VerticalOptions="Center"
-                   Margin="12,0,4,0" />
+                           Text="🔍"
+                           FontSize="16"
+                           VerticalOptions="Center"
+                           Margin="12,0,4,0" />
+
                     <Entry Grid.Column="1"
-                   Text="{Binding TermoPesquisa}"
-                   Placeholder="Pesquisar por peça, SKU ou status"
-                   PlaceholderColor="{StaticResource Gray400}"
-                   TextColor="{StaticResource Black}"
-                   FontSize="15"
-                   BackgroundColor="Transparent"
-                   VerticalOptions="Center"
-                   Margin="0,0,10,0" />
+                           Text="{Binding TermoPesquisa}"
+                           Placeholder="Pesquisar por peça, SKU ou status"
+                           PlaceholderColor="{StaticResource Gray400}"
+                           TextColor="{StaticResource Black}"
+                           FontSize="15"
+                           BackgroundColor="Transparent"
+                           VerticalOptions="Center"
+                           Margin="0,0,10,0" />
+
                 </Grid>
             </Border>
 
-            <CollectionView Grid.Row="1" ItemsSource="{Binding ListaSolicitacoes}">
+            <CollectionView Grid.Row="1"
+                            ItemsSource="{Binding ListaSolicitacoes}">
+
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:SolicitacaoModel">
-                        <Border Margin="0,0,0,15" Padding="18" BackgroundColor="White" Stroke="{Binding CorHexStatus}" StrokeThickness="1.5">
+
+                    <DataTemplate x:DataType="models:SolicitacaoModel">
+
+                        <Border Margin="0,0,0,15"
+                                Padding="18"
+                                BackgroundColor="White"
+                                Stroke="{Binding NomeStatus, Converter={StaticResource StatusToColor}}"
+                                StrokeThickness="1.5">
+
                             <Border.StrokeShape>
                                 <RoundRectangle CornerRadius="16" />
                             </Border.StrokeShape>
+
                             <Border.Shadow>
-                                <Shadow Brush="{StaticResource BlackBrush}" Offset="0,3" Radius="8" Opacity="0.08" />
+                                <Shadow Brush="{StaticResource BlackBrush}"
+                                        Offset="0,3"
+                                        Radius="8"
+                                        Opacity="0.08" />
                             </Border.Shadow>
+
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:HomeColaboradorViewModel}}, Path=AbrirDetalhesSolicitacaoCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+
                             <VerticalStackLayout Spacing="10">
-                                <Label Text="{Binding NomePeca}" FontSize="18" FontAttributes="Bold" TextColor="#1A1A1A" />
-                                <Label Text="{Binding Sku, StringFormat='SKU: {0}'}" FontSize="12" FontAttributes="Bold" TextColor="#757575" />
+
+                                <Label Text="{Binding NomeProduto}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       TextColor="#1A1A1A" />
+
+                                <Label Text="{Binding Sku, StringFormat='SKU: {0}'}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="#757575" />
+
                                 <Grid ColumnDefinitions="*,Auto">
-                                    <Label Text="{Binding Quantidade, StringFormat='{0} un'}" FontSize="20" FontAttributes="Bold" VerticalOptions="Center" TextColor="Black" />
-                                    <Button Grid.Column="1" Text="{Binding NomeStatus}" BackgroundColor="{Binding CorHexStatus}" TextColor="White" CornerRadius="10" Padding="20,8" FontAttributes="Bold" />
+
+                                    <Label Text="{Binding Quantidade, StringFormat='{0} un'}"
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"
+                                           TextColor="Black" />
+
+                                    <Button Grid.Column="1"
+                                            Text="{Binding NomeStatus}"
+                                            BackgroundColor="{Binding NomeStatus, Converter={StaticResource StatusToColor}}"
+                                            TextColor="White"
+                                            CornerRadius="10"
+                                            Padding="20,8"
+                                            FontAttributes="Bold" />
+
                                 </Grid>
+
                             </VerticalStackLayout>
+
                         </Border>
+
                     </DataTemplate>
+
                 </CollectionView.ItemTemplate>
+
             </CollectionView>
+
         </Grid>
 
-        <Grid Grid.Row="2" BackgroundColor="#1A336E" Padding="20,12">
+        <Grid Grid.Row="2"
+              BackgroundColor="#1A336E"
+              Padding="20,12">
+
             <Button Text="Ver Estoque e Fazer Pedido"
-                Command="{Binding VerEstoqueCommand}"
-                BackgroundColor="White"
-                TextColor="#1A336E"
-                FontAttributes="Bold"
-                FontSize="16"
-                HeightRequest="50"
-                CornerRadius="12">
+                    Command="{Binding VerEstoqueCommand}"
+                    BackgroundColor="White"
+                    TextColor="#1A336E"
+                    FontAttributes="Bold"
+                    FontSize="16"
+                    HeightRequest="50"
+                    CornerRadius="12">
+
                 <Button.Shadow>
-                    <Shadow Brush="#1A3160" Offset="0,4" Radius="10" Opacity="0.2" />
+                    <Shadow Brush="#1A3160"
+                            Offset="0,4"
+                            Radius="10"
+                            Opacity="0.2" />
                 </Button.Shadow>
+
             </Button>
+
         </Grid>
 
     </Grid>
+
 </ContentPage>

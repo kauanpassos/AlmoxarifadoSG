@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.Services;
 
-public sealed class NavigationService(IAuthService authService) : INavigationService
+public sealed class NavigationService(IAuthService authService, IServiceProvider serviceProvider) : INavigationService
 {
     public async Task NavigateToLoginAsync()
     {
@@ -18,7 +18,7 @@ public sealed class NavigationService(IAuthService authService) : INavigationSer
                     var window = Microsoft.Maui.Controls.Application.Current.Windows.FirstOrDefault();
                     if (window is not null)
                     {
-                        window.Page = new AppShell();
+                        window.Page = serviceProvider.GetRequiredService<AppShell>();
                     }
                 }
             });
