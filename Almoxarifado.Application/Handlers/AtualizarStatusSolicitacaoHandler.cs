@@ -1,21 +1,22 @@
-using MediatR;
 using Almoxarifado.Domain.Interfaces;
 using Almoxarifado.Application.Commands;
 using Almoxarifado.Domain.Entities;
+using Almoxarifado.Domain.Constants;
+using MediatR;
 using Almoxarifado.Application.DTOs;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
+using Google.Cloud.Firestore;
 
 namespace Almoxarifado.Application.Handlers;
 
 public sealed class AtualizarStatusSolicitacaoHandler(
     IReadOnlyRepository<Solicitacao> readRepository,
-    IWriteOnlyRepository<Solicitacao> writeRepository,
     IReadOnlyRepository<Produto> produtoReadRepo,
-    IWriteOnlyRepository<Produto> produtoWriteRepo)
+    FirestoreDb firestoreDb)
     : IRequestHandler<AtualizarStatusSolicitacaoCommand, SolicitacaoDto>
 {
     public async Task<SolicitacaoDto> Handle(AtualizarStatusSolicitacaoCommand request, CancellationToken cancellationToken)
@@ -23,50 +24,81 @@ public sealed class AtualizarStatusSolicitacaoHandler(
         var solicitacao = await readRepository.GetByIdAsync(request.Id)
             ?? throw new KeyNotFoundException($"Solicitação '{request.Id}' não encontrada.");
 
-        // Regra de Ouro: Só baixa estoque se a nova ação for "Aprovada" e se ela já não estava aprovada antes
-        if (request.NovoStatus == "Aprovada" && solicitacao.Status != "Aprovada")
+        if (request.NovoStatus == StatusSolicitacao.Aprovada && solicitacao.Status != StatusSolicitacao.Aprovada)
         {
-            var produtosParaAtualizar = new List<(Produto Produto, long Quantidade)>();
+            var refsProdutos = new Dictionary<string, DocumentReference>();
 
-            // 1. FASE DE VALIDAÇÃO (Fail Fast)
             foreach (var item in solicitacao.Itens)
             {
-                var idDoProduto = item.ProdutoId;
+                var produtosResult = await produtoReadRepo.GetByFieldAsync("NumCode", item.ProdutoId);
 
-                var produto = await produtoReadRepo.GetByIdAsync(idDoProduto)
-                    ?? throw new KeyNotFoundException($"Produto com ID '{idDoProduto}' não encontrado no banco de dados.");
+                var produtoEncontrado = produtosResult.FirstOrDefault()
+                    ?? throw new KeyNotFoundException($"Produto SKU '{item.ProdutoId}' não encontrado no banco.");
 
-                if (produto.QtdEstoque < item.Quantidade)
+                refsProdutos.Add(item.Id, firestoreDb.Collection("produtos").Document(produtoEncontrado.Id));
+            }
+
+            var solicitacaoRef = firestoreDb.Collection("solicitacoes").Document(solicitacao.Id);
+
+            await firestoreDb.RunTransactionAsync(async transaction =>
+            {
+                var solicitacaoSnapshot = await transaction.GetSnapshotAsync(solicitacaoRef);
+                var statusAtualBanco = solicitacaoSnapshot.GetValue<string>("Status");
+
+                if (statusAtualBanco != StatusSolicitacao.Pendente)
+                    throw new InvalidOperationException("Esta solicitação já foi processada por outro operador.");
+
+                var atualizacoesEstoque = new Dictionary<DocumentReference, long>();
+
+                foreach (var item in solicitacao.Itens)
                 {
-                    throw new InvalidOperationException(
-                        $"Estoque insuficiente para a peça '{produto.Nome}'. Solicitado: {item.Quantidade}, Disponível: {produto.QtdEstoque}.");
+                    var prodRef = refsProdutos[item.Id];
+                    var snapshot = await transaction.GetSnapshotAsync(prodRef);
+
+                    var estoqueAtual = snapshot.GetValue<long>("qtdEstoque");
+
+                    if (estoqueAtual < item.Quantidade)
+                    {
+                        throw new InvalidOperationException(
+                            $"Estoque insuficiente para SKU '{item.ProdutoId}'. Solicitado: {item.Quantidade}, Disponível: {estoqueAtual}.");
+                    }
+
+                    atualizacoesEstoque.Add(prodRef, estoqueAtual - item.Quantidade);
                 }
 
-                produtosParaAtualizar.Add((produto, (long)item.Quantidade));
-            }
+                foreach (var (prodRef, novoEstoque) in atualizacoesEstoque)
+                {
+                    transaction.Update(prodRef, "qtdEstoque", novoEstoque);
+                    transaction.Update(prodRef, "updatedAt", DateTime.UtcNow);
+                }
 
-            // 2. FASE DE EFETIVAÇÃO
-            foreach (var (produto, quantidade) in produtosParaAtualizar)
-            {
-                produto.BaixarEstoque(quantidade);
-                await produtoWriteRepo.UpdateAsync(produto);
-            }
+                transaction.Update(solicitacaoRef, "Status", StatusSolicitacao.Aprovada);
+                transaction.Update(solicitacaoRef, "UpdatedAt", DateTime.UtcNow);
+            });
+
+            solicitacao.Aprovar();
+
+            return solicitacao.ToDto();
         }
 
-        // 🔥 CORREÇÃO AQUI: Adicionada a opção "Cancelado" para mapear com a Entidade
         Action acao = request.NovoStatus switch
         {
-            "Aprovada" => solicitacao.Aprovar,
-            "Recusada" => solicitacao.Recusar,
-            "Entregue" => solicitacao.FinalizarEntrega,
-            "Cancelado" => solicitacao.Cancelar, // <-- AGORA ELE RECONHECE O CANCELAMENTO!
-            _ => throw new ArgumentException($"Status '{request.NovoStatus}' inválido. Use: Aprovada, Recusada, Entregue ou Cancelado.")
+            StatusSolicitacao.Aprovada => solicitacao.Aprovar,
+            StatusSolicitacao.Recusada => solicitacao.Recusar,
+            StatusSolicitacao.Entregue => solicitacao.FinalizarEntrega,
+            StatusSolicitacao.Cancelada => solicitacao.Cancelar,
+            _ => throw new ArgumentException($"Status '{request.NovoStatus}' inválido.")
         };
 
         acao();
 
-        // Salva a solicitação com o novo status no banco
-        await writeRepository.UpdateAsync(solicitacao);
+        var solRef = firestoreDb.Collection("solicitacoes").Document(solicitacao.Id);
+
+        await solRef.UpdateAsync(new Dictionary<string, object>
+        {
+            { "Status", solicitacao.Status },
+            { "UpdatedAt", DateTime.UtcNow }
+        });
 
         return solicitacao.ToDto();
     }

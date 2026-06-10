@@ -1,6 +1,7 @@
 using Google.Cloud.Firestore;
 using Almoxarifado.Domain.Interfaces;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
-        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
+        NumberHandling = JsonNumberHandling.AllowReadingFromString,
         TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver
         {
             Modifiers = { ModifyTypeInfo }
@@ -26,8 +27,8 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
     public async Task<T?> GetByIdAsync(string id)
     {
         var snapshot = await Collection.Document(id).GetSnapshotAsync();
-        
-        if (snapshot.Exists is false) 
+
+        if (snapshot.Exists is false)
             return default;
 
         return ConverterDocumentoParaEntidade(snapshot);
@@ -43,7 +44,7 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
     {
         var query = Collection.WhereEqualTo(fieldName, value);
         var snapshot = await query.GetSnapshotAsync();
-        
+
         return ExtrairEntidadesDaSnapshot(snapshot);
     }
 
@@ -60,7 +61,7 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
         }
 
         var docRef = await Collection.AddAsync(dicionario);
-        
+
         if (idProperty is not null && idProperty.CanWrite)
         {
             idProperty.SetValue(entity, docRef.Id);
@@ -143,7 +144,7 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
             {
                 var itemType = field.FieldType.GetGenericArguments()[0];
                 var jsonProp = ti.CreateJsonPropertyInfo(typeof(IEnumerable<>).MakeGenericType(itemType), propName);
-                
+
                 jsonProp.Set = (obj, value) =>
                 {
                     var list = field.GetValue(obj);
@@ -153,7 +154,7 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
                         addRange.Invoke(list, new[] { value });
                     }
                 };
-                
+
                 if (!ti.Properties.Any(p => p.Name.Equals(propName, StringComparison.OrdinalIgnoreCase)))
                 {
                     ti.Properties.Add(jsonProp);
@@ -169,6 +170,9 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
 
         foreach (var prop in propriedades)
         {
+            if (prop.GetCustomAttribute<JsonIgnoreAttribute>() is not null)
+                continue;
+
             var valor = prop.GetValue(entity);
 
             if (valor is not null)
@@ -180,7 +184,20 @@ public sealed class FirebaseEngine<T>(FirestoreDb firestoreDb, string collection
                         : data.ToUniversalTime();
                 }
 
-                dict[prop.Name] = valor;
+                var firestorePropAttr = prop.GetCustomAttribute<FirestorePropertyAttribute>();
+                var jsonPropAttr = prop.GetCustomAttribute<JsonPropertyNameAttribute>();
+                var nomeCampo = prop.Name;
+
+                if (firestorePropAttr is not null && !string.IsNullOrWhiteSpace(firestorePropAttr.Name))
+                {
+                    nomeCampo = firestorePropAttr.Name;
+                }
+                else if (jsonPropAttr is not null && !string.IsNullOrWhiteSpace(jsonPropAttr.Name))
+                {
+                    nomeCampo = jsonPropAttr.Name;
+                }
+
+                dict[nomeCampo] = valor;
             }
         }
 

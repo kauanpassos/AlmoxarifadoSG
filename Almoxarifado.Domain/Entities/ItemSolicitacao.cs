@@ -6,23 +6,21 @@ namespace Almoxarifado.Domain.Entities;
 [FirestoreData]
 public sealed class ItemSolicitacao
 {
-    [FirestoreProperty]
-    public string Id { get; private set; }
+    [FirestoreProperty("Id")]
+    public string Id { get; set; } = null!;
 
-    [FirestoreProperty]
-    public string SolicitacaoId { get; private set; }
+    [FirestoreProperty("SolicitacaoId")]
+    public string SolicitacaoId { get; set; } = null!;
 
-    [FirestoreProperty]
-    public string ProdutoId { get; private set; }
+    [FirestoreProperty("ProdutoId")]
+    public string ProdutoId { get; set; } = null!;
 
-    // --> ADICIONADO: Agora guardamos o nome do produto no Firestore
-    [FirestoreProperty]
-    public string NomeProduto { get; private set; }
+    [FirestoreProperty("NomeProduto")]
+    public string NomeProduto { get; set; } = null!;
 
-    [FirestoreProperty]
-    public int Quantidade { get; private set; }
+    [FirestoreProperty("Quantidade")]
+    public int Quantidade { get; set; }
 
-    // Construtor vazio exigido pelo SDK do Firestore
     public ItemSolicitacao() { }
 
     public ItemSolicitacao(string id, string solicitacaoId, string produtoId, string nomeProduto, int quantidade)
@@ -52,7 +50,7 @@ public sealed class ItemSolicitacao
     public void AlterarQuantidade(int novaQuantidade)
     {
         if (novaQuantidade <= 0)
-            throw new ArgumentException("A nova quantidade deve ser maior que zero.");
+            throw new ArgumentException("A nova quantidade deve ser maior que zero.", nameof(novaQuantidade));
 
         Quantidade = novaQuantidade;
     }

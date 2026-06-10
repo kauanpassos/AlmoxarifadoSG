@@ -2,10 +2,14 @@ using Almoxarifado.API.Configuration;
 using Almoxarifado.API.Middleware;
 using Almoxarifado.Application;
 using Almoxarifado.Infrastructure;
+using Almoxarifado.Domain.Constants;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Security.Claims;
 using Google.Cloud.Firestore;
+using Microsoft.Extensions.DependencyInjection;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,12 +25,6 @@ var projectId = builder.Configuration["Firebase:ProjectId"]
 
 var credentialsPath = Path.Combine(AppContext.BaseDirectory, builder.Configuration["Firebase:CredentialsPath"]!);
 Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialsPath);
-
-if (builder.Environment.EnvironmentName != "Testing")
-{
-    var firestoreDb = FirestoreDb.Create(projectId);
-    builder.Services.AddSingleton(firestoreDb);
-}
 
 builder.Services
     .AddInfrastructure(builder.Configuration)
@@ -56,11 +54,45 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidAudience = projectId,
             ValidateLifetime = true,
-            RoleClaimType = "role"
+            RoleClaimType = ClaimTypes.Role
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var claimsIdentity = context.Principal?.Identity as ClaimsIdentity;
+                if (claimsIdentity is null) return;
+
+                var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                             ?? claimsIdentity.FindFirst("user_id")?.Value;
+
+                if (string.IsNullOrEmpty(userId)) return;
+
+                if (!claimsIdentity.HasClaim(c => c.Type == ClaimTypes.NameIdentifier))
+                {
+                    claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userId));
+                }
+
+                var firestoreDb = context.HttpContext.RequestServices.GetRequiredService<FirestoreDb>();
+                var userDoc = await firestoreDb.Collection("usuarios").Document(userId).GetSnapshotAsync();
+
+                if (userDoc.Exists)
+                {
+                    var tipoUsuario = userDoc.GetValue<int>("tipo");
+                    if (tipoUsuario == 2)
+                    {
+                        claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, "Almoxarife"));
+                    }
+                }
+            }
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AlmoxarifeOnly", policy => policy.RequireRole("Almoxarife"));
+});
 
 var app = builder.Build();
 
@@ -70,6 +102,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 if (!app.Environment.IsDevelopment())
@@ -82,7 +115,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow }));
-
 app.MapControllers();
 
 app.Run();

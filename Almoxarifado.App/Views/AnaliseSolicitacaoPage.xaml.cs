@@ -3,12 +3,11 @@ using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.Views;
 
-public partial class DetalheSolicitacaoPage : ContentPage
+public partial class AnaliseSolicitacaoPage : ContentPage
 {
-    public DetalheSolicitacaoPage(DetalheSolicitacaoViewModel viewModel)
+    public AnaliseSolicitacaoPage(AnaliseSolicitacaoViewModel viewModel)
     {
         InitializeComponent();
-
         BindingContext = viewModel;
     }
 }

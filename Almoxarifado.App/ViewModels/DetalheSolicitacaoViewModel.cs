@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Almoxarifado.App.Services.Interfaces;
+using Almoxarifado.Domain.Constants;
 using Almoxarifado.Application.DTOs;
 using Microsoft.Maui.Controls;
 
@@ -17,16 +18,16 @@ public partial class DetalheSolicitacaoViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PodeCancelar))]
-    private SolicitacaoDto _solicitacaoSelecionada;
+    private SolicitacaoDto? _solicitacaoSelecionada;
 
     [ObservableProperty]
     private ObservableCollection<ItemSolicitacaoDto> _itens = new();
 
-    // Nova propriedade para guardar o nome real que vem da API
     [ObservableProperty]
     private string _nomeSolicitante = "Carregando...";
 
-    public bool PodeCancelar => SolicitacaoSelecionada?.Status == "Pendente" || SolicitacaoSelecionada?.Status == "Em análise";
+    public bool PodeCancelar => SolicitacaoSelecionada?.Status == StatusSolicitacao.Pendente
+                             || SolicitacaoSelecionada?.Status == "Em análise";
 
     public DetalheSolicitacaoViewModel(IFirebaseService firebaseService, IDialogService dialogService)
     {
@@ -34,13 +35,12 @@ public partial class DetalheSolicitacaoViewModel : ObservableObject
         _dialogService = dialogService;
     }
 
-    partial void OnSolicitacaoSelecionadaChanged(SolicitacaoDto value)
+    partial void OnSolicitacaoSelecionadaChanged(SolicitacaoDto? value)
     {
         if (value != null)
         {
             CarregarItens(value);
 
-            // Dispara a busca do nome do usuário em segundo plano
             _ = CarregarNomeUsuarioAsync(value.UsuarioId);
         }
     }
@@ -49,7 +49,6 @@ public partial class DetalheSolicitacaoViewModel : ObservableObject
     {
         try
         {
-            // Vai na API buscar o perfil e pega o nome
             var usuario = await _firebaseService.GetUsuarioAsync(usuarioId);
             NomeSolicitante = usuario?.Nome ?? "Usuário Desconhecido";
         }
@@ -72,7 +71,6 @@ public partial class DetalheSolicitacaoViewModel : ObservableObject
         }
     }
 
-    // 🔥 NOVO: Comando para voltar para a tela anterior
     [RelayCommand]
     private async Task VoltarAsync()
     {
@@ -86,7 +84,7 @@ public partial class DetalheSolicitacaoViewModel : ObservableObject
 
         bool confirmacao = await _dialogService.ShowConfirmationAsync(
             "Cancelar Solicitação",
-            $"Tem a certeza que deseja cancelar esta solicitação?\nEsta ação não poderá ser desfeita.",
+            "Tem a certeza que deseja cancelar esta solicitação?\nEsta ação não poderá ser desfeita.",
             "Sim, Cancelar",
             "Voltar");
 
@@ -94,18 +92,15 @@ public partial class DetalheSolicitacaoViewModel : ObservableObject
         {
             try
             {
-                // Chama a API para cancelar no banco de dados
-                await _firebaseService.AtualizarStatusSolicitacaoAsync(SolicitacaoSelecionada.Id, "Cancelado");
+                await _firebaseService.AtualizarStatusSolicitacaoAsync(SolicitacaoSelecionada.Id, StatusSolicitacao.Cancelada);
 
-                // Atualiza na tela local usando 'with' para contornar o 'record' imutável
-                SolicitacaoSelecionada = SolicitacaoSelecionada with { Status = "Cancelado" };
+                SolicitacaoSelecionada = SolicitacaoSelecionada with { Status = StatusSolicitacao.Cancelada };
 
                 OnPropertyChanged(nameof(SolicitacaoSelecionada));
                 OnPropertyChanged(nameof(PodeCancelar));
 
                 await _dialogService.ShowAlertAsync("Sucesso", "A solicitação foi cancelada com sucesso.", "OK");
 
-                // Volta para o Dashboard
                 await Shell.Current.GoToAsync("..");
             }
             catch (Exception ex)

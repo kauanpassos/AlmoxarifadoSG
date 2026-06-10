@@ -30,6 +30,7 @@ public static class MauiProgram
             h.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
             h.PlatformView.Background = null;
         });
+
         Microsoft.Maui.Handlers.PickerHandler.Mapper.AppendToMapping("NoBorder", (h, v) =>
         {
             h.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
@@ -70,23 +71,29 @@ public static class MauiProgram
 
         services.AddTransient<AuthenticatedHttpHandler>();
 
-        services.AddScoped(sp =>
+        services.AddHttpClient<IAuthService, AuthService>(client =>
         {
-            var authHandler = sp.GetRequiredService<AuthenticatedHttpHandler>();
-            authHandler.InnerHandler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-            };
+            client.BaseAddress = new Uri(apiBaseUrl);
+        })
+        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+        });
 
-            return new HttpClient(authHandler) { BaseAddress = new Uri(apiBaseUrl) };
+        services.AddHttpClient<IFirebaseService, HttpFirebaseService>(client =>
+        {
+            client.BaseAddress = new Uri(apiBaseUrl);
+        })
+        .AddHttpMessageHandler<AuthenticatedHttpHandler>()
+        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
         });
     }
 
     private static void RegistrarServicos(IServiceCollection services)
     {
-        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<INavigationService, NavigationService>();
-        services.AddScoped<IFirebaseService, HttpFirebaseService>();
         services.AddSingleton<ICartService, CartService>();
         services.AddSingleton<IDialogService, DialogService>();
     }
@@ -98,13 +105,10 @@ public static class MauiProgram
         services.AddTransient<GestaoFilaViewModel>();
         services.AddTransient<HomeColaboradorViewModel>();
         services.AddTransient<PerfilViewModel>();
-
-        // --> ADICIONADO AQUI: Registrando o ViewModel do Checkout
         services.AddTransient<CheckoutViewModel>();
-
-        // ViewModel da colega
         services.AddTransient<CadastroViewModel>();
         services.AddTransient<DetalheSolicitacaoViewModel>();
+        services.AddTransient<AnaliseSolicitacaoViewModel>();
     }
 
     private static void RegistrarPaginas(IServiceCollection services)
@@ -115,13 +119,10 @@ public static class MauiProgram
         services.AddTransient<MainPage>();
         services.AddTransient<HomeColaboradorPage>();
         services.AddTransient<PerfilPage>();
-
-        // --> ADICIONADO AQUI: Registrando a Page do Checkout
         services.AddTransient<CheckoutPage>();
-
-        // Página da colega
         services.AddTransient<CadastroPage>();
-
+        services.AddTransient<DetalheSolicitacaoPage>();
+        services.AddTransient<AnaliseSolicitacaoPage>();
         services.AddSingleton<AppShell>();
     }
 }

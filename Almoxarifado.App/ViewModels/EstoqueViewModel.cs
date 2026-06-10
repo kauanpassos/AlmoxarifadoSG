@@ -131,7 +131,6 @@ public partial class EstoqueViewModel : ObservableObject
     {
         if (!PodeUsarCarrinho) return;
 
-        // --> ALTERADO AQUI: Navegando para a nova CheckoutPage
         if (QuantidadeCarrinho == 0)
         {
             await Shell.Current.DisplayAlert("Aviso", "Seu carrinho está vazio. Adicione itens antes de prosseguir.", "OK");

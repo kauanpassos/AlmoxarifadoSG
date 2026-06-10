@@ -1,5 +1,10 @@
 using Almoxarifado.App.Services.Interfaces;
 using Microsoft.Maui.Controls;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Almoxarifado.App.Services;
 
@@ -23,9 +28,9 @@ public sealed class NavigationService(IAuthService authService, IServiceProvider
                 }
             });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw new InvalidOperationException("Falha crítica ao redirecionar para a tela de login. Tente reiniciar o aplicativo.");
+            throw new InvalidOperationException($"Falha crítica ao redirecionar para a tela de login. Detalhe: {ex.Message}");
         }
     }
 
@@ -41,12 +46,12 @@ public sealed class NavigationService(IAuthService authService, IServiceProvider
             }
             else
             {
-                throw new InvalidOperationException("A infraestrutura de navegação principal não está pronta.");
+                throw new InvalidOperationException("A infraestrutura de navegação principal (Shell) não está pronta.");
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw new InvalidOperationException($"Não foi possível navegar para o destino solicitado. Tente novamente.");
+            throw new InvalidOperationException($"Não foi possível navegar para a rota '{route}'. Detalhes do MAUI: {ex.Message}");
         }
     }
 }

@@ -3,6 +3,7 @@ using Almoxarifado.App.Validations;
 using Almoxarifado.Domain.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.ViewModels;
 
@@ -66,16 +67,16 @@ public partial class CadastroViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            
+
             var request = new Models.RegistrarUsuarioRequest(Nome, Email, Senha, Setor, Tipo);
             await _authService.RegistrarAsync(request);
-            
+
             if (Shell.Current is not null)
             {
                 await Shell.Current.DisplayAlert("Sucesso", "Usuário cadastrado com sucesso!", "OK");
             }
-            
-            await _navigationService.NavigateToLoginAsync();
+
+            await VoltarParaLoginAsync();
         }
         catch (Exception ex)
         {
@@ -90,6 +91,6 @@ public partial class CadastroViewModel : ObservableObject
     [RelayCommand]
     private async Task VoltarParaLoginAsync()
     {
-        await _navigationService.NavigateToLoginAsync();
+        await Shell.Current.GoToAsync("..");
     }
 }

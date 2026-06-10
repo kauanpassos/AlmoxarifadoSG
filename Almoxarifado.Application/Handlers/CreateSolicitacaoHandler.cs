@@ -18,12 +18,11 @@ public sealed class CreateSolicitacaoHandler(IWriteOnlyRepository<Solicitacao> r
 
         foreach (var item in request.Itens ?? [])
         {
-            // CORREÇÃO AQUI: Passando o item.NomeProduto como quarto parâmetro
             solicitacao.AdicionarItem(new ItemSolicitacao(
                 Guid.NewGuid().ToString(),
                 solicitacao.Id,
                 item.Sku,
-                item.NomeProduto, // <-- O nome que o construtor estava exigindo!
+                item.NomeProduto,
                 item.Quantidade
             ));
         }

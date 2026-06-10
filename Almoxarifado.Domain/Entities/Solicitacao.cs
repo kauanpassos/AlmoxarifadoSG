@@ -1,30 +1,29 @@
 using System;
 using System.Collections.Generic;
 using Google.Cloud.Firestore;
+using Almoxarifado.Domain.Constants;
 
 namespace Almoxarifado.Domain.Entities;
 
 [FirestoreData]
 public sealed class Solicitacao
 {
-    [FirestoreProperty]
-    public string Id { get; private set; }
+    [FirestoreDocumentId]
+    public string Id { get; set; } = null!;
 
-    [FirestoreProperty]
-    public string UsuarioId { get; private set; }
+    [FirestoreProperty("UsuarioId")]
+    public string UsuarioId { get; set; } = null!;
 
-    [FirestoreProperty]
-    public string Observacao { get; private set; }
+    [FirestoreProperty("Observacao")]
+    public string Observacao { get; set; } = null!;
 
-    [FirestoreProperty]
-    public string Status { get; private set; }
+    [FirestoreProperty("Status")]
+    public string Status { get; set; } = null!;
 
     private readonly List<ItemSolicitacao> _itens = new();
 
-    // Mantemos a coleção de leitura segura para a aplicação
     public IReadOnlyCollection<ItemSolicitacao> Itens => _itens.AsReadOnly();
 
-    // Propriedade exclusiva para o Firestore gravar/ler a lista sem quebrar o encapsulamento
     [FirestoreProperty("Itens")]
     public List<ItemSolicitacao> ItensDb
     {
@@ -32,17 +31,18 @@ public sealed class Solicitacao
         set
         {
             _itens.Clear();
-            if (value != null) _itens.AddRange(value);
+
+            if (value != null)
+                _itens.AddRange(value);
         }
     }
 
-    [FirestoreProperty]
-    public DateTime CreatedAt { get; private set; }
+    [FirestoreProperty("createdAt")]
+    public DateTime CreatedAt { get; set; }
 
-    [FirestoreProperty]
-    public DateTime UpdatedAt { get; private set; }
+    [FirestoreProperty("updatedAt")]
+    public DateTime UpdatedAt { get; set; }
 
-    // Construtor vazio exigido pelo SDK do Firestore
     public Solicitacao() { }
 
     public Solicitacao(string id, string usuarioId, string observacao)
@@ -52,8 +52,11 @@ public sealed class Solicitacao
 
         Id = id;
         UsuarioId = usuarioId;
-        Observacao = string.IsNullOrWhiteSpace(observacao) ? "Sem observações" : observacao.Trim();
-        Status = "Pendente";
+        Observacao = string.IsNullOrWhiteSpace(observacao)
+            ? "Sem observações"
+            : observacao.Trim();
+
+        Status = StatusSolicitacao.Pendente;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
@@ -68,39 +71,41 @@ public sealed class Solicitacao
 
     public void Aprovar()
     {
-        if (Status is not "Pendente")
-            throw new InvalidOperationException("Apenas solicitações pendentes podem ser aprovadas.");
+        if (Status != StatusSolicitacao.Pendente)
+            throw new InvalidOperationException("Apenas solicitações em estado pendente podem ser aprovadas.");
 
-        Status = "Aprovada";
+        Status = StatusSolicitacao.Aprovada;
         AtualizarData();
     }
 
     public void Recusar()
     {
-        if (Status is not "Pendente")
-            throw new InvalidOperationException("Apenas solicitações pendentes podem ser recusadas.");
+        if (Status != StatusSolicitacao.Pendente)
+            throw new InvalidOperationException("Apenas solicitações em estado pendente podem ser recusadas.");
 
-        Status = "Recusada";
+        Status = StatusSolicitacao.Recusada;
         AtualizarData();
     }
 
     public void FinalizarEntrega()
     {
-        if (Status is not "Aprovada")
-            throw new InvalidOperationException("Apenas solicitações aprovadas podem ser entregues.");
+        if (Status != StatusSolicitacao.Aprovada)
+            throw new InvalidOperationException("Apenas solicitações previamente aprovadas podem ser entregues.");
 
-        Status = "Entregue";
+        Status = StatusSolicitacao.Entregue;
         AtualizarData();
     }
 
-    // 🔥 CORREÇÃO: Método Cancelar adicionado para que o Handler possa chamá-lo
     public void Cancelar()
     {
-        if (Status != "Pendente" && Status != "Em análise")
+        if (Status != StatusSolicitacao.Pendente &&
+            Status != StatusSolicitacao.EmAnalise)
+        {
             throw new InvalidOperationException("Apenas solicitações pendentes ou em análise podem ser canceladas.");
+        }
 
-        Status = "Cancelado";
-        AtualizarData(); // Atualiza a data de modificação automaticamente
+        Status = StatusSolicitacao.Cancelada;
+        AtualizarData();
     }
 
     private void AtualizarData()

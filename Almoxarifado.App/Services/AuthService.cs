@@ -1,6 +1,8 @@
+using System;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Almoxarifado.App.Models;
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.Application.DTOs;
@@ -31,7 +33,14 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
 
             await SecureStorage.Default.SetAsync("auth_token", token);
 
-            return await FetchUserProfileAsync(token, email);
+            var usuario = await FetchUserProfileAsync(token, email);
+
+            if (usuario is not null)
+            {
+                UsuarioSessao.UsuarioLogado = usuario;
+            }
+
+            return usuario;
         });
     }
 
@@ -73,7 +82,14 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
         try
         {
             var token = await SecureStorage.Default.GetAsync("auth_token");
-            return string.IsNullOrWhiteSpace(token) ? default : ExtractUserFromJwt(token);
+            if (string.IsNullOrWhiteSpace(token)) return default;
+
+            var usuario = ExtractUserFromJwt(token);
+            if (usuario is not null)
+            {
+                UsuarioSessao.UsuarioLogado = usuario;
+            }
+            return usuario;
         }
         catch
         {
@@ -95,8 +111,6 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
         finally
         {
             SecureStorage.Default.Remove("auth_token");
-
-            // --> CORREÇÃO AQUI: Limpar os dados do utilizador logado em memória
             UsuarioSessao.UsuarioLogado = null;
         }
 
@@ -145,8 +159,10 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
                 }
             }
 
+            var idCorreto = GetStringFallback("id", "Id", baseUser.Id);
+
             return new UsuarioDto(
-                baseUser.Id,
+                idCorreto,
                 baseUser.Email,
                 GetStringFallback("nome", "Nome", baseUser.Nome),
                 GetStringFallback("setor", "Setor", baseUser.Setor),
@@ -168,7 +184,9 @@ public sealed class AuthService(FirebaseAuthClient firebaseAuthClient, HttpClien
 
             var root = jsonDoc.RootElement;
 
-            var id = root.TryGetProperty("sub", out var subProp) ? subProp.GetString() : string.Empty;
+            var id = root.TryGetProperty("user_id", out var uidProp) ? uidProp.GetString() :
+                     root.TryGetProperty("sub", out var subProp) ? subProp.GetString() : string.Empty;
+
             if (string.IsNullOrWhiteSpace(id))
                 return default;
 

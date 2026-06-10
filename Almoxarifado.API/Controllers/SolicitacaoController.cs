@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Almoxarifado.API.Controllers;
 
 [ApiController]
-[Route("api/solicitacoes")] // <-- ROTA CORRIGIDA PARA O PLURAL
+[Route("api/solicitacoes")]
 [Authorize]
 public sealed class SolicitacaoController : ControllerBase
 {
@@ -45,6 +45,7 @@ public sealed class SolicitacaoController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = "AlmoxarifeOnly")]
     [ProducesResponseType(typeof(IEnumerable<SolicitacaoDto>), 200)]
     public async Task<ActionResult<IEnumerable<SolicitacaoDto>>> GetAll()
     {
@@ -53,6 +54,7 @@ public sealed class SolicitacaoController : ControllerBase
     }
 
     [HttpGet("pendentes")]
+    [Authorize(Policy = "AlmoxarifeOnly")]
     [ProducesResponseType(typeof(IEnumerable<SolicitacaoDto>), 200)]
     public async Task<ActionResult<IEnumerable<SolicitacaoDto>>> GetPendentes()
     {
@@ -61,6 +63,7 @@ public sealed class SolicitacaoController : ControllerBase
     }
 
     [HttpPatch("{id}/status")]
+    [Authorize(Policy = "AlmoxarifeOnly")]
     [ProducesResponseType(typeof(SolicitacaoDto), 200)]
     [ProducesResponseType(typeof(ProblemDetails), 400)]
     [ProducesResponseType(typeof(ProblemDetails), 404)]

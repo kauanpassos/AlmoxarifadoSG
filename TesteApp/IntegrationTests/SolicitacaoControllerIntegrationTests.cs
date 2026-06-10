@@ -20,37 +20,50 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureServices(services =>
+        _factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
             {
-                var descriptors = services.Where(d => d.ServiceType.IsGenericType &&
-                    (d.ServiceType.GetGenericTypeDefinition() == typeof(IEngine<>) ||
-                     d.ServiceType.GetGenericTypeDefinition() == typeof(IReadOnlyRepository<>) ||
-                     d.ServiceType.GetGenericTypeDefinition() == typeof(IWriteOnlyRepository<>))).ToList();
-
-                foreach (var descriptor in descriptors)
+                builder.ConfigureServices(services =>
                 {
-                    services.Remove(descriptor);
-                }
-                services.AddSingleton<IEngine<Produto>, Mocks.MockEngine<Produto>>();
-                services.AddSingleton<IEngine<Solicitacao>, Mocks.MockEngine<Solicitacao>>();
+                    var descriptors = services
+                        .Where(d =>
+                            d.ServiceType.IsGenericType &&
+                            (d.ServiceType.GetGenericTypeDefinition() == typeof(IEngine<>) ||
+                             d.ServiceType.GetGenericTypeDefinition() == typeof(IReadOnlyRepository<>) ||
+                             d.ServiceType.GetGenericTypeDefinition() == typeof(IWriteOnlyRepository<>)))
+                        .ToList();
 
-                services.AddSingleton<IReadOnlyRepository<Produto>>(sp => sp.GetRequiredService<IEngine<Produto>>());
-                services.AddSingleton<IWriteOnlyRepository<Produto>>(sp => sp.GetRequiredService<IEngine<Produto>>());
+                    foreach (var descriptor in descriptors)
+                    {
+                        services.Remove(descriptor);
+                    }
 
-                services.AddSingleton<IReadOnlyRepository<Solicitacao>>(sp => sp.GetRequiredService<IEngine<Solicitacao>>());
-                services.AddSingleton<IWriteOnlyRepository<Solicitacao>>(sp => sp.GetRequiredService<IEngine<Solicitacao>>());
+                    services.AddSingleton<IEngine<Produto>, Mocks.MockEngine<Produto>>();
+                    services.AddSingleton<IEngine<Solicitacao>, Mocks.MockEngine<Solicitacao>>();
 
-                services.AddMvc(options =>
-                {
-                    options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AllowAnonymousFilter());
+                    services.AddSingleton<IReadOnlyRepository<Produto>>(sp =>
+                        sp.GetRequiredService<IEngine<Produto>>());
+
+                    services.AddSingleton<IWriteOnlyRepository<Produto>>(sp =>
+                        sp.GetRequiredService<IEngine<Produto>>());
+
+                    services.AddSingleton<IReadOnlyRepository<Solicitacao>>(sp =>
+                        sp.GetRequiredService<IEngine<Solicitacao>>());
+
+                    services.AddSingleton<IWriteOnlyRepository<Solicitacao>>(sp =>
+                        sp.GetRequiredService<IEngine<Solicitacao>>());
+
+                    services.AddMvc(options =>
+                    {
+                        options.Filters.Add(
+                            new Microsoft.AspNetCore.Mvc.Authorization.AllowAnonymousFilter());
+                    });
                 });
             });
-        });
 
         _client = _factory.CreateClient();
         _client.Timeout = TimeSpan.FromSeconds(30);
+
         await Task.CompletedTask;
     }
 
@@ -58,6 +71,7 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
     {
         _client?.Dispose();
         _factory?.Dispose();
+
         await Task.CompletedTask;
     }
 
@@ -65,17 +79,30 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
     public async Task ObterEstoque_DeveRetornarOk()
     {
         var response = await _client.GetAsync("/api/produtos");
+
         Assert.Equal(200, (int)response.StatusCode);
     }
 
     [Fact]
     public async Task CriarSolicitacao_ComRequest_DeveRetornarOk()
     {
-        var request = new { id = Guid.NewGuid().ToString(), usuarioId = "user123", observacao = "Teste" };
+        var request = new
+        {
+            id = Guid.NewGuid().ToString(),
+            usuarioId = "user123",
+            observacao = "Teste de Integração"
+        };
+
         var json = JsonSerializer.Serialize(request);
-        var httpContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-        
-        var response = await _client.PostAsync("/api/solicitacao", httpContent);
+
+        var httpContent = new StringContent(
+            json,
+            System.Text.Encoding.UTF8,
+            "application/json");
+
+        var response = await _client.PostAsync(
+            "/api/solicitacao",
+            httpContent);
 
         var body = await response.Content.ReadAsStringAsync();
 
@@ -84,11 +111,10 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
             response.StatusCode == HttpStatusCode.BadRequest ||
             response.StatusCode == HttpStatusCode.Unauthorized,
             $"""
-            StatusCode: {(int)response.StatusCode} ({response.StatusCode})
-
+            Falha no contrato da rota.
+            StatusCode recebido: {(int)response.StatusCode} ({response.StatusCode})
             Content-Type: {response.Content.Headers.ContentType}
-
-            Body:
+            Corpo do Retorno:
             {body}
             """
         );
@@ -97,9 +123,13 @@ public class SolicitacaoControllerIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task ListarPorUsuario_DeveRetornarOk()
     {
-        var response = await _client.GetAsync("/api/solicitacao/usuario/user123");
-        Assert.True(response.IsSuccessStatusCode ||
-                      response.StatusCode == System.Net.HttpStatusCode.NotFound ||
-                      response.StatusCode == System.Net.HttpStatusCode.Unauthorized);
+        var response = await _client.GetAsync(
+            "/api/solicitacao/usuario/user123");
+
+        Assert.True(
+            response.IsSuccessStatusCode ||
+            response.StatusCode == HttpStatusCode.NotFound ||
+            response.StatusCode == HttpStatusCode.Unauthorized
+        );
     }
 }

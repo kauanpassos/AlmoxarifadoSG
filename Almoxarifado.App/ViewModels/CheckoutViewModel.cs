@@ -114,7 +114,6 @@ public partial class CheckoutViewModel : ObservableObject
 
             var itensParaEnviar = MateriaisSolicitados.Select(i => i.ToDto()).ToList();
 
-            // O seu DTO de envio está passando a Justificativa corretamente aqui!
             await _firebaseService.EnviarSolicitacaoLoteAsync(usuarioId, Justificativa, itensParaEnviar);
 
             _cartService.LimparCarrinho();

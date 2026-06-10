@@ -49,7 +49,7 @@ public static class DependencyInjection
             }
         }
 
-        services.AddSingleton(sp => 
+        services.AddSingleton(sp =>
         {
             var projectId = configuration["Firebase:ProjectId"] ?? "almoxarifado-sg";
             return Google.Cloud.Firestore.FirestoreDb.Create(projectId);

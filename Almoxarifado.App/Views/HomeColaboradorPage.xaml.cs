@@ -10,14 +10,16 @@ public partial class HomeColaboradorPage : ContentPage
     public HomeColaboradorPage(HomeColaboradorViewModel viewModel)
     {
         InitializeComponent();
-        BindingContext = _viewModel = viewModel;
+
+        _viewModel = viewModel;
+        BindingContext = _viewModel;
     }
 
     protected override void OnAppearing()
     {
         base.OnAppearing();
 
-        if (_viewModel.CarregarDashboardCommand.CanExecute(null))
+        if (!_viewModel.IsBusy && _viewModel.CarregarDashboardCommand.CanExecute(null))
         {
             _viewModel.CarregarDashboardCommand.Execute(null);
         }

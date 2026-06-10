@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 
 namespace Almoxarifado.App.ViewModels;
 
@@ -22,7 +23,6 @@ public sealed partial class PerfilViewModel : ObservableObject
     private UsuarioDto? _usuarioAtual;
 
     public string Iniciais => ObterIniciais(UsuarioAtual?.Nome);
-
     public bool IsAlmoxarife => UsuarioAtual?.Tipo is TipoUsuario.Almoxarife;
     public bool IsColaborador => UsuarioAtual?.Tipo is TipoUsuario.Colaborador;
 
@@ -42,7 +42,13 @@ public sealed partial class PerfilViewModel : ObservableObject
     [RelayCommand]
     private async Task VoltarParaHomeAsync()
     {
-        await _navigationService.NavigateToAsync("//HomeColaboradorPage");
+        await Shell.Current.GoToAsync("..");
+    }
+
+    [RelayCommand]
+    private async Task VoltarParaFilaAsync()
+    {
+        await Shell.Current.GoToAsync("..");
     }
 
     [RelayCommand]
@@ -58,27 +64,16 @@ public sealed partial class PerfilViewModel : ObservableObject
 
             if (confirmar)
             {
-                // CORREÇÃO: Limpar a sessão atual da memória
                 UsuarioSessao.UsuarioLogado = null;
                 UsuarioAtual = null;
 
-                // Se o seu IAuthService tiver um método para limpar cache/tokens, chame-o aqui. 
-                // Exemplo: await _authService.LogoutAsync();
-
-                // Navega para o Login (e como a sessão está nula, ele vai parar lá de verdade)
-                await _navigationService.NavigateToLoginAsync();
+                await Shell.Current.GoToAsync("//LoginPage");
             }
         }
         catch (Exception)
         {
             await _dialogService.ShowAlertAsync("Erro", "Ocorreu um erro ao tentar sair. Tente novamente.");
         }
-    }
-
-    [RelayCommand]
-    private async Task VoltarParaFilaAsync()
-    {
-        await _navigationService.NavigateToAsync("//GestaoFilaPage");
     }
 
     private string ObterIniciais(string? nome)
@@ -90,4 +85,4 @@ public sealed partial class PerfilViewModel : ObservableObject
 
         return $"{partes[0][0]}{partes[^1][0]}".ToUpper();
     }
-} 
+}

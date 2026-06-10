@@ -3,64 +3,70 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Almoxarifado.App.Views.CheckoutPage"
              Title="Revisar Solicitação"
-             BackgroundColor="#F4F6F8">
+             BackgroundColor="#F8FAFC">
 
     <ContentPage.Resources>
-        <Color x:Key="CorAzul">#254A9A</Color>
-        <Color x:Key="CorPendente">#FF9665</Color>
-        <Color x:Key="CorVermelha">#DA0004</Color>
-        <Color x:Key="CorVerde">#03BA15</Color>
-        <Color x:Key="CorTextoEscuro">#333333</Color>
-        <Color x:Key="CorTextoClaro">#777777</Color>
+        <Color x:Key="CorAzul">#1E3A8A</Color>
+        <Color x:Key="CorAzulSuave">#EFF6FF</Color>
+        <Color x:Key="CorVermelha">#EF4444</Color>
+        <Color x:Key="CorVerde">#10B981</Color>
+        <Color x:Key="CorTextoEscuro">#0F172A</Color>
+        <Color x:Key="CorTextoClaro">#64748B</Color>
+        <Color x:Key="CorBordaNeutras">#E2E8F0</Color>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto, *, Auto" Padding="15">
+    <Grid RowDefinitions="Auto, *, Auto" Padding="20">
 
-        <VerticalStackLayout Grid.Row="0" Margin="0,0,0,15">
-            <Label Text="Materiais Solicitados" FontSize="22" FontAttributes="Bold" TextColor="{StaticResource CorAzul}" />
+        <VerticalStackLayout Grid.Row="0" Margin="0,0,0,20" Spacing="4">
+            <Label Text="Materiais Solicitados" FontSize="24" FontAttributes="Bold" TextColor="{StaticResource CorAzul}" />
             <Label Text="Verifique os itens e as quantidades antes de confirmar." FontSize="14" TextColor="{StaticResource CorTextoClaro}" />
         </VerticalStackLayout>
 
-        <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" IsVisible="{Binding IsListaVazia}">
+        <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" IsVisible="{Binding IsListaVazia}" Spacing="10">
+            <Label Text="📦" FontSize="48" HorizontalTextAlignment="Center"/>
             <Label Text="Nenhum material foi adicionado a esta solicitação." FontSize="16" TextColor="{StaticResource CorTextoClaro}" HorizontalTextAlignment="Center"/>
         </VerticalStackLayout>
 
         <CollectionView Grid.Row="1" ItemsSource="{Binding MateriaisSolicitados}" IsVisible="{Binding IsListaComItens}" SelectionMode="None">
             <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="14" />
             </CollectionView.ItemsLayout>
 
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Border StrokeThickness="0" BackgroundColor="White" Padding="15">
+                    <Border StrokeThickness="1" Stroke="{StaticResource CorBordaNeutras}" BackgroundColor="White" Padding="16">
                         <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="8" />
+                            <RoundRectangle CornerRadius="12" />
                         </Border.StrokeShape>
                         <Border.Shadow>
-                            <Shadow Brush="#000000" Opacity="0.08" Offset="0,2" Radius="4" />
+                            <Shadow Brush="#0F172A" Opacity="0.04" Offset="0,4" Radius="8" />
                         </Border.Shadow>
 
-                        <Grid ColumnDefinitions="*, Auto, Auto" RowDefinitions="Auto, Auto">
-                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding Produto.NomePeca}" FontAttributes="Bold" FontSize="16" TextColor="{StaticResource CorTextoEscuro}" LineBreakMode="TailTruncation" Margin="0,0,10,0"/>
-                            <Label Grid.Row="1" Grid.Column="0" Text="{Binding Produto.Sku, StringFormat='Cód: {0}'}" FontSize="12" TextColor="{StaticResource CorTextoClaro}" />
+                        <Grid ColumnDefinitions="*, Auto, Auto" RowDefinitions="Auto, Auto" VerticalOptions="Center">
+                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding Produto.NomePeca}" FontAttributes="Bold" FontSize="16" TextColor="{StaticResource CorTextoEscuro}" LineBreakMode="TailTruncation" Margin="0,0,10,2"/>
+                            <Label Grid.Row="1" Grid.Column="0" Text="{Binding Produto.Sku, StringFormat='Cód: {0}'}" FontSize="13" TextColor="{StaticResource CorTextoClaro}" />
 
-                            <Frame Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Padding="0" CornerRadius="6" BorderColor="{StaticResource CorAzul}" BackgroundColor="Transparent" HasShadow="False" VerticalOptions="Center" Margin="0,0,15,0">
-                                <HorizontalStackLayout Spacing="0">
-                                    <Button Text="-" WidthRequest="35" HeightRequest="40" Padding="0" BackgroundColor="Transparent" TextColor="{StaticResource CorAzul}" FontSize="18" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DiminuirQuantidadeCommand}" CommandParameter="{Binding .}" />
-                                    <Entry Text="{Binding Quantidade}" Keyboard="Numeric" VerticalOptions="Center" HorizontalTextAlignment="Center" FontAttributes="Bold" TextColor="{StaticResource CorAzul}" WidthRequest="40" BackgroundColor="Transparent" />
-                                    <Button Text="+" WidthRequest="35" HeightRequest="40" Padding="0" BackgroundColor="Transparent" TextColor="{StaticResource CorAzul}" FontSize="18" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AumentarQuantidadeCommand}" CommandParameter="{Binding .}" />
+                            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" StrokeThickness="1" Stroke="{StaticResource CorBordaNeutras}" BackgroundColor="#F8FAFC" HeightRequest="40" Margin="0,0,12,0" VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8" />
+                                </Border.StrokeShape>
+
+                                <HorizontalStackLayout Spacing="0" VerticalOptions="Center">
+                                    <Button Text="-" WidthRequest="36" HeightRequest="38" Padding="0" BackgroundColor="Transparent" TextColor="{StaticResource CorTextoEscuro}" FontSize="18" FontAttributes="Bold" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DiminuirQuantidadeCommand}" CommandParameter="{Binding .}" />
+                                    <Entry Text="{Binding Quantidade}" Keyboard="Numeric" VerticalOptions="Center" HorizontalTextAlignment="Center" FontAttributes="Bold" TextColor="{StaticResource CorAzul}" WidthRequest="44" HeightRequest="38" BackgroundColor="White" Margin="0" />
+                                    <Button Text="+" WidthRequest="36" HeightRequest="38" Padding="0" BackgroundColor="Transparent" TextColor="{StaticResource CorTextoEscuro}" FontSize="18" FontAttributes="Bold" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AumentarQuantidadeCommand}" CommandParameter="{Binding .}" />
                                 </HorizontalStackLayout>
-                            </Frame>
+                            </Border>
 
                             <ImageButton Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" 
-                                         BackgroundColor="{StaticResource CorVermelha}"
-                                         CornerRadius="6"
+                                         BackgroundColor="#FEF2F2"
+                                         CornerRadius="8"
                                          WidthRequest="40" HeightRequest="40"
                                          VerticalOptions="Center"
                                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoverItemCommand}" 
                                          CommandParameter="{Binding .}">
                                 <ImageButton.Source>
-                                    <FontImageSource FontFamily="OpenSansRegular" Glyph="🗑" Size="18" Color="White"/>
+                                    <FontImageSource FontFamily="OpenSansRegular" Glyph="🗑" Size="16" Color="{StaticResource CorVermelha}"/>
                                 </ImageButton.Source>
                             </ImageButton>
                         </Grid>
@@ -69,22 +75,34 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <VerticalStackLayout Grid.Row="2" Spacing="8" Padding="0,15,0,0">
-            <Label Text="Justificativa" FontAttributes="Bold" TextColor="{StaticResource CorAzul}" />
-            <Border Stroke="{StaticResource CorAzul}" StrokeThickness="1" BackgroundColor="White">
+        <VerticalStackLayout Grid.Row="2" Spacing="10" Padding="0,15,0,0">
+            <Label Text="Justificativa" FontAttributes="Bold" FontSize="14" TextColor="{StaticResource CorTextoEscuro}" />
+
+            <Border Stroke="{StaticResource CorBordaNeutras}" StrokeThickness="1" BackgroundColor="White">
                 <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="6" />
+                    <RoundRectangle CornerRadius="10" />
                 </Border.StrokeShape>
 
-                <Editor Placeholder="Descreva o motivo desta solicitação..." 
+                <Editor Placeholder="Descreva brevemente o motivo desta solicitação..." 
                         Text="{Binding Justificativa, Mode=TwoWay}" 
                         TextColor="{StaticResource CorTextoEscuro}"
-                        HeightRequest="80" 
+                        PlaceholderColor="{StaticResource CorTextoClaro}"
+                        HeightRequest="90" 
                         MaxLength="250" 
-                        AutoSize="TextChanges" />
+                        AutoSize="TextChanges"
+                        Margin="5" />
             </Border>
 
-            <Button Text="Finalizar Solicitação" BackgroundColor="{StaticResource CorVerde}" TextColor="White" FontAttributes="Bold" FontSize="16" CornerRadius="8" HeightRequest="50" Margin="0,15,0,0" Command="{Binding EnviarSolicitacaoCommand}" IsEnabled="{Binding IsListaComItens}" />
+            <Button Text="Finalizar Solicitação" 
+                    BackgroundColor="{StaticResource CorVerde}" 
+                    TextColor="White" 
+                    FontAttributes="Bold" 
+                    FontSize="16" 
+                    CornerRadius="10" 
+                    HeightRequest="52" 
+                    Margin="0,10,0,0" 
+                    Command="{Binding EnviarSolicitacaoCommand}" 
+                    IsEnabled="{Binding IsListaComItens}" />
         </VerticalStackLayout>
     </Grid>
 </ContentPage>
