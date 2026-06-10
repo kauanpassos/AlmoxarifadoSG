@@ -37,7 +37,10 @@ public sealed class FirestoreEstoqueTransactionService : IEstoqueTransactionServ
 
         foreach (var item in solicitacao.Itens)
         {
-            var produtosResult = await _produtoReadRepo.GetByFieldAsync("NumCode", item.ProdutoId);
+            if (!long.TryParse(item.ProdutoId, out var numCode))
+                throw new KeyNotFoundException($"Produto SKU '{item.ProdutoId}' inválido (não numérico).");
+
+            var produtosResult = await _produtoReadRepo.GetByFieldAsync("NumCode", numCode);
             var produtoEncontrado = produtosResult.FirstOrDefault()
                 ?? throw new KeyNotFoundException($"Produto SKU '{item.ProdutoId}' não encontrado no banco.");
 
