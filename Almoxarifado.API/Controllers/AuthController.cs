@@ -1,13 +1,16 @@
 using Almoxarifado.Application.Commands.Auth;
 using Almoxarifado.Application.Queries;
+using Almoxarifado.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace Almoxarifado.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public sealed class AuthController(IMediator mediator) : ControllerBase
 {
     [HttpPost("registrar")]
@@ -36,7 +39,9 @@ public sealed class AuthController(IMediator mediator) : ControllerBase
         if (perfil is null)
             return NotFound("Usuário não encontrado na base de dados.");
 
-        var tipoId = string.Equals(perfil.Tipo, "Almoxarife", StringComparison.OrdinalIgnoreCase) ? 1 : 2;
+        var tipoId = string.Equals(perfil.Tipo, "Almoxarife", StringComparison.OrdinalIgnoreCase)
+            ? (int)TipoUsuario.Almoxarife
+            : (int)TipoUsuario.Colaborador;
 
         return Ok(new
         {

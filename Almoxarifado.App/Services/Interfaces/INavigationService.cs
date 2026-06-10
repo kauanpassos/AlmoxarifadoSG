@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace Almoxarifado.App.Services.Interfaces;
 
 public interface INavigationService

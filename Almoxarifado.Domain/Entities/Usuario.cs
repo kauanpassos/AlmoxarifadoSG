@@ -13,7 +13,9 @@ public sealed class Usuario
     public bool Ativo { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
+
     private Usuario() { }
+
     public Usuario(string id, string nome, string email, string setor, TipoUsuario tipo)
     {
         if (string.IsNullOrWhiteSpace(id))
@@ -38,9 +40,11 @@ public sealed class Usuario
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
+
     public void Desativar()
     {
-        if (!Ativo) return;
+        if (!Ativo)
+            return;
 
         Ativo = false;
         AtualizarData();
@@ -48,7 +52,8 @@ public sealed class Usuario
 
     public void Ativar()
     {
-        if (Ativo) return;
+        if (Ativo)
+            return;
 
         Ativo = true;
         AtualizarData();

@@ -17,11 +17,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(CadastroPage), typeof(CadastroPage));
         Routing.RegisterRoute(nameof(EstoquePage), typeof(EstoquePage));
         Routing.RegisterRoute(nameof(CheckoutPage), typeof(CheckoutPage));
-
-        // Rota de Detalhes da Solicitação
         Routing.RegisterRoute(nameof(DetalheSolicitacaoPage), typeof(DetalheSolicitacaoPage));
-
-        // ❌ O evento "Loaded" que fazia a checagem automática foi removido daqui.
-        // O app agora iniciará estritamente na página padrão definida no AppShell.xaml.
+        Routing.RegisterRoute(nameof(AnaliseSolicitacaoPage), typeof(AnaliseSolicitacaoPage));
     }
 }

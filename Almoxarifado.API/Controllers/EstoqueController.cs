@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MediatR;
 using Almoxarifado.Application.Queries;
 using Almoxarifado.Domain.Entities;
@@ -9,6 +10,7 @@ namespace Almoxarifado.API.Controllers;
 
 [ApiController]
 [Route("api/produtos")]
+[Authorize]
 public sealed class EstoqueController : ControllerBase
 {
     private readonly IMediator _mediator;

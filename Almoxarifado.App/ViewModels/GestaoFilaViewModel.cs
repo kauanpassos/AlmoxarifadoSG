@@ -1,10 +1,14 @@
+using Almoxarifado.App.Models;
 using Almoxarifado.App.Services;
 using Almoxarifado.App.Services.Interfaces;
+using Almoxarifado.App.Views;
 using Almoxarifado.Application.DTOs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 
@@ -12,17 +16,27 @@ namespace Almoxarifado.App.ViewModels;
 
 public sealed partial class GestaoFilaViewModel : ObservableObject
 {
+    private const string FiltroTodos = "Todos";
+    private const string StatusProdutoSemNome = "Produto Sem Nome";
+
     private readonly IFirebaseService _firebaseService;
     private readonly INavigationService _navigationService;
     private readonly IDialogService _dialogService;
 
-    public ObservableCollection<SolicitacaoDto> Solicitacoes { get; } = new();
+    private List<FilaItemModel> _todosItensAchatados = new();
+
+    public ObservableCollection<FilaItemModel> FilaAchatada { get; } = new();
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsEmpty))]
     private bool _isBusy;
 
-    public bool IsEmpty => Solicitacoes.Count is 0 && IsBusy is false;
+    [ObservableProperty]
+    private string _textoPesquisa = string.Empty;
+
+    [ObservableProperty]
+    private string _filtroAtual = FiltroTodos;
+
+    public bool IsEmpty => FilaAchatada.Count is 0 && IsBusy is false;
 
     public string IniciaisUsuario
     {
@@ -30,10 +44,10 @@ public sealed partial class GestaoFilaViewModel : ObservableObject
         {
             var nome = UsuarioSessao.UsuarioLogado?.Nome;
             if (string.IsNullOrWhiteSpace(nome)) return "US";
-            
+
             var partes = nome.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (partes.Length is 1) return partes[0].Substring(0, Math.Min(2, partes[0].Length)).ToUpper();
-            
+
             return $"{partes[0][0]}{partes[^1][0]}".ToUpper();
         }
     }
@@ -43,25 +57,31 @@ public sealed partial class GestaoFilaViewModel : ObservableObject
         INavigationService navigationService,
         IDialogService dialogService)
     {
-        ArgumentNullException.ThrowIfNull(firebaseService);
-        ArgumentNullException.ThrowIfNull(navigationService);
-        ArgumentNullException.ThrowIfNull(dialogService);
+        _firebaseService = firebaseService ?? throw new ArgumentNullException(nameof(firebaseService));
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+    }
 
-        _firebaseService = firebaseService;
-        _navigationService = navigationService;
-        _dialogService = dialogService;
+    partial void OnTextoPesquisaChanged(string value) => AplicarFiltros();
+    partial void OnIsBusyChanged(bool value) => OnPropertyChanged(nameof(IsEmpty));
+
+    [RelayCommand]
+    private void MudarFiltro(string novoFiltro)
+    {
+        FiltroAtual = string.IsNullOrWhiteSpace(novoFiltro) ? FiltroTodos : novoFiltro;
+        AplicarFiltros();
     }
 
     [RelayCommand]
-    private async Task IrParaPerfilAsync()
+    public async Task IrParaPerfilAsync()
     {
-        await _navigationService.NavigateToAsync("//PerfilPage");
+        await _navigationService.NavigateToAsync(nameof(PerfilPage));
     }
 
     [RelayCommand]
     private async Task IrParaEstoqueAsync()
     {
-        await Shell.Current.GoToAsync("EstoquePage");
+        await Shell.Current.GoToAsync($"//{nameof(EstoquePage)}");
     }
 
     [RelayCommand]
@@ -72,15 +92,24 @@ public sealed partial class GestaoFilaViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            Solicitacoes.Clear();
-
-            if (UsuarioSessao.UsuarioLogado is null) return;
+            _todosItensAchatados.Clear();
 
             var dados = await _firebaseService.GetSolicitacoesPendentesAsync();
 
-            foreach (var item in dados)
+            if (dados != null)
             {
-                Solicitacoes.Add(item);
+                _todosItensAchatados = dados.SelectMany(solicitacao => solicitacao.Itens.Select(item => new FilaItemModel
+                {
+                    SolicitacaoId = solicitacao.Id,
+                    UsuarioSolicitante = solicitacao.UsuarioId,
+                    NomeProduto = string.IsNullOrWhiteSpace(item.NomeProduto) ? StatusProdutoSemNome : item.NomeProduto,
+                    Sku = item.Sku,
+                    Quantidade = item.Quantidade,
+                    Status = solicitacao.Status,
+                    SolicitacaoOriginal = solicitacao
+                })).ToList();
+
+                AplicarFiltros();
             }
         }
         catch (Exception)
@@ -93,36 +122,43 @@ public sealed partial class GestaoFilaViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    private async Task AprovarAsync(SolicitacaoDto solicitacao)
+    private void AplicarFiltros()
     {
-        await AlterarStatusAsync(solicitacao, "Aprovada");
+        FilaAchatada.Clear();
+        var query = _todosItensAchatados.AsEnumerable();
+
+        if (FiltroAtual != FiltroTodos)
+        {
+            query = query.Where(x => x.Status.Equals(FiltroAtual, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(TextoPesquisa))
+        {
+            var termo = TextoPesquisa.ToLowerInvariant();
+            query = query.Where(x =>
+                x.NomeProduto.ToLowerInvariant().Contains(termo) ||
+                x.Sku.ToLowerInvariant().Contains(termo) ||
+                x.Status.ToLowerInvariant().Contains(termo));
+        }
+
+        foreach (var item in query)
+        {
+            FilaAchatada.Add(item);
+        }
+
+        OnPropertyChanged(nameof(IsEmpty));
     }
 
     [RelayCommand]
-    private async Task RecusarAsync(SolicitacaoDto solicitacao)
+    private async Task AnalisarSolicitacaoAsync(FilaItemModel itemSelecionado)
     {
-        await AlterarStatusAsync(solicitacao, "Recusada");
-    }
+        if (itemSelecionado?.SolicitacaoOriginal == null) return;
 
-    private async Task AlterarStatusAsync(SolicitacaoDto solicitacao, string novoStatus)
-    {
-        if (IsBusy) return;
+        var parametros = new Dictionary<string, object>
+        {
+            { "SolicitacaoSelecionada", itemSelecionado.SolicitacaoOriginal }
+        };
 
-        try
-        {
-            IsBusy = true;
-            
-            await _firebaseService.AtualizarStatusSolicitacaoAsync(solicitacao.Id, novoStatus);
-            await LoadAsync();
-        }
-        catch (Exception)
-        {
-            await _dialogService.ShowAlertAsync("Erro na Atualização", "Houve uma falha inesperada ao tentar atualizar o status da solicitação.");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
+        await Shell.Current.GoToAsync(nameof(AnaliseSolicitacaoPage), parametros);
     }
 }

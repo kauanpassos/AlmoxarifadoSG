@@ -16,16 +16,26 @@ namespace Almoxarifado.App.ViewModels;
 
 public partial class HomeColaboradorViewModel : ObservableObject
 {
+    private const string StatusFiltroTodos = "Todas";
+    private const string StatusCancelada = "Cancelada";
+
     private readonly INavigationService _navigationService;
     private readonly IFirebaseService _firebaseService;
 
     private List<SolicitacaoDto> _solicitacoesOriginais = new();
+    private List<SolicitacaoModel> _modelosEmMemoria = new();
+
+    [ObservableProperty]
+    private bool _isBusy;
 
     [ObservableProperty]
     private string _iniciaisUsuario = string.Empty;
 
     [ObservableProperty]
     private string _termoPesquisa = string.Empty;
+
+    [ObservableProperty]
+    private string _filtroStatusAtual = StatusFiltroTodos;
 
     public ObservableCollection<SolicitacaoModel> ListaSolicitacoes { get; } = new();
 
@@ -41,6 +51,18 @@ public partial class HomeColaboradorViewModel : ObservableObject
         }
     }
 
+    partial void OnTermoPesquisaChanged(string value)
+    {
+        AplicarFiltros();
+    }
+
+    [RelayCommand]
+    private void AlterarFiltro(string status)
+    {
+        FiltroStatusAtual = string.IsNullOrWhiteSpace(status) ? StatusFiltroTodos : status;
+        AplicarFiltros();
+    }
+
     [RelayCommand]
     private async Task IrParaPerfilAsync() => await _navigationService.NavigateToAsync(nameof(PerfilPage));
 
@@ -50,10 +72,13 @@ public partial class HomeColaboradorViewModel : ObservableObject
     [RelayCommand]
     public async Task CarregarDashboardAsync()
     {
+        if (IsBusy) return;
+
         try
         {
-            ListaSolicitacoes.Clear();
+            IsBusy = true;
             _solicitacoesOriginais.Clear();
+            _modelosEmMemoria.Clear();
 
             var usuario = UsuarioSessao.UsuarioLogado;
             if (usuario is null) return;
@@ -62,30 +87,50 @@ public partial class HomeColaboradorViewModel : ObservableObject
 
             if (solicitacoes != null)
             {
-                // 🔥 CORREÇÃO AQUI: Filtramos para ignorar as solicitações canceladas
-                var solicitacoesAtivas = solicitacoes.Where(s => s.Status != "Cancelado").ToList();
+                _solicitacoesOriginais = solicitacoes.Where(s => s.Status != StatusCancelada).ToList();
 
-                _solicitacoesOriginais = solicitacoesAtivas;
-
-                // Construímos o modelo usando o NomeProduto quando disponível, caso contrário mostramos o Sku
-                var modelos = solicitacoesAtivas.SelectMany(s => s.Itens.Select(i => new SolicitacaoModel
+                _modelosEmMemoria = _solicitacoesOriginais.SelectMany(s => s.Itens.Select(i => new SolicitacaoModel
                 {
                     NomeProduto = string.IsNullOrWhiteSpace(i.NomeProduto) ? i.Sku : i.NomeProduto,
                     Sku = i.Sku,
                     Quantidade = i.Quantidade,
                     NomeStatus = s.Status
-                }));
+                })).ToList();
 
-                foreach (var model in modelos)
-                {
-                    ListaSolicitacoes.Add(model);
-                }
+                AplicarFiltros();
             }
         }
         catch (Exception)
         {
-            if (Microsoft.Maui.Controls.Application.Current?.MainPage is not null)
-                await Microsoft.Maui.Controls.Application.Current.MainPage.DisplayAlert("Erro", "Não foi possível carregar o dashboard.", "OK");
+            if (Shell.Current is not null)
+                await Shell.Current.DisplayAlert("Erro", "Não foi possível carregar o dashboard.", "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void AplicarFiltros()
+    {
+        ListaSolicitacoes.Clear();
+        var query = _modelosEmMemoria.AsEnumerable();
+
+        if (FiltroStatusAtual != StatusFiltroTodos)
+        {
+            query = query.Where(q => q.NomeStatus.Equals(FiltroStatusAtual, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(TermoPesquisa))
+        {
+            var termo = TermoPesquisa.ToLowerInvariant();
+            query = query.Where(q => q.NomeProduto.ToLowerInvariant().Contains(termo) ||
+                                     q.Sku.ToLowerInvariant().Contains(termo));
+        }
+
+        foreach (var item in query)
+        {
+            ListaSolicitacoes.Add(item);
         }
     }
 
@@ -112,6 +157,7 @@ public partial class HomeColaboradorViewModel : ObservableObject
     private static string ObterIniciais(string? nome)
     {
         if (string.IsNullOrWhiteSpace(nome)) return "CO";
+
         var partes = nome.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         return partes.Length is 1

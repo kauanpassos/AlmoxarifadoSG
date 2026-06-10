@@ -10,13 +10,18 @@ public partial class GestaoFilaPage : ContentPage
     public GestaoFilaPage(GestaoFilaViewModel viewModel)
     {
         InitializeComponent();
+
         _viewModel = viewModel;
         BindingContext = _viewModel;
     }
 
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
-        await _viewModel.LoadAsync ();
+
+        if (!_viewModel.IsBusy && _viewModel.LoadCommand.CanExecute(null))
+        {
+            _viewModel.LoadCommand.Execute(null);
+        }
     }
 }

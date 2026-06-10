@@ -14,9 +14,13 @@ public sealed class StatusToColorConverter : IValueConverter
 
         return status switch
         {
-            "Aprovada" => Color.FromArgb("#2E7D32"),
-            "Recusada" => Color.FromArgb("#D32F2F"),
-            _ => Color.FromArgb("#F57C00")
+            "Pendente" => Color.FromArgb("#F57C00"), // Laranja
+            "Em análise" => Color.FromArgb("#1976D2"), // Azul
+            "Aprovada" => Color.FromArgb("#2E7D32"), // Verde
+            "Recusada" => Color.FromArgb("#D32F2F"), // Vermelho
+            "Entregue" => Color.FromArgb("#7B1FA2"), // Roxo
+            "Cancelada" => Color.FromArgb("#757575"), // Cinza
+            _ => Color.FromArgb("#616161")  // Fallback
         };
     }
 

@@ -7,6 +7,7 @@ using Almoxarifado.Domain.Interfaces;
 using Almoxarifado.Domain.Entities;
 using Almoxarifado.Application.DTOs;
 using Almoxarifado.Application.Queries;
+using Almoxarifado.Domain.Constants;
 
 namespace Almoxarifado.Application.Handlers;
 
@@ -15,8 +16,8 @@ public sealed class GetSolicitacoesPendentesHandler(IReadOnlyRepository<Solicita
 {
     public async Task<IEnumerable<SolicitacaoDto>> Handle(GetSolicitacoesPendentesQuery request, CancellationToken cancellationToken)
     {
-        var pendentes = await repository.GetByFieldAsync(nameof(Solicitacao.Status), "Pendente");
-        
+        var pendentes = await repository.GetByFieldAsync(nameof(Solicitacao.Status), StatusSolicitacao.Pendente);
+
         return (pendentes ?? []).Select(s => s.ToDto());
     }
 }

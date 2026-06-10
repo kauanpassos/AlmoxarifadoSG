@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization; // 🔥 ADICIONADO AQUI
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Linq;
 using Almoxarifado.App.Services.Interfaces;
 using Almoxarifado.Application.DTOs;
+using Microsoft.Maui.Storage;
 
 namespace Almoxarifado.App.Services;
 
@@ -22,13 +24,20 @@ public sealed class HttpFirebaseService : IFirebaseService
 
         _httpClient = httpClient;
         _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-        // 🔥 CORREÇÃO AQUI: Ensina o JSON a traduzir os Enums (como o TipoUsuario)
         _jsonOptions.Converters.Add(new JsonStringEnumConverter());
+    }
+    private async Task GarantirAutenticacaoAsync()
+    {
+        var token = await SecureStorage.Default.GetAsync("auth_token");
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
     }
 
     public async Task<IEnumerable<ProdutoDto>> GetProdutosAsync()
     {
+        await GarantirAutenticacaoAsync();
         var resposta = await _httpClient.GetAsync("api/produtos");
 
         if (resposta.IsSuccessStatusCode is false)
@@ -43,6 +52,7 @@ public sealed class HttpFirebaseService : IFirebaseService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(uid);
 
+        await GarantirAutenticacaoAsync();
         var resposta = await _httpClient.GetAsync($"api/usuarios/{uid}");
 
         if (resposta.IsSuccessStatusCode is false)
@@ -60,6 +70,7 @@ public sealed class HttpFirebaseService : IFirebaseService
     {
         ArgumentNullException.ThrowIfNull(produto);
 
+        await GarantirAutenticacaoAsync();
         var resposta = await _httpClient.PostAsJsonAsync("api/produtos", produto);
 
         if (resposta.IsSuccessStatusCode is false)
@@ -86,6 +97,7 @@ public sealed class HttpFirebaseService : IFirebaseService
             }).ToList()
         };
 
+        await GarantirAutenticacaoAsync();
         var resposta = await _httpClient.PostAsJsonAsync("api/solicitacoes", payload);
 
         if (resposta.IsSuccessStatusCode is false)
@@ -96,6 +108,7 @@ public sealed class HttpFirebaseService : IFirebaseService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(usuarioId);
 
+        await GarantirAutenticacaoAsync();
         var resposta = await _httpClient.GetAsync($"api/solicitacoes/usuario/{usuarioId}");
 
         if (resposta.IsSuccessStatusCode is false)
@@ -108,6 +121,7 @@ public sealed class HttpFirebaseService : IFirebaseService
 
     public async Task<IEnumerable<SolicitacaoDto>> GetSolicitacoesPendentesAsync()
     {
+        await GarantirAutenticacaoAsync();
         var resposta = await _httpClient.GetAsync("api/solicitacoes/pendentes");
 
         if (resposta.IsSuccessStatusCode is false)
@@ -125,6 +139,7 @@ public sealed class HttpFirebaseService : IFirebaseService
 
         var payload = new { NovoStatus = novoStatus };
 
+        await GarantirAutenticacaoAsync();
         var resposta = await _httpClient.PatchAsJsonAsync($"api/solicitacoes/{id}/status", payload);
 
         if (resposta.IsSuccessStatusCode is false)

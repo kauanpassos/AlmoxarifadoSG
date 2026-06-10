@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Almoxarifado.App.ViewModels"
+             xmlns:models="clr-namespace:Almoxarifado.App.Models"
+             xmlns:converters="clr-namespace:Almoxarifado.App.Converters"
+             x:Class="Almoxarifado.App.Views.AnaliseSolicitacaoPage"
+             x:DataType="vm:AnaliseSolicitacaoViewModel"
+             Title="Análise de Solicitação"
+             BackgroundColor="#F8F9FA"
+             NavigationPage.HasNavigationBar="False"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StatusToValidationColorConverter x:Key="StatusToValidationColorConverter" />
+            <converters:StatusToMissingColorConverter x:Key="StatusToMissingColorConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid RowDefinitions="Auto, *, Auto">
+
+            <Grid Grid.Row="0" BackgroundColor="#1A336E" Padding="20,45,20,20" ColumnDefinitions="Auto, *, Auto">
+                <ImageButton Grid.Column="0" Source="arrow_back.png" BackgroundColor="Transparent" HeightRequest="24" WidthRequest="24" Command="{Binding VoltarCommand}" VerticalOptions="Center"/>
+                <Label Grid.Column="1" Text="Analisar Pedido" FontSize="20" FontAttributes="Bold" TextColor="White" VerticalOptions="Center" HorizontalOptions="Center" />
+
+                <Frame Grid.Column="2" WidthRequest="40" HeightRequest="40" CornerRadius="20" Padding="0" HasShadow="True" BackgroundColor="#F0F4F8" BorderColor="#AFD7FF">
+                    <Label Text="US" FontAttributes="Bold" TextColor="#1A336E" FontSize="15" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Frame>
+            </Grid>
+
+            <CollectionView Grid.Row="1" ItemsSource="{Binding ItensAnalise}" Margin="15,20,15,0">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:ItemAnaliseModel">
+                        <Frame Margin="0,0,0,15" Padding="15" CornerRadius="8" BorderColor="#E0E0E0" BackgroundColor="White" HasShadow="True">
+                            <VerticalStackLayout Spacing="10">
+
+                                <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                                    <Label Grid.Row="0" Grid.Column="0" Text="{Binding NomeProduto}" FontAttributes="Bold" TextColor="#1A1A1A" FontSize="16" LineBreakMode="TailTruncation" />
+                                    <Label Grid.Row="1" Grid.Column="0" Text="{Binding Sku, StringFormat='SKU: {0}'}" TextColor="#757575" FontSize="12" />
+                                    <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Text="{Binding Quantidade, StringFormat='{0} un'}" TextColor="#254A9A" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                                </Grid>
+
+                                <BoxView HeightRequest="1" Color="#EEEEEE" />
+
+                                <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
+                                    <Button Grid.Column="0" Text="Validar" Command="{Binding MarcarValidadoCommand}" 
+                                            BackgroundColor="{Binding Estado, Converter={x:StaticResource StatusToValidationColorConverter}}" 
+                                            TextColor="White" FontSize="13" CornerRadius="8" HeightRequest="38" />
+
+                                    <Button Grid.Column="1" Text="Em Falta" Command="{Binding MarcarEmFaltaCommand}" 
+                                            BackgroundColor="{Binding Estado, Converter={x:StaticResource StatusToMissingColorConverter}}" 
+                                            TextColor="White" FontSize="13" CornerRadius="8" HeightRequest="38" />
+                                </Grid>
+
+                                <Label Text="{Binding Estado, StringFormat='Status: {0}'}" FontSize="11" TextColor="Gray" HorizontalOptions="Center" Margin="0,5,0,0"/>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Frame Grid.Row="2" BackgroundColor="White" Padding="20" HasShadow="True">
+                <Button Text="Finalizar Análise" Command="{Binding FinalizarAnaliseCommand}" 
+                        IsEnabled="{Binding PodeFinalizar}"
+                        BackgroundColor="#03BA15" TextColor="White" FontAttributes="Bold" CornerRadius="10" HeightRequest="50" FontSize="16" />
+            </Frame>
+        </Grid>
+
+        <BoxView Color="#80000000" IsVisible="{Binding IsBusy}" />
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="White" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="60" HeightRequest="60" />
+    </Grid>
+</ContentPage>
