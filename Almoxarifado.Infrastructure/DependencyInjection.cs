@@ -24,6 +24,8 @@ public static class DependencyInjection
         services.AddScoped(typeof(IReadOnlyRepository<>), typeof(FirebaseRepository<>));
         services.AddScoped(typeof(IWriteOnlyRepository<>), typeof(FirebaseRepository<>));
 
+        services.AddScoped<IEstoqueTransactionService, Almoxarifado.Infrastructure.Services.FirestoreEstoqueTransactionService>();
+
         services.AddScoped<IIdentityService, FirebaseIdentityService>();
 
         var firebaseKeyPath = configuration["Firebase:CredentialsPath"];

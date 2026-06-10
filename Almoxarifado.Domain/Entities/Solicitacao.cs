@@ -2,48 +2,35 @@ using System;
 using System.Collections.Generic;
 using Google.Cloud.Firestore;
 using Almoxarifado.Domain.Constants;
+using Almoxarifado.Domain.Interfaces;
 
 namespace Almoxarifado.Domain.Entities;
 
 [FirestoreData]
-public sealed class Solicitacao
+public sealed class Solicitacao : IEntity
 {
+    public Solicitacao() { }
+
     [FirestoreDocumentId]
-    public string Id { get; set; } = null!;
+    public string Id { get; private set; } = string.Empty;
 
     [FirestoreProperty("UsuarioId")]
-    public string UsuarioId { get; set; } = null!;
+    public string UsuarioId { get; private set; } = string.Empty;
 
     [FirestoreProperty("Observacao")]
-    public string Observacao { get; set; } = null!;
+    public string Observacao { get; private set; } = string.Empty;
 
     [FirestoreProperty("Status")]
-    public string Status { get; set; } = null!;
-
-    private readonly List<ItemSolicitacao> _itens = new();
-
-    public IReadOnlyCollection<ItemSolicitacao> Itens => _itens.AsReadOnly();
+    public string Status { get; private set; } = string.Empty;
 
     [FirestoreProperty("Itens")]
-    public List<ItemSolicitacao> ItensDb
-    {
-        get => _itens;
-        set
-        {
-            _itens.Clear();
+    public List<ItemSolicitacao> Itens { get; private set; } = new();
 
-            if (value != null)
-                _itens.AddRange(value);
-        }
-    }
-
-    [FirestoreProperty("createdAt")]
-    public DateTime CreatedAt { get; set; }
+    [FirestoreProperty("CreatedAt")]
+    public DateTime CreatedAt { get; private set; }
 
     [FirestoreProperty("updatedAt")]
-    public DateTime UpdatedAt { get; set; }
-
-    public Solicitacao() { }
+    public DateTime UpdatedAt { get; private set; }
 
     public Solicitacao(string id, string usuarioId, string observacao)
     {
@@ -65,7 +52,7 @@ public sealed class Solicitacao
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        _itens.Add(item);
+        Itens.Add(item);
         AtualizarData();
     }
 
