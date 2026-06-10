@@ -74,10 +74,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userId));
                 }
 
+                
                 var firestoreDb = context.HttpContext.RequestServices.GetRequiredService<FirestoreDb>();
                 var userDoc = await firestoreDb.Collection("usuarios").Document(userId).GetSnapshotAsync();
 
-                if (userDoc.Exists)
+                if (userDoc.Exists && userDoc.ContainsField("tipo"))
                 {
                     var tipoUsuario = userDoc.GetValue<int>("tipo");
                     if (tipoUsuario == 2)

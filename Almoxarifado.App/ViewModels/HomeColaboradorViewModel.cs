@@ -85,7 +85,7 @@ public partial class HomeColaboradorViewModel : ObservableObject
 
             var solicitacoes = await _firebaseService.GetSolicitacoesUsuarioAsync(usuario.Id);
 
-            if (solicitacoes != null)
+            if (solicitacoes is not null)
             {
                 _solicitacoesOriginais = solicitacoes.Where(s => s.Status != StatusCancelada).ToList();
 
@@ -102,8 +102,8 @@ public partial class HomeColaboradorViewModel : ObservableObject
         }
         catch (Exception)
         {
-            if (Shell.Current is not null)
-                await Shell.Current.DisplayAlert("Erro", "Não foi possível carregar o dashboard.", "OK");
+            var toast = CommunityToolkit.Maui.Alerts.Toast.Make("Falha na rede. Não foi possível carregar o histórico.", CommunityToolkit.Maui.Core.ToastDuration.Long);
+            await toast.Show();
         }
         finally
         {
@@ -137,13 +137,13 @@ public partial class HomeColaboradorViewModel : ObservableObject
     [RelayCommand]
     private async Task AbrirDetalhesSolicitacaoAsync(SolicitacaoModel itemSelecionado)
     {
-        if (itemSelecionado == null) return;
+        if (itemSelecionado is null) return;
 
         var solicitacao = _solicitacoesOriginais.FirstOrDefault(s =>
             s.Status == itemSelecionado.NomeStatus &&
-            s.Itens.Any(i => i.Sku == itemSelecionado.Sku));
+            s.Itens.FirstOrDefault(i => i.Sku == itemSelecionado.Sku) is not null);
 
-        if (solicitacao != null)
+        if (solicitacao is not null)
         {
             var parametros = new Dictionary<string, object>
             {

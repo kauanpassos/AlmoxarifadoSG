@@ -24,4 +24,24 @@ public sealed class EstoqueController : ControllerBase
         var result = await _mediator.Send(query);
         return Ok(result);
     }
+
+    [HttpPost("{id}/entrada")]
+    [Authorize(Policy = "AlmoxarifeOnly")]
+    [ProducesResponseType(typeof(Almoxarifado.Application.DTOs.ProdutoDto), 200)]
+    public async Task<IActionResult> AdicionarEstoque(string id, [FromBody] QuantidadeRequest request)
+    {
+        var result = await _mediator.Send(new Almoxarifado.Application.Commands.AdicionarEstoqueCommand(id, request.Quantidade));
+        return Ok(result);
+    }
+
+    [HttpPost("{id}/saida")]
+    [Authorize(Policy = "AlmoxarifeOnly")]
+    [ProducesResponseType(typeof(Almoxarifado.Application.DTOs.ProdutoDto), 200)]
+    public async Task<IActionResult> BaixarEstoque(string id, [FromBody] QuantidadeRequest request)
+    {
+        var result = await _mediator.Send(new Almoxarifado.Application.Commands.BaixarEstoqueCommand(id, request.Quantidade));
+        return Ok(result);
+    }
 }
+
+public record QuantidadeRequest(long Quantidade);

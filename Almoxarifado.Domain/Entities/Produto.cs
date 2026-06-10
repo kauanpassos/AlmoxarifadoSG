@@ -1,4 +1,4 @@
-﻿using Almoxarifado.Domain.Interfaces;
+using Almoxarifado.Domain.Interfaces;
 using Google.Cloud.Firestore;
 using System;
 
@@ -12,7 +12,7 @@ public sealed class Produto : IEntity
     [FirestoreDocumentId]
     public string Id { get; private set; } = string.Empty;
 
-    [FirestoreProperty("numCode")]
+    [FirestoreProperty("NumCode")]
     public long NumCode { get; private set; }
 
     [FirestoreProperty("nome")]
@@ -27,7 +27,7 @@ public sealed class Produto : IEntity
     [FirestoreProperty("unidadeMedida")]
     public string UnidadeMedida { get; private set; } = string.Empty;
 
-    [FirestoreProperty("qtdEstoque")]
+    [FirestoreProperty("QtdEstoque")]
     public long QtdEstoque { get; private set; }
 
     [FirestoreProperty("estoqueMinimo")]
