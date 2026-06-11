@@ -65,13 +65,14 @@ public static class MauiProgram
 
     private static void RegistrarHttpClients(IServiceCollection services)
     {
-        var apiBaseUrl = "http://187.90.210.145:5000/";
+        var apiBaseUrl = "https://squall-sacrament-barman.ngrok-free.dev/";
 
         services.AddTransient<AuthenticatedHttpHandler>();
 
         services.AddHttpClient<IAuthService, AuthService>(client =>
         {
             client.BaseAddress = new Uri(apiBaseUrl);
+            client.DefaultRequestHeaders.Add("ngrok-skip-browser-warning", "true");
         })
         .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
         {
@@ -81,6 +82,7 @@ public static class MauiProgram
         services.AddHttpClient<IFirebaseService, HttpFirebaseService>(client =>
         {
             client.BaseAddress = new Uri(apiBaseUrl);
+            client.DefaultRequestHeaders.Add("ngrok-skip-browser-warning", "true");
         })
         .AddHttpMessageHandler<AuthenticatedHttpHandler>()
         .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
