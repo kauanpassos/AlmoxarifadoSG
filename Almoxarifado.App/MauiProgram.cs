@@ -65,9 +65,7 @@ public static class MauiProgram
 
     private static void RegistrarHttpClients(IServiceCollection services)
     {
-        var apiBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
-            ? "http://10.0.2.2:5144/"
-            : "http://127.0.0.1:5144/";
+        var apiBaseUrl = "http://187.90.210.145:5000/";
 
         services.AddTransient<AuthenticatedHttpHandler>();
 

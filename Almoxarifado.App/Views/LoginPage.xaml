@@ -27,11 +27,10 @@
                 <VerticalStackLayout Spacing="25">
 
                     <Label Text="AlmoxarifadoSG"
-                           FontSize="36"
+                           FontSize="28"
                            FontAttributes="Bold"
                            TextColor="#1A3160"
-                           HorizontalOptions="Center" 
-                           CharacterSpacing="1"/>
+                           HorizontalOptions="Center" />
 
                     <Label Text="Faça login para solicitar as peças"
                            FontSize="16"
